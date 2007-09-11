@@ -1,0 +1,71 @@
+package editor.mapmode;
+
+import editor.Main;
+import editor.MapPanel;
+import editor.ProvinceData.Province;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+
+/**
+ * A <code>MapMode</code> that paints a blue background and then delegates
+ * any painting of provinces to the subclass. Painting provinces is made
+ * easier by {@link #paintProvince}.
+ * <p>
+ * Subclasses must override {@link #paintProvince(Graphics2D, int)} and
+ * {@link #paintSeaZone(Graphics2D, int)}. They may also override
+ * {@link #paintBackground(Graphics2D)} or
+ * {@link #paintTerraIncognita(Graphics2D)} if they wish; the default is to
+ * paint the background blue fading to cyan, and terra incognita black.
+ * @author Michael Myers
+ * @since 0.4pre1
+ */
+public abstract class ProvincePaintingMode extends MapMode {
+    
+    protected static final int SEA_STARTS = Integer.parseInt(Main.map.getString("sea_starts"));
+    private static final Paint background = new Color(15, 100, 255);
+    // new GradientPaint(0, 0, Color.BLUE.brighter(), 0, mapPanel.getHeight(), Color.CYAN.darker(), true)
+    
+    protected ProvincePaintingMode() {
+        super();
+    }
+    
+    protected ProvincePaintingMode(MapPanel panel) {
+        super(panel);
+    }
+    
+    public void paint(final Graphics2D g) {
+        paintBackground(g);
+        
+        Province[] provinces = mapPanel.getModel().getProvinceData().getAllProvs();
+        
+        // First, paint PTI
+        paintTerraIncognita(g);
+        
+        // Now, send the rest to the subclass.
+        for (int i = 1; i < SEA_STARTS; i++) {
+            paintProvince(g, i);
+        }
+        for (int i = SEA_STARTS; i < provinces.length; i++) {
+            paintSeaZone(g, i);
+        }
+    }
+    
+    protected void paintTerraIncognita(final Graphics2D g) {
+        mapPanel.paintProvince(g, 0, Color.BLACK);
+    }
+    
+    protected void paintBackground(final Graphics2D g) {
+        g.setPaint(background);
+        g.fillRect(0, 0, mapPanel.getWidth(), mapPanel.getHeight());
+    }
+    
+    protected abstract void paintProvince(final Graphics2D g, int provId);
+    
+    protected abstract void paintSeaZone(final Graphics2D g, int id);
+
+    public boolean paintsBorders() {
+        return true;
+    }
+
+}

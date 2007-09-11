@@ -1,0 +1,4 @@
+# Configuration file for the text editor
+editor.font.name = "Monospaced"
+editor.font.style = PLAIN # One of PLAIN, BOLD, or ITALIC (currently unused)
+editor.font.size = 12 # Others to come...
