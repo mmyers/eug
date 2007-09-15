@@ -33,14 +33,15 @@ public final class ReligionMode extends ProvincePaintingMode {
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final String religion = mapPanel.getModel().getHistString(provId, "religion");
-        final String owner = mapPanel.getModel().getHistString(provId, "owner");
-        final String ownerRel = (Utilities.isNotACountry(owner) ? null : mapPanel.getModel().getHistString(owner, "religion"));
         
         if (religion == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
         } else if (religion.length() == 0 || religion.equals("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_RELIGION);
         } else {
+            final String owner = mapPanel.getModel().getHistString(provId, "owner");
+            final String ownerRel = (Utilities.isNotACountry(owner) ? null : mapPanel.getModel().getHistString(owner, "religion"));
+            
             if (ownerRel == null || religion.equals(ownerRel)) {
                 mapPanel.paintProvince(g, provId, Utilities.getReligionColor(religion));
             } else {
