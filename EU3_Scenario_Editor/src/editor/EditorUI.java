@@ -39,7 +39,7 @@ public class EditorUI extends javax.swing.JFrame {
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.5pre3";
+    private static final String VERSION = "0.5";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
     
