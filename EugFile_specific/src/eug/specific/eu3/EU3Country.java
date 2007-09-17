@@ -22,9 +22,14 @@ public class EU3Country extends EU3SpecificObject {
     private List<GenericObject> armies = null;
     private List<GenericObject> navies = null;
     
-    /** Creates a new instance of EU3Country */
-    public EU3Country(GenericObject go, EU3SaveGame s) {
-        super(go, s);
+    /**
+     * Creates a new instance of EU3Country.
+     * <p>
+     * Note that some methods require that <code>src</code> be an instance of
+     * {@link EU3SaveGame}.
+     */
+    public EU3Country(GenericObject go, EU3DataSource src) {
+        super(go, src);
     }
     
     // Lazy accessors, to reduce object creation time
@@ -56,8 +61,12 @@ public class EU3Country extends EU3SpecificObject {
         return go.name;
     }
     
+    /**
+     * This method can only be called if the data source is a saved game.
+     * It will throw an exception otherwise.
+     */
     public void changeTag(String newTag) {
-        scenario.changeCountryTag(getTag(), newTag);
+        ((EU3SaveGame)dataSource).changeCountryTag(getTag(), newTag);
         go.name = newTag.toUpperCase();
     }
     
@@ -150,57 +159,68 @@ public class EU3Country extends EU3SpecificObject {
     }
     
     public boolean ownsProvince(int id) {
-        return scenario.getEU3Province(id).getOwner().equals(getTag());
+        return dataSource.getProvince(id).getString("owner").equals(getTag());
     }
     
     public boolean controllsProvince(int id) {
-        return scenario.getEU3Province(id).getOwner().equals(getTag());
+        return dataSource.getProvince(id).getString("controller").equals(getTag());
     }
     
     public boolean isCore(int id) {
-        return scenario.getEU3Province(id).isCoreOf().contains(getTag());
+        GenericObject prov = dataSource.getProvince(id);
+        // this is necessary because history files do it one way and saved games do it another
+        return prov.getStrings("add_core").contains(getTag()) ||
+                prov.getStrings("core").contains(getTag());
     }
     
 
     public int numOwned() {
         int ret = 0;
         final String tag = getTag();
-        for (int i = 1; i <= scenario.getLastProvID(); i++) {
-            EU3Province prov = scenario.getEU3Province(i);
-            if (prov.getOwner().equals(tag))
+        for (int i = 1; /* loop until broken */; i++) {
+            GenericObject prov = dataSource.getProvince(i);
+            if (prov == null)
+                break;
+            if (prov.getString("owner").equals(tag))
                 ret++;
         }
         return ret;
     }
     
-    public List<EU3Province> getOwned() {
-        final List<EU3Province> owned = new ArrayList<EU3Province>();
+    public List<GenericObject> getOwned() {
+        final List<GenericObject> owned = new ArrayList<GenericObject>();
         final String tag = getTag();
-        for (int i = 1; i <= scenario.getLastProvID(); i++) {
-            EU3Province prov = scenario.getEU3Province(i);
-            if (prov.getOwner().equals(tag))
+        for (int i = 1; /* loop until broken */; i++) {
+            GenericObject prov = dataSource.getProvince(i);
+            if (prov == null)
+                break;
+            if (prov.getString("owner").equals(tag))
                 owned.add(prov);
         }
         return owned;
     }
     
-    public List<EU3Province> getControlled() {
-        final List<EU3Province> controlled = new ArrayList<EU3Province>();
+    public List<GenericObject> getControlled() {
+        final List<GenericObject> controlled = new ArrayList<GenericObject>();
         final String tag = getTag();
-        for (int i = 1; i <= scenario.getLastProvID(); i++) {
-            EU3Province prov = scenario.getEU3Province(i);
-            if (prov.getController().equals(tag))
+        for (int i = 1; /* loop until broken */; i++) {
+            GenericObject prov = dataSource.getProvince(i);
+            if (prov == null)
+                break;
+            if (prov.getString("controller").equals(tag))
                 controlled.add(prov);
         }
         return controlled;
     }
     
-    public List<EU3Province> getCore() {
-        final List<EU3Province> core = new ArrayList<EU3Province>();
+    public List<GenericObject> getCore() {
+        final List<GenericObject> core = new ArrayList<GenericObject>();
         final String tag = getTag();
-        for (int i = 1; i <= scenario.getLastProvID(); i++) {
-            EU3Province prov = scenario.getEU3Province(i);
-            if (prov.isCoreOf().contains(tag))
+        for (int i = 1; /* loop until broken */; i++) {
+            GenericObject prov = dataSource.getProvince(i);
+            if (prov == null)
+                break;
+            if (prov.getStrings("core").contains(tag) || prov.getStrings("is_core").contains(tag))
                 core.add(prov);
         }
         return core;
@@ -223,6 +243,10 @@ public class EU3Country extends EU3SpecificObject {
     
     private static final String[] techs = { "land_tech", "naval_tech", "trade_tech", "infra_tech", "government_tech"/*, "stability" */};
     
+    /**
+     * This method can only be called if the data source is a saved game.
+     * It will throw an exception otherwise.
+     */
     public void merge(EU3Country country) {
         if (true)
             throw new UnsupportedOperationException("Not yet implemented");
@@ -253,7 +277,7 @@ public class EU3Country extends EU3SpecificObject {
         final String tag = getTag();
         final String otherTag = country.getTag();
         
-        for (GenericObject prov : scenario.provinces) {
+        for (GenericObject prov : ((EU3SaveGame)dataSource).provinces) {
             if (prov.getString("owner").equals(otherTag)) {
                 prov.setString("owner", tag);
                 if (prov.getString("controller").equals(otherTag))
