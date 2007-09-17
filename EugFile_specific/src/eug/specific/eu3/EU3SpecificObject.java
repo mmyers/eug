@@ -17,12 +17,12 @@ import java.util.Comparator;
  */
 public class EU3SpecificObject extends SpecificObject {
     
-    public EU3SaveGame scenario;
+    public EU3DataSource dataSource;
     
     /** Creates a new instance of EU3SpecificObject */
-    public EU3SpecificObject(GenericObject o, EU3SaveGame s) {
+    public EU3SpecificObject(GenericObject o, EU3DataSource src) {
         go = o;
-        scenario = s;
+        dataSource = src;
     }
     
 }
