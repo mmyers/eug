@@ -259,11 +259,11 @@ class SetConfig extends javax.swing.JFrame {
                 if (check == JOptionPane.NO_OPTION)
                     return false;
                 else {
-                    config.setString("moddir", modDirTextField.getText().replaceAll("[/\\\\]", "/"));
+                    config.setString("moddir", modDirTextField.getText().replaceAll("[/\\\\]", "/"), true);
                     return true;
                 }
             } else {
-                config.setString("moddir", modDirTextField.getText().replaceAll("[/\\\\]", "/"));
+                config.setString("moddir", modDirTextField.getText().replaceAll("[/\\\\]", "/"), true);
                 return true;
             }
         }
