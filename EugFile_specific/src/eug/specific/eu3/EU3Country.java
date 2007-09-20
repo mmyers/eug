@@ -150,10 +150,13 @@ public class EU3Country extends EU3SpecificObject {
     }
     
     public int getRelation(String tag) {
-        return go.getChild(tag).getInt("value");
+        GenericObject dip = go.getChild(tag);
+        if (dip != null)
+            return dip.getInt("value");
+        return 0;
     }
     
-
+    
     public int getPolicyValue(String policy) {
         return go.getInt(policy);
     }
@@ -173,7 +176,7 @@ public class EU3Country extends EU3SpecificObject {
                 prov.getStrings("core").contains(getTag());
     }
     
-
+    
     public int numOwned() {
         int ret = 0;
         final String tag = getTag();
@@ -241,15 +244,15 @@ public class EU3Country extends EU3SpecificObject {
     //
     
     
-    private static final String[] techs = { "land_tech", "naval_tech", "trade_tech", "infra_tech", "government_tech"/*, "stability" */};
+    private static final String[] techs = { "land_tech", "naval_tech", "trade_tech", "production_tech", "government_tech"/*, "stability" */};
     
     /**
      * This method can only be called if the data source is a saved game.
      * It will throw an exception otherwise.
      */
     public void merge(EU3Country country) {
-        if (true)
-            throw new UnsupportedOperationException("Not yet implemented");
+//        if (true)
+//            throw new UnsupportedOperationException("Not yet implemented");
         
         for (String tech : techs) {
             setTech(tech, (getTechnologyLevel(tech) + country.getTechnologyLevel(tech)) / 2);
@@ -277,6 +280,7 @@ public class EU3Country extends EU3SpecificObject {
         final String tag = getTag();
         final String otherTag = country.getTag();
         
+        ((EU3SaveGame)dataSource).preloadProvinces();
         for (GenericObject prov : ((EU3SaveGame)dataSource).provinces) {
             if (prov.getString("owner").equals(otherTag)) {
                 prov.setString("owner", tag);

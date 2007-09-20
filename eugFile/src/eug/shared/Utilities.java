@@ -8,6 +8,7 @@ package eug.shared;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -29,7 +30,19 @@ public final class Utilities {
     }
     
     public static String findNewestFile(File dir) {
-        File[] list = dir.listFiles(EUG_FILTER);
+        File[] list = dir.listFiles(/*EUG_FILTER*/);
+        Arrays.sort(list, SORT_BY_DATE);
+        return list[0].getAbsolutePath();
+    }
+    
+    public static String findNewestFile(File dir, FileFilter filter) {
+        File[] list = dir.listFiles(filter);
+        Arrays.sort(list, SORT_BY_DATE);
+        return list[0].getAbsolutePath();
+    }
+    
+    public static String findNewestFile(File dir, FilenameFilter filter) {
+        File[] list = dir.listFiles(filter);
         Arrays.sort(list, SORT_BY_DATE);
         return list[0].getAbsolutePath();
     }
@@ -47,7 +60,7 @@ public final class Utilities {
 
     private static final class EugFileFilter implements FileFilter {
         public boolean accept(File pathname) {
-            return pathname.getName().endsWith(".eug");
+            return pathname.getName().endsWith(".eug") || pathname.getName().endsWith(".eu3");
         }
     }
 

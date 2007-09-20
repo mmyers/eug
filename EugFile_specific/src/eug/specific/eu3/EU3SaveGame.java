@@ -162,6 +162,8 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         if (provinces == null)
             initProvs();
         
+        if (id > lastProvId)
+            return null;
         return provinces.get(id-1);
     }
     
@@ -251,6 +253,10 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     
     public void preloadProvinces(int last) {
         // ignore parameter, since it's so quick anyway
+        preloadProvinces();
+    }
+    
+    public void preloadProvinces() {
         if (provinces == null)
             initProvs();
     }
@@ -258,6 +264,12 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     public void preloadCountries() {
         if (countries == null)
             initCountries();
+    }
+    
+    
+    public int numCountries() {
+        preloadCountries();
+        return countryMap.size();
     }
     
     
@@ -353,7 +365,8 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         }
         
         // Relations
-        for (GenericObject country : countries) {
+        preloadCountries();
+        for (GenericObject country : countryMap.values()) {
             for (GenericObject child : country.children) {
                 if (child.name.equals(oldTag)) {
                     child.name = newTag;
@@ -379,6 +392,8 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         }
         
         // Whew... I think that's it.
+        // Now to make sure there aren't old entries in the country database.
+        initCountries();
     }
     
     public static void main(String[] args) {
