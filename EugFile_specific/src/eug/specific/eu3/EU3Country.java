@@ -41,14 +41,14 @@ public class EU3Country extends EU3SpecificObject {
         return history;
     }
     
-    private List<GenericObject> getArmies() {
+    public List<GenericObject> getArmies() {
         if (armies == null) {
             armies = go.getChildren("army");
         }
         return armies;
     }
     
-    private List<GenericObject> getNavies() {
+    public List<GenericObject> getNavies() {
         if (navies == null) {
             navies = go.getChildren("navy");
         }
@@ -227,6 +227,20 @@ public class EU3Country extends EU3SpecificObject {
                 core.add(prov);
         }
         return core;
+    }
+    
+    
+    public List<Integer> getProvsWithBuilding(String building) {
+        final List<Integer> provs = new ArrayList<Integer>();
+        final String tag = getTag();
+        for (int i = 1; /* loop until broken */; i++) {
+            GenericObject prov = dataSource.getProvince(i);
+            if (prov == null)
+                break;
+            if (prov.getString("owner").equals(tag) && prov.getString(building).equals("yes"))
+                provs.add(i);
+        }
+        return provs;
     }
     
     
