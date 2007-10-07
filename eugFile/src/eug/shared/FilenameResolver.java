@@ -79,7 +79,7 @@ public final class FilenameResolver {
      */
     public FilenameResolver(String mainDirName, String modName) {
         setMainDirectory(mainDirName);
-        setModName(modName);
+        setModName(modName != null ? modName : "");
     }
     
     private void initDirNames(File cfgFile) {
@@ -94,23 +94,30 @@ public final class FilenameResolver {
         }
     }
     
+    /**
+     * Sets the main directory name to the given string.
+     * @param dirName the main directory.
+     * @throws NullPointerException if <code>dirName</code> is <code>null</code>.
+     */
     public void setMainDirectory(String dirName) {
         mainDirName = dirName;
         
         if (!(mainDirName.endsWith("/") || mainDirName.endsWith("\\"))) {
             mainDirName += FILE_SEPARATOR;
         }
-        
-//        System.out.println("Main directory: " + mainDirName);
     }
     
+    /**
+     * Sets the mod name to the given string.
+     * @param modName the name of the mod.
+     * @throws NullPointerException if <code>modName</code> is <code>null</code>.
+     */
     public void setModName(String modName) {
         this.modName = modName;
         
         if (modName.length() != 0) {
             usingMod = true;
             modDirName = mainDirName + modPrefix + modName + "/";
-//            System.out.println("Mod directory: " + modDirName + "\n");
             
             if (modFile) {
                 GenericObject mod = EUGFileIO.load(mainDirName + modPrefix + modName + ".mod");
@@ -120,15 +127,12 @@ public final class FilenameResolver {
                     replaced = null;
                 } else {
                     extended = mod.getStrings("extend");
-//                    System.out.println("extended: " + extended);
                     replaced = mod.getStrings("replace");
-//                    System.out.println("replaced: " + replaced);
                 }
             }
         } else {
             usingMod = false;
             modDirName = mainDirName;
-//            System.out.println("No moddir\n");
         }
     }
     
@@ -176,6 +180,12 @@ public final class FilenameResolver {
         }
     }
     
+    /**
+     * Lists all files in the given directory. If a mod is being used and the
+     * directory is set to extend, files in both the original and the mod
+     * directory are returned.
+     * @param dirName the name of the directory to list files in.
+     */
     public File[] listFiles(String dirName) {
         if (dirName.startsWith("/") || dirName.startsWith("\\"))
             dirName = dirName.substring(1);
@@ -399,7 +409,7 @@ public final class FilenameResolver {
     
     /**
      * Directory information for province and country history files is cached,
-     * to avoid calling <code>File.listFiles</code> every time a file is
+     * to avoid calling <code>File.listFiles()</code> every time a file is
      * requested. This method clears the caches to force reloading of the
      * directory information.
      */
@@ -429,6 +439,10 @@ public final class FilenameResolver {
         setModName(modName);
     }
     
+    /**
+     * Returns the main directory name. This method is not generally useful;
+     * {@link #getModDirName()} is more common.
+     */
     public String getMainDirName() {
         return mainDirName;
     }
