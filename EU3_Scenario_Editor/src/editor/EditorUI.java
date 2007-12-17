@@ -39,7 +39,7 @@ public class EditorUI extends javax.swing.JFrame {
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.5";
+    private static final String VERSION = "0.5.1";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
     
@@ -89,7 +89,7 @@ public class EditorUI extends javax.swing.JFrame {
             JFileChooser chooser = new JFileChooser(Main.filenameResolver.getModDirName() + "/save games");
             chooser.setFileFilter(new SaveGameFileFilter());
             int secondChoice = chooser.showOpenDialog(this);
-            if (secondChoice == chooser.APPROVE_OPTION) {
+            if (secondChoice == JFileChooser.APPROVE_OPTION) {
                 System.out.println("Loading saved game...");
                 EU3SaveGame save = EU3SaveGame.loadSaveGame(
                         chooser.getSelectedFile().getAbsolutePath(),
