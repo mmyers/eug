@@ -10,6 +10,7 @@ import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
 import eug.shared.GenericObject;
 import eug.shared.Style;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -180,15 +181,15 @@ class SetConfig extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
     
     private void useModDirCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_useModDirCheckBoxItemStateChanged
-        modDirTextField.setEnabled(evt.getStateChange() == evt.SELECTED);
+        modDirTextField.setEnabled(evt.getStateChange() == ItemEvent.SELECTED);
     }//GEN-LAST:event_useModDirCheckBoxItemStateChanged
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser(mainDirTextField.getText());
         chooser.setDialogTitle("Select the main EU3 directory");
-        chooser.setFileSelectionMode(chooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int check = chooser.showDialog(this, "Select");
-        if (check == chooser.APPROVE_OPTION) {
+        if (check == JFileChooser.APPROVE_OPTION) {
             mainDirTextField.setText(chooser.getSelectedFile().getAbsolutePath().replaceAll("[/\\\\]", "/"));
         }
     }//GEN-LAST:event_browseButtonActionPerformed
@@ -248,7 +249,13 @@ class SetConfig extends javax.swing.JFrame {
             if (last != '/' && last != '\\')
                 filename.append(File.separatorChar);
             
+            String mainDir = filename.toString();   // in case the next operation fails
+            
             File modDir = new File(filename.append(modDirTextField.getText()).toString());
+            
+            if (!modDir.exists()) {
+                modDir = new File(mainDir + "mod" + File.separatorChar + modDirTextField.getText());
+            }
             
             if (!modDir.exists()) {
                 int check = JOptionPane.showConfirmDialog(this,
