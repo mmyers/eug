@@ -207,7 +207,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         GenericObject country = countryMap.get(tag);
         country.clear();
         GenericObject newCountry = EUGFileIO.loadFromString(data);
-        country.addAllChildren(newCountry);
+        country.addAllChildren(newCountry.getChild(tag));
         hasUnsavedChanges = true;
     }
     
