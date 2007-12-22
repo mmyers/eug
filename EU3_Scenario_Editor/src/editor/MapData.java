@@ -50,17 +50,24 @@ public final class MapData {
                     provLines.put(rgb, new ArrayList<Integer[]>(100));
                 
                 Integer[] points = new Integer[3];
+                
+                // Store the first point
                 points[0] = y;
                 points[1] = x;
-                do {
+                
+                // Go until it's not the same color or it hits the edge of the image
+                while (x < width && rgb == rgbLine[x]) {
                     x++;
-                } while (x < width && rgb == rgbLine[x]);
-                points[2] = (x);
+                }
+                
+                points[2] = x;
+                
                 provLines.get(rgb).add(points);
                 if (rgb != black && x < width && rgbLine[x] != black) { // it's PTI, so don't bother with a border
                     tmpBorders.put(new Integer[] {x,y}, null);
                 }
-//                x--;
+                
+                x--;
             }
         }
         
