@@ -30,7 +30,10 @@ public final class Map {
     private java.util.Map<String, List<String>> contList = null;
     
     private GenericObject climates;
-    private java.util.Map<String , List<String>> climateList = null;
+    private java.util.Map<String, List<String>> climateList = null;
+    
+    private GenericObject natives;
+    private java.util.Map<String, List<String>> nativeList = null;
     
     /**
      * Creates a new instance of Map.
@@ -64,6 +67,13 @@ public final class Map {
         
         climates = EUGFileIO.load(
                 Main.filenameResolver.resolveFilename(climateFilename),
+                ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
+                );
+        
+        String nativesFilename = "common/natives.txt";
+        
+        natives = EUGFileIO.load(
+                Main.filenameResolver.resolveFilename(nativesFilename),
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
     }
@@ -135,6 +145,48 @@ public final class Map {
     
     public String getClimateOfProv(int provId) {
         return getClimateOfProv(Integer.toString(provId));
+    }
+    
+    public java.util.Map<String, List<String>> getNatives() {
+        if (nativeList == null) {
+            nativeList = new HashMap<String, List<String>>(natives.size()+1);
+            final List<String> usedIds = new ArrayList<String>(1000);
+            for (GenericObject nativeGroup : natives.children) {
+                final List<String> ids = nativeGroup.getList("provinces").getList();
+                usedIds.addAll(ids);
+                nativeList.put(nativeGroup.name, ids);
+            }
+            Collections.sort(usedIds);
+            
+            final int sea_starts = Integer.parseInt(getString("sea_starts"));
+            final List<String> unusedIds = new ArrayList<String>(sea_starts - usedIds.size());
+            for (int i = 1; i < sea_starts; i++) {
+                final String sid = Integer.toString(i);
+                final int idx = Collections.binarySearch(usedIds, sid);
+                if (idx < 0) {
+                    unusedIds.add(sid);
+                }
+            }
+            nativeList.put("normal", unusedIds);
+        }
+        return nativeList;
+    }
+    
+    public List<String> getNatives(String name) {
+        return getNatives().get(name);
+    }
+    
+    public String getNativeTypeOfProv(String provId) {
+        for (java.util.Map.Entry<String, List<String>> entry : nativeList.entrySet()) {
+            if (entry.getValue().contains(provId)) {
+                return entry.getKey();
+            }
+        }
+        return "(none)";
+    }
+    
+    public String getNativeTypeOfProv(int provId) {
+        return getNativeTypeOfProv(Integer.toString(provId));
     }
     
     public String getString(String key) {
