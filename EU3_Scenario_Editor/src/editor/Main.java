@@ -31,7 +31,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Main EU3 directory is " + filenameResolver.getMainDirName());
         
-        if (filenameResolver.getModPrefix().length() == 0)
+        if (filenameResolver.getModDirName().length() == 0)
             System.out.println("No mod");
         else
             System.out.println("Mod directory is " + filenameResolver.getModDirName());
