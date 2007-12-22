@@ -40,6 +40,7 @@ public class CustomCountryMode extends CountryMode {
     }
     
     
+    @Override
     protected Color getCtryColor(String country) {
         country = country.toUpperCase();
         
@@ -55,6 +56,7 @@ public class CustomCountryMode extends CountryMode {
             return notFoundColor;
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
         if (id == 0 || id >= SEA_STARTS)
@@ -69,7 +71,16 @@ public class CustomCountryMode extends CountryMode {
         return ret.toString();
     }
     
+    @Override
     public String toString() {
         return "Countries with " + name + " = " + value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
     }
 }
