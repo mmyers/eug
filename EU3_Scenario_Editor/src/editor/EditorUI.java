@@ -63,7 +63,8 @@ public class EditorUI extends javax.swing.JFrame {
                 mapPanel.setPaintBorders(!mapPanel.isPaintBorders());
                 mapPanel.repaint();
             }
-        };
+        }
+        
         viewMenu.add(new PaintBordersAction());
         
         mapPanel.centerMap();
@@ -231,6 +232,7 @@ public class EditorUI extends javax.swing.JFrame {
         viewNativeSizeMenuItem = new javax.swing.JMenuItem();
         viewNativeFerocityMenuItem = new javax.swing.JMenuItem();
         viewNativeHostilenessMenuItem = new javax.swing.JMenuItem();
+        viewNativeTypesMenu = new javax.swing.JMenu();
         jSeparator6 = new javax.swing.JSeparator();
         customMapModeMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
@@ -422,6 +424,9 @@ public class EditorUI extends javax.swing.JFrame {
 
         viewNativeHostilenessMenuItem.setAction(new DiscreteStepFilterAction("Native hostileness", "native_hostileness", 0, 10, 1));
         viewNativesMenu.add(viewNativeHostilenessMenuItem);
+
+        viewNativeTypesMenu.setText("Native types...");
+        viewNativesMenu.add(viewNativeTypesMenu);
 
         viewMenu.add(viewNativesMenu);
 
@@ -628,7 +633,7 @@ public class EditorUI extends javax.swing.JFrame {
      */
     private transient Point lastPt = null;
     
-    private transient Point lastClick = null;
+//    private transient Point lastClick = null;
     
     private transient String lastCountry = null;
     
@@ -733,11 +738,13 @@ public class EditorUI extends javax.swing.JFrame {
             }
         });
         
-        lastClick = evt.getPoint();
+//        lastClick = evt.getPoint();
     }//GEN-LAST:event_mapPanelMouseClicked
     
     private void doMouseClick(final ProvinceData.Province p) {
         currentProvince = p;
+        
+        mapPanel.flashProvince(p.getId(), 1);
         
         if (p == null) {
             provNameLabel.setText("No province");
@@ -778,36 +785,59 @@ public class EditorUI extends javax.swing.JFrame {
                         viewModeLabel.setText("controller = " + lastCountry);
                         mapPanel.repaint();
                     }
-//                    else if (name.equals("religion")) {
-//                        mapPanel.setMode(new CustomMode(mapPanel, "religion", lastCountry));
-//                        viewModeLabel.setText("controller = " + lastCountry);
-//                        mapPanel.repaint();
-//                    }
+                    else if (name.equals("religion") && !(mode instanceof AdvancedCustomMode)) {
+                        String religion = mapPanel.getModel().getHistString(p.getId(), name);
+                        mapPanel.setMode(new CustomMode(mapPanel, "religion", religion));
+                        viewModeLabel.setText("religion = " + religion);
+                        mapPanel.repaint();
+                    }
                 } else if (mode instanceof CoreMapMode) {
                     mapPanel.setMode(new CoreMapMode(mapPanel, lastCountry));
                     viewModeLabel.setText("Cores of " + lastCountry);
                     mapPanel.repaint();
+                } else if (mode instanceof CustomCountryMode) {
+                    final String name = ((CustomCountryMode)mode).getName();
+                    final String owner = mapPanel.getModel().getHistString(p.getId(), "owner");
+                    if (name.equals("government")) {
+                        String government = mapPanel.getModel().getHistString(owner, name);
+                        mapPanel.setMode(new CustomCountryMode(mapPanel, "government", government));
+                        viewModeLabel.setText("government = " + government);
+                        mapPanel.repaint();
+                    }
                 }
                 ctryNameLabel.setText(Text.getText(lastCountry));
                 showCountryHistButton.setEnabled(true);
             }
             
-            if (mode instanceof ContinentMode) {
-                String cont = Main.map.getContinentOfProv(lastProv.getId());
-                mapPanel.setMode(new ContinentMode(mapPanel, cont));
-                viewModeLabel.setText("Provinces in " + cont);
-                mapPanel.repaint();
-            } else if (mode instanceof ClimateMode) {
-                String climate = Main.map.getClimateOfProv(lastProv.getId());
-                mapPanel.setMode(new ClimateMode(mapPanel, climate));
-                viewModeLabel.setText("Provinces with climate " + climate);
-                mapPanel.repaint();
-            } /*else if (mode instanceof CustomMode) {
-                String name = ((CustomMode)mode).getName();
-                if (name.equals("trade_goods")) {
-               
+            // Do some neat stuff if we're viewing a land province
+            if (lastProv.getId() > 0 && lastProv.getId() < Integer.parseInt(Main.map.getString("sea_starts"))) {
+                if (mode instanceof ContinentMode) {
+                    String cont = Main.map.getContinentOfProv(lastProv.getId());
+                    mapPanel.setMode(new ContinentMode(mapPanel, cont));
+                    viewModeLabel.setText("Provinces in " + cont);
+                    mapPanel.repaint();
+                } else if (mode instanceof ClimateMode) {
+                    String climate = Main.map.getClimateOfProv(lastProv.getId());
+                    mapPanel.setMode(new ClimateMode(mapPanel, climate));
+                    viewModeLabel.setText("Provinces with climate " + climate);
+                    mapPanel.repaint();
+                } else if (mode instanceof NativeGroupMode) {
+                    String nativeType = Main.map.getNativeTypeOfProv(lastProv.getId());
+                    mapPanel.setMode(new NativeGroupMode(mapPanel, nativeType));
+                    viewModeLabel.setText("Provinces with " + nativeType + " natives");
+                    mapPanel.repaint();
+                } else if (mode instanceof CustomMode) {
+                    String name = ((CustomMode)mode).getName();
+                    if (name.equals("trade_goods")) {
+                        String goods = mapPanel.getModel().getHistString(p.getId(), name);
+                        mapPanel.setMode(new CustomMode(mapPanel, name, goods));
+                        viewModeLabel.setText("trade_goods = " + goods);
+                        mapPanel.repaint();
+                    } else {
+                        // maybe some other types, too
+                    }
                 }
-            } */
+            }
         } else {
             ctryNameLabel.setText("");
             showCountryHistButton.setEnabled(false);
@@ -863,7 +893,7 @@ public class EditorUI extends javax.swing.JFrame {
         lastCountry = null;
         lastPt = null;
         lastProv = null;
-        lastClick = null;
+//        lastClick = null;
     }
     
     private static final ParserSettings defaultSettings =
@@ -878,6 +908,7 @@ public class EditorUI extends javax.swing.JFrame {
         addGovernmentFilters();
         addContinentFilters();
         addClimateFilters();
+        addNativesFilters();
         
         // Anything else?
     }
@@ -965,7 +996,7 @@ public class EditorUI extends javax.swing.JFrame {
             
             int idx = start - 'A';
             if (idx >= 0 && idx < menus.length)
-                menus[start - 'A'].add(menu);
+                menus[idx].add(menu);
             else
                 otherMenu.add(menu);
         }
@@ -1059,6 +1090,12 @@ public class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private void addNativesFilters() {
+        for (String nativeType : Main.map.getNatives().keySet()) {
+            viewNativeTypesMenu.add(new NativesFilterAction((Text.getText(nativeType)), nativeType));
+        }
+    }
+    
 // <editor-fold defaultstate="collapsed" desc=" Generated Variables ">
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
@@ -1088,6 +1125,7 @@ public class EditorUI extends javax.swing.JFrame {
     private javax.swing.JMenu viewMenu;
     private javax.swing.ButtonGroup viewModeButtonGroup;
     private javax.swing.JLabel viewModeLabel;
+    private javax.swing.JMenu viewNativeTypesMenu;
     private javax.swing.JMenuItem viewProvReligionsMenuItem;
     private javax.swing.JMenuItem viewProvincesMenuItem;
     private javax.swing.JMenu viewSingleCountryMenu;
@@ -1405,6 +1443,13 @@ public class EditorUI extends javax.swing.JFrame {
         public ClimateFilterAction(String name, String climateName) {
             super(name, new ClimateMode(mapPanel, climateName));
             putValue(SHORT_DESCRIPTION, "Provinces with climate " + climateName);
+        }
+    }
+    
+    private class NativesFilterAction extends FilterAction {
+        public NativesFilterAction(String name, String nativeType) {
+            super(name, new NativeGroupMode(mapPanel, nativeType));
+            putValue(SHORT_DESCRIPTION, "Provinces with " + nativeType + " natives");
         }
     }
     

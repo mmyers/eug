@@ -297,6 +297,15 @@
                     </Property>
                   </Properties>
                 </MenuItem>
+                <Menu class="javax.swing.JMenu" name="viewNativeTypesMenu">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Native types..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
+                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
+                  </AuxValues>
+                </Menu>
               </SubComponents>
             </Menu>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator6">
