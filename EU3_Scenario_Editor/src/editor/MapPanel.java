@@ -111,6 +111,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
     
+    @Override
     protected void paintComponent(final Graphics g) {
 //        super.paintComponent(g);
         
@@ -169,13 +170,16 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         double y;
         
         for(Integer[] line : lines) {
-            x1 = (int) Math.floor(((double) line[1]) * scale);
-            x2 = (int) (((double) line[2]) * scale);
-            y = ((double) line[0]) * scale;
-            y1 = Math.max((int) Math.floor(y - scale), 0);
-            y2 = Math.min((int) Math.ceil(y + scale), maxY);
-//                for (y = y1; y < y2; y++)
-//                    g2D.drawLine(x1, y, x2, y);
+            x1 = (int) Math.round(((double) line[1]) * scale);
+            x2 = (int) Math.round(((double) line[2]) * scale);
+            
+            // If there is an inaccuracy, y is usually the culprit.
+            // This has been hacked to keep from overrunning the province bounds.
+            y = ((double) (line[0]+1)) * scale;
+            y1 = Math.max((int) Math.round(y - scale), 0);
+            y = ((double) (line[0])) * scale;
+            y2 = Math.min((int) Math.round(y + scale), maxY);
+            
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
     }
@@ -194,14 +198,15 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         for (Integer[] pt : model.getMapData().getBorderPixels()) {
             x = ((double) pt[0]) * scale;
             x1 = Math.max((int) Math.round(x - halfScale), 0);
-            x2 = Math.min((int) Math.ceil(x + halfScale), maxX);
+            x2 = Math.min((int) Math.round(x + halfScale), maxX);
             y = ((double) pt[1]) * scale;
             y1 = Math.max((int) Math.round(y - halfScale), 0);
-            y2 = Math.min((int) Math.ceil(y + halfScale), maxY);
+            y2 = Math.min((int) Math.round(y + halfScale), maxY);
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
     }
     
+    @Override
     public Dimension getPreferredSize() {
         if (scaledMapImage == null) {
             System.err.println("scaledMap == null!");
@@ -379,7 +384,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         for (Integer[] line : lines) {
             if (line[0] < yTop)
                 yTop = line[0];
-            else if (line[0] > yBot)
+            
+            if (line[0] > yBot)
                 yBot = line[0];
             
             if (line[1] < xLeft)
