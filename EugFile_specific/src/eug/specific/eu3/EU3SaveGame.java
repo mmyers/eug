@@ -109,7 +109,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
 //        System.out.println(lastProvId + " provinces");
     }
     
-    private static final java.util.regex.Pattern tagPattern = java.util.regex.Pattern.compile("[A-Z]{3}");
+    private static final java.util.regex.Pattern tagPattern = java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
     private void initCountries() {
         countryMap = new HashMap<String, GenericObject>(100);
         for (GenericObject obj : root.children) {
@@ -120,91 +120,77 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
 //        System.out.println(countries.size() + " countries");
     }
     
+    // Lazy accessor
+    private Map<String, GenericObject> getCountryMap() {
+        if (countries == null)
+            initCountries();
+        
+        return countryMap;
+    }
+    
+    // Lazy accessor
+    private List<GenericObject> getProvinces() {
+        if (provinces == null)
+            initProvs();
+        
+        return provinces;
+    }
+    
     
     public List<String> getCountryTags() {
-        return new ArrayList<String>(countryMap.keySet());
+        return new ArrayList<String>(getCountryMap().keySet());
     }
     
     public List<GenericObject> getCountries() {
-        return new ArrayList<GenericObject>(countryMap.values());
+        return new ArrayList<GenericObject>(getCountryMap().values());
     }
     
     
     public EU3Country getEU3Country(final String tag) {
-        if (countries == null)
-            initCountries();
-        
-        return new EU3Country(countryMap.get(tag.substring(0,3).toUpperCase()), this);
+        return new EU3Country(getCountryMap().get(tag.substring(0,3).toUpperCase()), this);
     }
     
     public EU3Province getEU3Province(int id) {
-        if (provinces == null)
-            initProvs();
-        
-        return new EU3Province(provinces.get(id + 1), this);
+        return new EU3Province(getProvinces().get(id + 1), this);
     }
     
     public GenericObject getCountry(String tag) {
-        if (countries == null)
-            initCountries();
-        
-        return countryMap.get(tag.substring(0,3).toUpperCase());
+        return getCountryMap().get(tag.substring(0,3).toUpperCase());
     }
     
     public GenericObject getCountryHistory(String tag) {
-        if (countries == null)
-            initCountries();
-        
-        return countryMap.get(tag.substring(0,3).toUpperCase()).getChild("history");
+        return getCountryMap().get(tag.substring(0,3).toUpperCase()).getChild("history");
     }
     
     public GenericObject getProvince(int id) {
-        if (provinces == null)
-            initProvs();
-        
         if (id > lastProvId)
             return null;
-        return provinces.get(id-1);
+        return getProvinces().get(id-1);
     }
     
     public GenericObject getProvinceHistory(int id) {
-        if (provinces == null)
-            initProvs();
-        
-        return provinces.get(id-1).getChild("history");
+        return getProvinces().get(id-1).getChild("history");
     }
     
     
     public String getCountryAsStr(String tag) {
-        if (countries == null)
-            initCountries();
-        
-        return countryMap.get(tag.substring(0,3).toUpperCase()).toString(Style.EU3_SAVE_GAME);
+        return getCountryMap().get(tag.substring(0,3).toUpperCase()).toString(Style.EU3_SAVE_GAME);
     }
     
     public String getCountryHistoryAsStr(String tag) {
-        if (countries == null)
-            initCountries();
-        
-        return countryMap.get(tag.substring(0,3).toUpperCase()).getChild("history").toString(Style.EU3_SAVE_GAME);
+        return getCountryMap().get(tag.substring(0,3).toUpperCase()).getChild("history").toString(Style.EU3_SAVE_GAME);
     }
     
     public String getProvinceAsStr(int id) {
-        if (provinces == null)
-            initProvs();
-        
-        return provinces.get(id-1).toString(Style.EU3_SAVE_GAME);
+        return getProvinces().get(id-1).toString(Style.EU3_SAVE_GAME);
     }
     
     public String getProvinceHistoryAsStr(int id) {
-        if (provinces == null)
-            initProvs();
-        
-        return provinces.get(id-1).getChild("history").toString(Style.EU3_SAVE_GAME);
+        return getProvinces().get(id-1).getChild("history").toString(Style.EU3_SAVE_GAME);
     }
     
     public void saveCountry(String tag, String cname, final String data) {
-        GenericObject country = countryMap.get(tag);
+        GenericObject country = getCountryMap().get(tag);
         country.clear();
         GenericObject newCountry = EUGFileIO.loadFromString(data);
         country.addAllChildren(newCountry.getChild(tag));
@@ -212,7 +198,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     }
     
     public void saveProvince(int id, String pname, final String data) {
-        GenericObject province = provinces.get(id-1);
+        GenericObject province = getProvinces().get(id-1);
         province.clear();
         GenericObject newProvince = EUGFileIO.loadFromString(data);
         province.addAllChildren(newProvince.getChild(Integer.toString(id)));
@@ -267,9 +253,9 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     }
     
     
+    @Override
     public int numCountries() {
-        preloadCountries();
-        return countryMap.size();
+        return getCountryMap().size();
     }
     
     
@@ -281,6 +267,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         return lastProvId;
     }
     
+    // Lazy accessor
     private GenericObject getDiplomacy() {
         if (diplomacy == null)
             diplomacy = root.getChild("diplomacy");
@@ -318,8 +305,8 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         if (oldTag.equals(newTag))
             return;
         
-        if (countryMap != null) {
-            countryMap.put(newTag, countryMap.get(oldTag));
+        if (getCountryMap() != null) {
+            countryMap.put(newTag, getCountryMap().get(oldTag));
             countryMap.remove(oldTag);
         }
         
@@ -366,7 +353,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         
         // Relations
         preloadCountries();
-        for (GenericObject country : countryMap.values()) {
+        for (GenericObject country : getCountryMap().values()) {
             for (GenericObject child : country.children) {
                 if (child.name.equals(oldTag)) {
                     child.name = newTag;
@@ -424,5 +411,5 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
 //            }
 //        }
     }
-    
+
 }
