@@ -134,7 +134,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         if (countries == null)
             initCountries();
         
-        return new EU3Country(countryMap.get(tag.toUpperCase().substring(0,3)), this);
+        return new EU3Country(countryMap.get(tag.substring(0,3).toUpperCase()), this);
     }
     
     public EU3Province getEU3Province(int id) {
