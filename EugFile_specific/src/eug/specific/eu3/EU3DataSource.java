@@ -83,7 +83,7 @@ public interface EU3DataSource {
      * Returns the province data for the province with the given ID.
      * <p/>
      * This may or may not be equivalent to calling
-     * <code>getProvince(tag).toString()</code>.
+     * <code>getProvince(id).toString()</code>.
      * @param id the ID of the province to fetch data for.
      * @return the province data in the form of a string.
      */
@@ -93,7 +93,7 @@ public interface EU3DataSource {
      * Returns the province history for the province with the given ID.
      * <p/>
      * This may or may not be equivalent to calling
-     * <code>getProvinceHistory(tag).toString()</code>.
+     * <code>getProvinceHistory(id).toString()</code>.
      * @param id the ID of the province to fetch data for.
      * @return the province data in the form of a string.
      */
