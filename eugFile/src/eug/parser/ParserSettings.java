@@ -8,7 +8,21 @@ package eug.parser;
 
 /**
  * Encapsulates a number of parameters used during parsing.
+ * <p>
+ * The only way of creating an instance is to call one of the static factory
+ * methods {@link #getDefaults()}, {@link #getNoCommentSettings()}, and
+ * {@link #getStrictSettings()}. All of these return clones of the actual static
+ * objects, so it is perfectly legitimate (and expected, although not always
+ * necessary) to customize the returned object.
+ * <p>
+ * A common usage is when a program wants to load things silently. This is
+ * easily accomplished by keeping a field holding
+ * <code>ParserSettings.getDefaults().setPrintTimingInfo(false)</code> and
+ * passing it to any <code>EUGFileIO.load()</code> methods used.
  * @author Michael Myers
+ * @see EUGFileIO#load(String, ParserSettings)
+ * @see EUGFileIO#load(File, ParserSettings)
+ * @see EUGFileIO#loadFromString(String, ParserSettings)
  * @since EUGFile 1.06.00pre1
  */
 public final class ParserSettings implements Cloneable, java.io.Serializable {
@@ -68,31 +82,62 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
         setWarningsAreErrors(false);
     }
     
+    /**
+     * Indicates whether or not lists should be allowed.
+     * <p>
+     * The default value is <code>true</code>.
+     */
     public ParserSettings setAllowLists(boolean allow) {
         allowLists = allow;
         return this;
     }
     
+    /**
+     * Indicates whether or not single words should be allowed.
+     * <p>
+     * The default value is <code>false</code>.
+     */
     public ParserSettings setAllowSingleTokens(boolean allow) {
         allowSingleTokens = allow;
         return this;
     }
     
+    /**
+     * Indicates whether or not comments should be ignored.
+     * <p>
+     * The default value is <code>false</code>.
+     */
     public ParserSettings setIgnoreComments(boolean ignore) {
         ignoreComments = ignore;
         return this;
     }
     
+    /**
+     * Indicates whether to display info on how long the loading took.
+     * <p>
+     * The default value is <code>true</code>.
+     */
     public ParserSettings setPrintTimingInfo(boolean info) {
         printTimingInfo = info;
         return this;
     }
     
+    /**
+     * Indicates whether or not the parser should try to recover after, e.g.,
+     * an extra '}'.
+     * <p>
+     * The default value is <code>true</code>.
+     */
     public ParserSettings setTryToRecover(boolean recover) {
         tryToRecover = recover;
         return this;
     }
     
+    /**
+     * Indicates whether or not warnings should be treated as errors.
+     * <p>
+     * The default value is <code>false</code>.
+     */
     public ParserSettings setWarningsAreErrors(boolean errors) {
         warningsAreErrors = errors;
         return this;
@@ -128,14 +173,30 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
     private static final ParserSettings strictSettings = new ParserSettings().setTryToRecover(false).setWarningsAreErrors(true);
     
     
+    /**
+     * Returns the default parser settings. Values are as shown in the
+     * getter/setter documentation.
+     * @return the default parser settings.
+     */
     public static ParserSettings getDefaults() {
         return defaults.clone();
     }
     
+    /**
+     * Returns an instance of <code>ParserSettings</code> that is equal to the
+     * defaults, except that <code>ignoreComments</code> is <code>true</code>.
+     * @return a <code>ParserSettings</code> object that ignores comments.
+     */
     public static ParserSettings getNoCommentSettings() {
         return noCommentSettings.clone();
     }
     
+    /**
+     * Returns an instance of <code>ParserSettings</code> that is equal to the
+     * defaults, except that <code>tryToRecover</code> is <code>false</code> and
+     * <code>warningsAreErrors</code> is <code>true</code>.
+     * @return a set of strict parser settings.
+     */
     public static ParserSettings getStrictSettings() {
         return strictSettings.clone();
     }
