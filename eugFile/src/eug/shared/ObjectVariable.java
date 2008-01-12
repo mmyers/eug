@@ -87,6 +87,7 @@ public final class ObjectVariable
         }
     }
     
+    @Override
     public String toString() {
         System.out.println("Called ObjectVariable.toString()");
         return toString(Style.DEFAULT);
@@ -105,6 +106,7 @@ public final class ObjectVariable
         return sb.toString();
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -115,12 +117,18 @@ public final class ObjectVariable
         
         return (inQuotes == ov.inQuotes) && varname.equals(ov.varname) && value.equals(ov.value);
     }
-    
+
+    @Override
     public int hashCode() {
-        return Boolean.valueOf(inQuotes).hashCode() + varname.hashCode() + value.hashCode();
+        int hash = 7;
+        hash = 13 * hash + (this.varname != null ? this.varname.hashCode() : 0);
+        hash = 13 * hash + (this.value != null ? this.value.hashCode() : 0);
+        hash = 13 * hash + (this.inQuotes ? 1 : 0);
+        return hash;
     }
     
-    public ObjectVariable clone() throws CloneNotSupportedException {
+    @Override
+    public ObjectVariable clone() {
         final ObjectVariable retValue = new ObjectVariable(varname, value, inQuotes);
         
         if (headComment != null)
