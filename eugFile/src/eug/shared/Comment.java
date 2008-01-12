@@ -6,6 +6,9 @@
 
 package eug.shared;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -13,7 +16,7 @@ import java.util.regex.Pattern;
  * left to subclasses, but the {@link #commentChar comment-start character} is not.
  * @author Michael Myers
  */
-public abstract class Comment implements WritableObject {
+public abstract class Comment implements WritableObject, Cloneable {
     
     /**
      * The character that must start all comments when printed out.
@@ -71,5 +74,21 @@ public abstract class Comment implements WritableObject {
             comment = toAdd;
         else
             comment += "\n" + toAdd;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        
+        return getClass() == obj.getClass() &&  // check for subclasses
+                comment.equals(((Comment)obj).comment);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.comment != null ? this.comment.hashCode() : 0);
+        return hash;
     }
 }
