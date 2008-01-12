@@ -35,6 +35,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     
     // <editor-fold defaultstate="collapsed" desc=" Variables ">
     
+    // The header and inline comments, if any, are not stored in allWritable.
     private HeaderComment headComment = null;
     private InlineComment inlineComment = null;
     
@@ -203,10 +204,9 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     /**
-     * @deprecated This method should not be used. Modifying the returned list
-     * could cause problems.
+     * This method should only be used with great, great caution. Modifying the
+     * returned list could cause major problems.
      */
-    @Deprecated
     public List<WritableObject> getAllWritable() {
         return allWritable;
     }
@@ -558,8 +558,10 @@ public final class GenericObject implements WritableObject, Cloneable {
         
         final Comment c =
                 (header ? new HeaderComment(comment) : new InlineComment(comment));
-        getRoot().generalComments.add(0, c);
-        getRoot().allWritable.add(0, c);
+        
+        final GenericObject root = getRoot(); // avoid calling recursive methods more than once
+        root.generalComments.add(0, c);
+        root.allWritable.add(0, c);
     }
     
     public String getHeadComment() {
@@ -769,12 +771,47 @@ public final class GenericObject implements WritableObject, Cloneable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc=" Overrides ">
     
+    @Override
+    public boolean equals(Object other) {
+        if (other == this)
+            return true;
+        else if (other == null || !(other instanceof GenericObject))
+            return false;
+        
+        return equals((GenericObject)other);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + (this.headComment != null ? this.headComment.hashCode() : 0);
+        hash = 47 * hash + (this.inlineComment != null ? this.inlineComment.hashCode() : 0);
+        hash = 47 * hash + (this.allWritable != null ? this.allWritable.hashCode() : 0);
+        return hash;
+    }
+    
+    private boolean equals(GenericObject other) {
+        if (parent == other.parent &&
+                (headComment != null ? headComment.equals(other.headComment) : other.headComment == null) &&
+                (inlineComment != null ? inlineComment.equals(other.inlineComment) : other.inlineComment == null)) {
+            for (WritableObject obj : allWritable) {
+                if (!other.allWritable.contains(obj)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * Creates and returns a shallow copy of this object. Note that children
      * are not cloned, but the lists of children are.
      * @return a shallow copy of this object.
      */
-    public GenericObject clone() throws CloneNotSupportedException {
+    @Override
+    public GenericObject clone() {
         final GenericObject retValue = new GenericObject(parent, name);
         
         retValue.children.addAll(children);
@@ -783,6 +820,35 @@ public final class GenericObject implements WritableObject, Cloneable {
         retValue.generalComments.addAll(generalComments);
         retValue.allWritable.addAll(allWritable);
         
+        if (headComment != null)
+            retValue.setHeadComment(headComment.getComment());
+        if (inlineComment != null)
+            retValue.setInlineComment(inlineComment.getComment());
+        
+        return retValue;
+    }
+    
+    public GenericObject deepClone() {
+        final GenericObject retValue = new GenericObject(parent, name);
+        
+        for (WritableObject obj : allWritable) {
+            if (obj instanceof GenericObject) {
+                GenericObject go = ((GenericObject)obj).deepClone();
+                retValue.addChild(go);
+            } else if (obj instanceof GenericList) {
+                GenericList gl = ((GenericList)obj).clone();
+                retValue.addList(gl);
+            } else if (obj instanceof ObjectVariable) {
+                ObjectVariable ov = ((ObjectVariable)obj).clone();
+                retValue.values.add(ov);
+                retValue.allWritable.add(ov);
+            } else if (obj instanceof InlineComment) {
+                Comment com = ((InlineComment)obj).clone();
+                retValue.generalComments.add(com);
+                retValue.allWritable.add(com);
+            }
+        }
+            
         if (headComment != null)
             retValue.setHeadComment(headComment.getComment());
         if (inlineComment != null)
@@ -805,6 +871,7 @@ public final class GenericObject implements WritableObject, Cloneable {
         return sw.toString();
     }
     
+    @Override
     public String toString() {
         return toString(Style.DEFAULT);
     }
