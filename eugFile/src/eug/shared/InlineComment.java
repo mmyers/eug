@@ -8,6 +8,8 @@ package eug.shared;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -65,5 +67,15 @@ public class InlineComment extends Comment {
     
     public String toString(Style s) {
         return s.getCommentStart() + comment;
+    }
+
+    @Override
+    public InlineComment clone() {
+        try {
+            return (InlineComment)super.clone();
+        } catch (CloneNotSupportedException ex) {
+            Logger.getLogger(InlineComment.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 }
