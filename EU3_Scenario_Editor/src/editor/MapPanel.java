@@ -471,6 +471,11 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         }
     }
     
+    /** @since 0.6pre1 */
+    public EU3DataSource getDataSource() {
+        return model.getDataSource();
+    }
+    
     /** @since 0.5pre1 */
     public void setDataSource(EU3DataSource dataSource) {
         model.setDataSource(dataSource);
