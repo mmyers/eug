@@ -235,6 +235,7 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
             inlineComment.toFileString(bw, depth, style);
     }
     
+    @Override
     public String toString() {
         final java.io.StringWriter sw = new java.io.StringWriter();
         final BufferedWriter bw = new BufferedWriter(sw);
@@ -270,6 +271,7 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
         varname = name;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -280,11 +282,17 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
         
         return (quotes == gl.quotes) && varname.equals(gl.varname) && list.equals(gl.list);
     }
-    
+
+    @Override
     public int hashCode() {
-        return Boolean.valueOf(quotes).hashCode() + varname.hashCode() + list.hashCode();
+        int hash = 7;
+        hash = 17 * hash + (this.list != null ? this.list.hashCode() : 0);
+        hash = 17 * hash + (this.varname != null ? this.varname.hashCode() : 0);
+        hash = 17 * hash + (this.quotes ? 1 : 0);
+        return hash;
     }
     
+    @Override
     public GenericList clone() {
         final GenericList retValue = new GenericList(varname);
         
