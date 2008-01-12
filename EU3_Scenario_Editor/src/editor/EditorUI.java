@@ -744,9 +744,9 @@ public class EditorUI extends javax.swing.JFrame {
     private void doMouseClick(final ProvinceData.Province p) {
         currentProvince = p;
         
-        mapPanel.flashProvince(p.getId(), 1);
-        
-        if (p == null) {
+        if (p != null) {
+            mapPanel.flashProvince(p.getId(), 1);
+        } else { // (p == null)
             provNameLabel.setText("No province");
             showProvHistButton.setEnabled(false);
             ctryNameLabel.setText("No country");
