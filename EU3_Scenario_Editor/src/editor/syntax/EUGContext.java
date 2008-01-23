@@ -4,7 +4,7 @@
  * Created on June 26, 2007, 11:59 AM
  */
 
-package editor.syntax;
+package eug.syntax;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -42,6 +42,14 @@ public class EUGContext extends StyleContext implements ViewFactory {
     
     public View create(Element elem) {
         return new EUGView(elem);
+    }
+
+    public StyleSet getStyles() {
+        return styles;
+    }
+
+    public void setStyles(StyleSet styles) {
+        this.styles = styles;
     }
     
     private class EUGView extends PlainView {

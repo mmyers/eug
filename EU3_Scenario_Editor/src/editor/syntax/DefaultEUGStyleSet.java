@@ -4,7 +4,7 @@
  * Created on June 26, 2007, 5:21 PM
  */
 
-package editor.syntax;
+package eug.syntax;
 
 import eug.parser.TokenType;
 import java.awt.Color;
@@ -49,6 +49,20 @@ public class DefaultEUGStyleSet implements StyleSet {
 //        addDefaults();
     }
     
+    /**
+     * Adds the default keywords. Included are:
+     * <ul>
+     * <li>EU3-style dates, such as 1492.1.1</li>
+     * <li>The constant strings "yes" and "no" (without quotes)</li>
+     * <li>Country tags (three characters beginning with a capital letter and
+     * including only numbers and capital letters)</li>
+     * <li>Numbers</li>
+     * <li>Comments</li>
+     * <li>Quote-delimited strings</li>
+     * </ul>
+     * Each of these has its own style; for example, "yes" and "no" are in a
+     * dark blue bold font.
+     */
     public void addDefaults() {
         final StyleContext defaultStyleContext = StyleContext.getDefaultStyleContext();
         final Style basic = defaultStyleContext.getStyle(StyleContext.DEFAULT_STYLE);
@@ -121,22 +135,84 @@ public class DefaultEUGStyleSet implements StyleSet {
         return mas;
     }
     
+    /**
+     * Adds a custom keyword style to the style set.
+     * @param pattern the pattern (in java.util.regex.Pattern syntax) that
+     * describes the keyword or set of keywords.
+     * @param attrs the <code>AttributeSet</code> that will be used when the
+     * given pattern is found in the document's text.
+     * @see #addKeywordStyle(Pattern, MutableAttributeSet)
+     * @see #removeKeywordStyle(String)
+     * @see #removeKeywordStyle(Pattern)
+     */
     public void addKeywordStyle(String pattern, MutableAttributeSet attrs) {
-        keywords.put(Pattern.compile(pattern), attrs);
+        addKeywordStyle(Pattern.compile(pattern), attrs);
     }
     
+    /**
+     * Add a custom keyword style to the style set.
+     * @param pattern the pattern that describes the keyword or set of keywords.
+     * @param attrs the <code>AttributeSet</code> that will be used when the
+     * given pattern is found in the document's text.
+     * @see #addKeywordStyle(String, MutableAttributeSet)
+     * @see #removeKeywordStyle(Pattern)
+     * @see #removeKeywordStyle(String)
+     */
     public void addKeywordStyle(Pattern pattern, MutableAttributeSet attrs) {
         keywords.put(pattern, attrs);
     }
     
+    /**
+     * Removes the given pattern from the list of keyword patterns.
+     * @param pattern the pattern (in java.util.regex.Pattern syntax) that
+     * describes the keyword or set of keywords.
+     * @see #removeKeywordStyle(Pattern)
+     * @see #addKeywordStyle(String, MutableAttributeSet)
+     * @see #addKeywordStyle(Pattern, MutableAttributeSet)
+     */
+    public void removeKeywordStyle(String pattern) {
+        removeKeywordStyle(Pattern.compile(pattern));
+    }
+    
+    /**
+     * Removes the given pattern from the list of keyword patterns.
+     * @param pattern the pattern that describes the keyword or set of keywords.
+     * @see #removeKeywordStyle(String)
+     * @see #addKeywordStyle(Pattern, MutableAttributeSet)
+     * @see #addKeywordStyle(String, MutableAttributeSet)
+     */
     public void removeKeywordStyle(Pattern pattern) {
         keywords.remove(pattern);
     }
     
+    /**
+     * Adds a custom token style to the style set. If there is already a style
+     * listed for the given token type, the given attributes will be added to it
+     * instead of replacing it.
+     * @param type the TokenType to apply the attributes to.
+     * @param attrs the <code>AttributeSet</code> that will be used when the
+     * given pattern is found in the document's text.
+     * @see #addTokenStyle(TokenType, MutableAttributeSet, boolean)
+     * @see #addKeywordStyle(String, MutableAttributeSet)
+     * @see #addKeywordStyle(Pattern, MutableAttributeSet)
+     */
     public void addTokenStyle(TokenType type, MutableAttributeSet attrs) {
         addTokenStyle(type, attrs, false);
     }
     
+    /**
+     * Adds a custom token style to the style set. If there is already a style
+     * listed for the given token type, the parameter <code>override</code>
+     * determines whether it will be replaced or added to.
+     * @param type the TokenType to apply the attributes to.
+     * @param attrs the <code>AttributeSet</code> that will be used when the
+     * given pattern is found in the document's text.
+     * @param override whether or not to override any previous attributes for
+     * the given token type. Ignored if there is no previous entry.
+     * @see #addTokenStyle(TokenType, MutableAttributeSet)
+     * @see #addKeywordStyle(String, MutableAttributeSet)
+     * @see #addKeywordStyle(Pattern, MutableAttributeSet)
+     */
     public void addTokenStyle(TokenType type, MutableAttributeSet attrs, boolean override) {
         if (override) {
             // Don't check for a previous listing.

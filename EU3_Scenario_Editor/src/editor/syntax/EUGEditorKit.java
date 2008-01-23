@@ -4,14 +4,27 @@
  * Created on June 26, 2007, 11:56 AM
  */
 
-package editor.syntax;
+package eug.syntax;
 
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.ViewFactory;
 
 /**
- *
+ * The only class that is absolutely necessary to have syntax highlighting. To
+ * use it in the default form, call
+ * <code>myJEditorPane.setEditorKit(new EUGEditorKit());</code>. Further
+ * customization is possible by using something like the following:
+ * <pre>
+ * EUGContext myContext = new EUGContext();
+ * DefaultEUGStyleSet myStyleSet = myContext.getStyles();
+ * // ... customize style set ...
+ * EUGEditorKit myEditorKit = new EUGEditorKit();
+ * myEditorKit.setStylePreferences(myContext);
+ * myJEditorPane.setEditorKit(myEditorKit);
+ * </pre>
+ * @see EUGContext
+ * @see DefaultEUGStyleSet
  * @author Michael Myers
  */
 public class EUGEditorKit extends DefaultEditorKit {
@@ -49,8 +62,7 @@ public class EUGEditorKit extends DefaultEditorKit {
     /**
      * Fetches a factory that is suitable for producing
      * views of any models that are produced by this
-     * kit.  The default is to have the UI produce the
-     * factory, so this method has no implementation.
+     * kit.
      * @return the view factory
      */
     @Override

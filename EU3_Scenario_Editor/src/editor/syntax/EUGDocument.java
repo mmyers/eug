@@ -4,7 +4,7 @@
  * Created on June 26, 2007, 12:01 PM
  */
 
-package editor.syntax;
+package eug.syntax;
 
 import eug.parser.TokenScanner;
 import eug.parser.TokenType;

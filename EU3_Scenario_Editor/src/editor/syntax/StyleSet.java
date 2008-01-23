@@ -4,7 +4,7 @@
  * Created on June 26, 2007, 5:18 PM
  */
 
-package editor.syntax;
+package eug.syntax;
 
 import eug.parser.TokenType;
 import javax.swing.text.MutableAttributeSet;
