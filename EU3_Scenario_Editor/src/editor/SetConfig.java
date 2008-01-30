@@ -229,11 +229,11 @@ class SetConfig extends javax.swing.JFrame {
             if (check == JOptionPane.NO_OPTION)
                 return false;
             else {
-                config.setString("maindir", mainDirTextField.getText().replaceAll("[/\\\\]", "/"));
+                config.setString("maindir", mainDirTextField.getText().replaceAll("[/\\\\]", "/"), true);
                 return true;
             }
         } else {
-            config.setString("maindir", mainDirTextField.getText().replaceAll("[/\\\\]", "/"));
+            config.setString("maindir", mainDirTextField.getText().replaceAll("[/\\\\]", "/"), true);
             return true;
         }
     }
