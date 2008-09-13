@@ -565,47 +565,8 @@ public final class EditorUI extends javax.swing.JFrame {
     private void bookmarksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookmarksButtonActionPerformed
         bookmarkMenu.show(bookmarksButton, bookmarksButton.getWidth(), 0);
     }//GEN-LAST:event_bookmarksButtonActionPerformed
-        /*
-        String prop = JOptionPane.showInputDialog(this, "Enter the property that the province must have:");
-        if (prop == null || prop.length() == 0)
-            return;
-         
-        StringBuilder pattern = new StringBuilder("(");
-        String value;
-        do {
-            value = JOptionPane.showInputDialog(this, "Enter a value that property " +
-                    prop + " can have.\nPress \"Cancel\" or leave the field blank to stop.");
-            if (value == null || value.length() == 0)
-                break;
-            else {
-                if (pattern.length() != 1)
-                    pattern.append("|");
-                pattern.append(value);
-            }
-        } while (true);
-         
-        if (pattern.length() == 1)
-            return;
-         
-        pattern.append(")");
-         
-        mapPanel.setMode(new AdvancedCustomMode(mapPanel, prop, pattern.toString()));
-        viewModeLabel.setText(prop + " matches " + pattern);
-        mapPanel.repaint();
-         */
+
     private void customMapModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customMapModeMenuItemActionPerformed
-//        String prop = JOptionPane.showInputDialog(this, "Enter the property that the province must have (e.g., \"native_size\"):");
-//        if (prop == null || prop.length() == 0)
-//            return;
-//
-//        String value = JOptionPane.showInputDialog(this, "Enter the value that property " + prop + " must have:");
-//        if (value == null || prop.length() == 0)
-//            return;
-//
-//        mapPanel.setMode(new CustomMode(mapPanel, prop, value));
-//        viewModeLabel.setText(prop + " = " + value);
-//        mapPanel.repaint();
-        
         final MapMode mode = CustomModeDialog.showDialog(this);
         if (mode != null) {
             mode.setMapPanel(mapPanel);
@@ -1082,6 +1043,7 @@ public final class EditorUI extends javax.swing.JFrame {
         viewBuildingMenu.add(new FortLevelFilterAction(forts));
     }
     
+    @SuppressWarnings("unchecked") // array of lists, can't use generics
     private void addCountryFilters() {
         final GenericObject countries =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/countries.txt"),
@@ -1107,7 +1069,7 @@ public final class EditorUI extends javax.swing.JFrame {
             
             int idx = start - 'A';
             if (idx >= 0 && idx < menus.length)
-                menus[idx].add(menu);
+                menus[idx].add(menu); // unchecked
             else
                 otherMenu.add(menu);
         }
