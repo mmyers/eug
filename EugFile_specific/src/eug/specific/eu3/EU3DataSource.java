@@ -7,6 +7,7 @@
 package eug.specific.eu3;
 
 import eug.shared.GenericObject;
+import java.util.List;
 
 /**
  * Interface defining common methods used on EU3 data.
@@ -57,6 +58,20 @@ public interface EU3DataSource {
      * @return the province data.
      */
     public GenericObject getProvinceHistory(int id);
+    
+    /**
+     * Returns a list of all wars (including those that are not active).
+     * @return all wars that have happened, are happening, or will happen (if
+     * possible).
+     */
+    public List<GenericObject> getWars();
+    
+    /**
+     * Returns a list of all wars that are or were active on the given date.
+     * @param date the date (in standard EU3 format) to find wars from.
+     * @return all active wars from the given date.
+     */
+    public List<GenericObject> getWars(String date);
     
     
     /**
@@ -130,6 +145,15 @@ public interface EU3DataSource {
     
     
     /**
+     * Removes the given war from the history. Depending on the implementation,
+     * a call to {@link #saveChanges()} may still be necessary. Removing a
+     * non-existent war is guaranteed to cause no problems.
+     * @param name the name of the war to remove.
+     */
+    public void removeWar(String name);
+    
+    
+    /**
      * Saves the data for the given country. Depending on the implementation, a
      * call to {@link #saveChanges()} may still be necessary.
      * @param tag the tag of the country.
@@ -146,6 +170,16 @@ public interface EU3DataSource {
      * @param data the province data to save.
      */
     public void saveProvince(int id, String pname, final String data);
+    
+    /**
+     * Saves the data for the given war (that is, the one with the given name).
+     * Depending on the implementation, a call to {@link #saveChanges()} may
+     * still be necessary.
+     * @param name the name of the war (if not found, it is assumed to be a new
+     * war).
+     * @param data the war data to save.
+     */
+    public void saveWar(String name, final String data);
     
     /**
      * Saves any outstanding changes. Usually called at the end of a session.

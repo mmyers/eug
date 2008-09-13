@@ -172,6 +172,51 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         return getProvinces().get(id-1).getChild("history");
     }
     
+    public List<GenericObject> getWars() {
+        List<GenericObject> ret = root.getChildren("active_war");
+        ret.addAll(root.getChildren("previous_war"));
+        return ret;
+    }
+    
+    public List<GenericObject> getWars(String date) {
+        List<GenericObject> ret = new ArrayList<GenericObject>();
+        
+        // Only check wars if the date is in the past
+        if (EU3History.DATE_COMPARATOR.isBefore(date, getDate())) {
+            for (GenericObject war : root.getChildren("active_war")) {
+                List<String> participants =
+                        EU3History.getHistStrings(war, date, "add_attacker", "rem_attacker");
+                
+                if (!participants.isEmpty())
+                    ret.add(war);
+            }
+        
+            for (GenericObject war : root.getChildren("previous_war")) {
+                List<String> participants =
+                        EU3History.getHistStrings(war, date, "add_attacker", "rem_attacker");
+                
+                if (!participants.isEmpty())
+                    ret.add(war);
+            }
+        }
+        
+        return ret;
+    }
+
+    public void removeWar(String name) {
+        GenericObject toRemove = null;
+        for (GenericObject war : getWars()) {
+            if (war.getString("name").equals(name)) {
+                toRemove = war;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            toRemove.getParent().removeChild(toRemove);
+            hasUnsavedChanges = true;
+        }
+    }
+    
     
     public String getCountryAsStr(String tag) {
         return getCountryMap().get(tag.substring(0,3).toUpperCase()).toString(Style.EU3_SAVE_GAME);
@@ -203,6 +248,18 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         GenericObject newProvince = EUGFileIO.loadFromString(data);
         province.addAllChildren(newProvince.getChild(Integer.toString(id)));
         hasUnsavedChanges = true;
+    }
+
+    public void saveWar(String name, String data) {
+        GenericObject newWar = EUGFileIO.loadFromString(data);
+        for (GenericObject war : getWars()) {
+            if (war.getString("name").equals(name)) {
+                war.clear();
+                war.addAllChildren(newWar.getChild(0));
+                hasUnsavedChanges = true;
+                return;
+            }
+        }
     }
     
     public void saveChanges() {

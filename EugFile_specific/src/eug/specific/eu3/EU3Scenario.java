@@ -16,7 +16,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +33,8 @@ public class EU3Scenario implements EU3DataSource {
     
     private final Map<Object, GenericObject> historyCache;
     
-    private static final ParserSettings settings = ParserSettings.getDefaults().setPrintTimingInfo(false);
+    private static final ParserSettings settings =
+            ParserSettings.getDefaults().setPrintTimingInfo(false);
     
     /** Creates a new instance of EU3Scenario */
     public EU3Scenario(FilenameResolver resolver) {
@@ -62,6 +65,47 @@ public class EU3Scenario implements EU3DataSource {
     
     public GenericObject getProvinceHistory(int id) {
         return getProvHistory(id);
+    }
+    
+    public List<GenericObject> getWars() {
+        List<GenericObject> ret = new ArrayList<GenericObject>();
+        
+        for (File file : resolver.listFiles("history/wars")) {
+            GenericObject obj = EUGFileIO.load(file, settings);
+            if (obj != null)
+                ret.add(obj);
+        }
+        
+        return ret;
+    }
+    
+    public List<GenericObject> getWars(final String date) {
+        List<GenericObject> ret = new ArrayList<GenericObject>();
+        
+        for (File file : resolver.listFiles("history/wars")) {
+            GenericObject obj = EUGFileIO.load(file, settings);
+            if (obj != null) {
+                List<String> participants =
+                        EU3History.getHistStrings(obj, date, "add_attacker", "rem_attacker");
+                
+                if (!participants.isEmpty())
+                    ret.add(obj);
+            }
+        }
+        
+        return ret;
+    }
+
+    public void removeWar(String name) {
+        String filename = resolver.resolveFilename("history/wars/" + name + ".txt");
+        File file = new File(filename);
+        if (file.exists()) {
+            if (!file.delete())
+                System.err.println("Could not delete " + filename);
+        } else {
+            // What do we do here? Assume it's a war name, not a filename?
+            // If so, what do we do about it?
+        }
     }
     
     
@@ -112,17 +156,43 @@ public class EU3Scenario implements EU3DataSource {
         }
         
         File file = new File(filename);
-        String backupFilename = getBackupFilename(filename);
         if (file.exists()) {
+            String backupFilename = getBackupFilename(filename);
             file.renameTo(new File(backupFilename));
         }
         
         saveFile(filename, data);
     }
+
+    public void saveWar(String name, String data) {
+        String filename = resolver.resolveFilename("history/wars/" + name + ".txt");
+        File file = new File(filename);
+//        if (!file.exists()) {
+//            // we were given the war name, not the filename
+//            // or is this reasonable? Left commented out for now.
+//            for (File warFile : resolver.listFiles("history/wars")) {
+//                GenericObject war = EUGFileIO.load(warFile, settings);
+//                if (war.getString("name").equals(name)) {
+//                    file = warFile;
+//                    filename = file.getAbsolutePath();
+//                    break;
+//                }
+//            }
+//        }
+        
+        if (!file.exists()) {
+            // new file
+            filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
+            filename = resolver.resolveDirectory("history") + "wars/" + filename;
+        } else {
+            file.renameTo(new File(getBackupFilename(filename)));
+        }
+        saveFile(filename, data);
+    }
     
     private static final String getBackupFilename(String filename) {
         File f = new File(filename);
-        return f.getParent() + f.separatorChar + "~" + f.getName();
+        return f.getParent() + File.separatorChar + "~" + f.getName();
     }
     
     public void saveChanges() {
