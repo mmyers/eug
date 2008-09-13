@@ -1,0 +1,15 @@
+#EU3 directory definition
+#Uncomment the one that fits your needs, or put in your own.
+
+#For use in development.
+#maindir = "/media/winhd/Program Files/Paradox Interactive/Rome - DEMO/"
+#maindir = "/media/winhd/Program Files/Paradox Interactive/Rome/"
+
+#For more common use.
+maindir = "C:/Program Files/Paradox Interactive/Rome - DEMO/"
+#maindir = "C:/Program Files/Paradox Interactive/Rome/"
+
+#Mod directory definition
+#If you are using this with a mod, uncomment the line below and replace it
+#with the name of the mod (without any slashes).
+#moddir = ""
