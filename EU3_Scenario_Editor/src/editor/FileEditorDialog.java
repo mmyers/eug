@@ -125,19 +125,22 @@ public class FileEditorDialog extends EditorDialog {
         }
     }
     
+    // For some reason, overriding hashCode() consistently generates three
+    // stack traces when closing the dialog. I have yet to figure out why, but
+    // at least I finally figured out what was causing it....
     
-    /** Compares id numbers for equality. */
-    @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof FileEditorDialog) &&
-                ((FileEditorDialog) obj).id == id;
-    }
-    
-    @Override
-    public int hashCode() {
-        return id;
-    }
-    
+//    /** Compares id numbers for equality. */
+//    @Override
+//    public boolean equals(Object obj) {
+//        return (obj instanceof FileEditorDialog) &&
+//                ((FileEditorDialog) obj).id == id;
+//    }
+//    
+//    @Override
+//    public int hashCode() {
+//        return id;
+//    }
+
     
     // -------------------------------------------------------------------
     // Static Members
@@ -222,15 +225,5 @@ public class FileEditorDialog extends EditorDialog {
                 d.dispose();
         }
     }
-    
-//    /** For testing only. */
-//    public static void main(String[] args) {
-////        showDialog(null, "FRA", "France");
-////        showDialog(null, "RUS", "Russia");
-////        showDialog(null, "FRA", "France");
-//        FileEditorDialog fd = new FileEditorDialog(null, "FRA", "France");
-//        fd.setVisible(true);
-//        fd.list();
-//    }
     
 }
