@@ -76,10 +76,12 @@ public final class ObjectVariable
             style.printTab(bw, depth);
         }
         
+        sb.append(varname).append(style.getEqualsSign(depth));
+        
         if (inQuotes)
-            bw.write(sb.append(varname).append(style.getEqualsSign(depth)).append("\"").append(value).append("\"").toString());
+            bw.write(sb.append('\"').append(value).append('\"').toString());
         else
-            bw.write(sb.append(varname).append(style.getEqualsSign(depth)).append(value).toString());
+            bw.write(sb.append(value).toString());
         
         if (inlineComment != null) {
             bw.write(' ');
@@ -89,16 +91,16 @@ public final class ObjectVariable
     
     @Override
     public String toString() {
-        System.out.println("Called ObjectVariable.toString()");
+//        System.out.println("Called ObjectVariable.toString()");
         return toString(Style.DEFAULT);
     }
     
     public String toString(Style s) {
-        StringBuilder sb;
+        StringBuilder sb = new StringBuilder(varname).append(s.getEqualsSign(0));
         if (inQuotes)
-            sb = new StringBuilder(varname).append(s.getEqualsSign(0)).append("\"").append(value).append("\"");
+            sb.append('\"').append(value).append('\"');
         else
-            sb = new StringBuilder(varname).append(s.getEqualsSign(0)).append(value);
+            sb.append(value);
         
         if (inlineComment != null)
             sb.append(' ').append(inlineComment.toString());

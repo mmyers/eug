@@ -791,18 +791,26 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     private boolean equals(GenericObject other) {
-        if (parent == other.parent &&
-                (headComment != null ? headComment.equals(other.headComment) : other.headComment == null) &&
-                (inlineComment != null ? inlineComment.equals(other.inlineComment) : other.inlineComment == null)) {
+//        if (parent == other.parent &&
+//                (headComment != null ? headComment.equals(other.headComment) : other.headComment == null) &&
+//                (inlineComment != null ? inlineComment.equals(other.inlineComment) : other.inlineComment == null)) {
+        if (!name.equals(other.name))
+            return false;
+        
             for (WritableObject obj : allWritable) {
                 if (!other.allWritable.contains(obj)) {
                     return false;
                 }
             }
+            for (WritableObject obj : other.allWritable) {
+                if (!allWritable.contains(obj)) {
+                    return false;
+                }
+            }
             return true;
-        } else {
-            return false;
-        }
+//        } else {
+//            return false;
+//        }
     }
     
     /**

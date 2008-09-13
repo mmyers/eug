@@ -456,6 +456,18 @@ public final class FilenameResolver {
         return modDirName;
     }
     
+    /**
+     * Returns the name of the mod, or "" if no mod is being used.
+     * @return the name of the mod being used.
+     * @since EUGFile 1.07.00pre1
+     */
+    public String getModName() {
+        return modName;
+    }
+    
+    /**
+     * @return true if an EU3-style .mod file is being used.
+     */
     public boolean hasModFile() {
         return modFile;
     }
