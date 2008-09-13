@@ -59,9 +59,19 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     private boolean paintBorders;
     
     /**
-     * Creates new form MapPanel.
+     * Creates new form MapPanel. {@link #initialize()} must be called before the
+     * panel is shown; this way, GUI editors can use this component without
+     * having to load the data.
      */
     public MapPanel() {
+//        initialize();
+    }
+    
+    /**
+     * Loads the necessary data for showing the map. This method must be called
+     * before the panel is shown on screen; otherwise, it's just a blank JPanel.
+     */
+    public void initialize() {
         createMapImage();
         
         System.out.println("Reading map...");
@@ -113,16 +123,18 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     @Override
     protected void paintComponent(final Graphics g) {
-//        super.paintComponent(g);
-        
-        mode.paint(g);
-        
-        for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
-            paintProvince((Graphics2D) g, override.getKey(), override.getValue());
-        }
-        
-        if (paintBorders && mode.paintsBorders()) {
-            paintBorders((Graphics2D) g);
+        if (scaledMapImage == null) {
+            super.paintComponent(g);
+        } else {
+            mode.paint(g);
+
+            for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
+                paintProvince((Graphics2D) g, override.getKey(), override.getValue());
+            }
+
+            if (paintBorders && mode.paintsBorders()) {
+                paintBorders((Graphics2D) g);
+            }
         }
     }
     
@@ -209,7 +221,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     @Override
     public Dimension getPreferredSize() {
         if (scaledMapImage == null) {
-            System.err.println("scaledMap == null!");
+//            System.err.println("scaledMap == null!");
             return super.getPreferredSize();
         }
         return new Dimension(scaledMapImage.getWidth(), scaledMapImage.getHeight());
@@ -420,6 +432,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.4pre1 */
     public MapPanelDataModel getModel() {
         return model;
+    }
+    
+    public void setModel(MapPanelDataModel model) {
+        this.model = model;
     }
     
     
