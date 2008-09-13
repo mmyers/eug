@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="viewModeButtonGroup">
       <AuxValues>
@@ -92,6 +92,19 @@
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
               </AuxValues>
             </MenuItem>
+            <MenuItem class="javax.swing.JSeparator" name="jSeparator7">
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="reloadMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Force a reload of all data"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadMenuItemActionPerformed"/>
+              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
+              </AuxValues>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="viewMenu">
@@ -142,6 +155,15 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
+              </AuxValues>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="viewRegionMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Regions..."/>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
               </AuxValues>
             </Menu>
             <Menu class="javax.swing.JMenu" name="viewClimateMenu">
@@ -227,6 +249,14 @@
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
               </AuxValues>
             </Menu>
+            <Menu class="javax.swing.JMenu" name="viewTechGroupMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Tech groups..."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
+              </AuxValues>
+            </Menu>
             <MenuItem class="javax.swing.JMenuItem" name="viewCOTMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -271,6 +301,13 @@
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="final DiscreteStepFilterAction act = new DiscreteStepFilterAction(&quot;Revolt risk&quot;, &quot;revolt_risk&quot;, 0, 10, 1);&#xa;//act.setMinColor(java.awt.Color.GREEN);&#xa;//act.setMaxColor(java.awt.Color.RED);&#xa;viewRevoltRiskMenuItem.setAction(act);"/>
               </AuxValues>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="viewCapitalsMenuItem">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="new CapitalFilterAction()" type="code"/>
+                </Property>
+              </Properties>
+            </MenuItem>
             <Menu class="javax.swing.JMenu" name="viewNativesMenu">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Natives..."/>
@@ -308,6 +345,17 @@
                 </Menu>
               </SubComponents>
             </Menu>
+            <MenuItem class="javax.swing.JMenuItem" name="warsMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Wars..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="warsMenuItemActionPerformed"/>
+              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="false"/>
+              </AuxValues>
+            </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator6">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="customMapModeMenuItem">
@@ -359,6 +407,7 @@
     <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="formWindowClosing"/>
   </Events>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -405,9 +454,6 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="yearSpinner">
           <Properties>
-            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new SpinnerNumberModel(1453, 0, 50000, 1)" type="code"/>
-            </Property>
             <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="new javax.swing.JSpinner.NumberEditor(yearSpinner, &quot;#####&quot;)" type="code"/>
             </Property>
@@ -425,9 +471,6 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="monthSpinner">
           <Properties>
-            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new SpinnerNumberModel(1, 0, 12, 1)" type="code"/>
-            </Property>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 30]"/>
             </Property>
@@ -442,9 +485,6 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="daySpinner">
           <Properties>
-            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new SpinnerNumberModel(1, 0, 31, 1)" type="code"/>
-            </Property>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 30]"/>
             </Property>
