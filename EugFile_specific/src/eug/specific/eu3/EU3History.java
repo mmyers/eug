@@ -24,50 +24,10 @@ public final class EU3History {
     private EU3History() { }
     
     
-    private static final Comparator<String> DATE_COMPARATOR =
-            new Comparator<String>() {
-        
-        private final Map<String, String[]> splitMap =
-                new HashMap<String, String[]>(100);
-        
-        private final Pattern dot = Pattern.compile("\\.");
-        
-        private final String[] split(final String s) {
-            String[] split = splitMap.get(s);
-            if (split == null) {
-                split = dot.split(s);
-                splitMap.put(s, split);
-            }
-            return split;
-        }
-        
-        private final Map<String, Integer> intMap =
-                new HashMap<String, Integer>(100);
-        
-        private final Integer getInt(final String s) {
-            Integer i = intMap.get(s);
-            if (i == null) {
-                i = Integer.valueOf(s);
-                intMap.put(s, i);
-            }
-            return i;
-        }
-        
-        public final int compare(final String s1, final String s2) {
-            final String[] s1Split = split(s1);
-            final String[] s2Split = split(s2);
-            
-            int ret = getInt(s1Split[0]).compareTo(getInt(s2Split[0]));
-            if (ret != 0)
-                return ret;
-            
-            ret = getInt(s1Split[1]).compareTo(getInt(s2Split[1]));
-            if (ret != 0)
-                return ret;
-            
-            return getInt(s1Split[2]).compareTo(getInt(s2Split[2]));
-        }
-    };
+    /**
+     * Comparator for EU3 date strings, like 1492.1.1 .
+     */
+    public static final DateComparator DATE_COMPARATOR = new DateComparator();
     
 //    private static final Comparator<GenericObject> DATE_OBJECT_COMPARATOR =
 //            new Comparator<GenericObject>() {
@@ -245,26 +205,102 @@ public final class EU3History {
     
     /** @since EUGFile 1.05.00pre1 */
     public static final List<String> isCoreOf(final GenericObject history, String date) {
+        return getHistStrings(history, date, "add_core", "remove_core");
+    }
+    
+    /**
+     * Searches through a history object and finds all strings that have been
+     * added by the <code>adder</code> string and not removed by the
+     * <code>remover</code> string. Examples of adder/remover pairs include
+     * "add_core"/"remove_core" in province histories and 
+     * "add_attacker"/"rem_attacker" in war histories.
+     * @param history the history object to search through.
+     * @param date the last date that is checked. Anything added or removed
+     * after this date is not considered.
+     * @param adder the string that signals that something has been added.
+     * @param remover the string that signals that something has been removed.
+     * @return the list of strings that have been added but not removed. This
+     * could be, for example, the list of country tags that have cores on a
+     * particular province.
+     * @since EUGFIle 1.07.00pre1
+     */
+    public static final List<String> getHistStrings(
+            final GenericObject history,
+            final String date,
+            final String adder,
+            final String remover)
+    {
+        
         if (history == null)
             return null;
         
-        final List<String> values = history.getStrings("add_core");
-        
-//        java.util.Collections.sort(history.children, DATE_OBJECT_COMPARATOR);
+        final List<String> values = history.getStrings(adder);
         
         for (GenericObject dateObj : history.children) {
             if (!DATE_PATTERN.matcher(dateObj.name).matches()) {
-                if (!dateObj.name.equals("advisor"))
+                if (!"advisor".equals(dateObj.name))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
             
             if (DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
-                values.removeAll(dateObj.getStrings("remove_core"));
-                values.addAll(dateObj.getStrings("add_core"));
+                values.removeAll(dateObj.getStrings(remover));
+                values.addAll(dateObj.getStrings(adder));
             }
         }
         
         return values;
     }
+
+    public static final class DateComparator implements Comparator<String> {
+
+        public DateComparator() {
+        }
+        
+        private final Map<String, String[]> splitMap = new HashMap<String, String[]>(100);
+        private final Pattern dot = Pattern.compile("\\.");
+
+        private final String[] split(final String s) {
+            String[] split = splitMap.get(s);
+            if (split == null) {
+                split = dot.split(s);
+                splitMap.put(s, split);
+            }
+            return split;
+        }
+        private final Map<String, Integer> intMap = new HashMap<String, Integer>(100);
+
+        private final Integer getInt(final String s) {
+            Integer i = intMap.get(s);
+            if (i == null) {
+                i = Integer.valueOf(s);
+                intMap.put(s, i);
+            }
+            return i;
+        }
+
+        public final int compare(final String s1, final String s2) {
+            final String[] s1Split = split(s1);
+            final String[] s2Split = split(s2);
+
+            int ret = getInt(s1Split[0]).compareTo(getInt(s2Split[0]));
+            if (ret != 0) {
+                return ret;
+            }
+            ret = getInt(s1Split[1]).compareTo(getInt(s2Split[1]));
+            if (ret != 0) {
+                return ret;
+            }
+            return getInt(s1Split[2]).compareTo(getInt(s2Split[2]));
+        }
+
+        /**
+         * Returns <code>true</code> if <code>date1</code> is before
+         * <code>date2</code>.
+         */
+        public boolean isBefore(final String date1, final String date2) {
+            return compare(date1, date2) < 0;
+        }
+    }
+    
 }
