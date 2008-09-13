@@ -54,11 +54,16 @@ public final class ProvinceData {
             reader.readLine();  // eat first line
             
             for (int i = 1; i < numProvs; i++) {
-                String tmp;
-                if ((tmp = reader.readLine()) == null)
+                String line;
+                if ((line = reader.readLine()) == null)
                     break;
                 
-                String[] arr = SEMICOLON.split(tmp);
+                String[] arr = SEMICOLON.split(line);
+            
+                if (arr == null) {
+                    System.err.println("Badly formatted province definition: " + line);
+                    continue;
+                }
                 
                 final int id = Integer.parseInt(arr[0]);
                 final int r = Integer.parseInt(arr[1]);
