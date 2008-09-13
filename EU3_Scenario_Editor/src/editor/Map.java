@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,6 +36,13 @@ public final class Map {
     private GenericObject natives;
     private java.util.Map<String, List<String>> nativeList = null;
     
+    private GenericObject regions;
+    private java.util.Map<String, List<String>> regionList = null;
+    
+    private boolean[] isLand = null;   // for In Nomine mainly
+    
+    private boolean isInNomine;
+    
     /**
      * Creates a new instance of Map.
      */
@@ -49,8 +57,12 @@ public final class Map {
     private void loadData() throws FileNotFoundException {
         System.out.println("Map file is " + Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
         mapData = EUGFileIO.load(Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
-        System.out.println("default.map:");
-        System.out.println(mapData);
+//        System.out.println("default.map:");
+//        System.out.println(mapData);
+        
+        isInNomine = mapData.getString("sea_starts").length() == 0;
+        
+        System.out.println(isInNomine ? "In Nomine" : "Not In Nomine");
         
         String contFilename = mapData.getString("continent").replace('\\', '/');
         if (!contFilename.contains("/"))
@@ -76,6 +88,30 @@ public final class Map {
                 Main.filenameResolver.resolveFilename(nativesFilename),
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
+        
+        if (isInNomine) {
+            String regFilename = mapData.getString("region").replace('\\', '/');
+            if (!regFilename.contains("/"))
+                regFilename = MAP_DIR_NAME + '/' + regFilename;
+
+            regions = EUGFileIO.load(
+                    Main.filenameResolver.resolveFilename(regFilename),
+                    ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
+                    );
+        }
+        
+        if (isInNomine) {
+            // Initialize boolean array
+            isLand = new boolean[mapData.getInt("max_provinces")];
+            for (int i = 1; i < isLand.length; i++) {
+                isLand[i] = true;   // unfortunately, the default is false
+            }
+            
+            for (String provId : mapData.getList("sea_starts")) {
+                int id = Integer.parseInt(provId);
+                isLand[id] = false;
+            }
+        }
     }
     
     public java.util.Map<String, List<String>> getContinents() {
@@ -93,7 +129,7 @@ public final class Map {
     }
     
     public String getContinentOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : contList.entrySet()) {
+        for (java.util.Map.Entry<String, List<String>> entry : getContinents().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
@@ -116,9 +152,8 @@ public final class Map {
             }
             Collections.sort(usedIds);
             
-            final int sea_starts = Integer.parseInt(getString("sea_starts"));
-            final List<String> unusedIds = new ArrayList<String>(sea_starts - usedIds.size());
-            for (int i = 1; i < sea_starts; i++) {
+            final List<String> unusedIds = new ArrayList<String>();
+            for (int i : getLandProvs()) {
                 final String sid = Integer.toString(i);
                 final int idx = Collections.binarySearch(usedIds, sid);
                 if (idx < 0) {
@@ -135,7 +170,7 @@ public final class Map {
     }
     
     public String getClimateOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : climateList.entrySet()) {
+        for (java.util.Map.Entry<String, List<String>> entry : getClimates().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
@@ -145,6 +180,42 @@ public final class Map {
     
     public String getClimateOfProv(int provId) {
         return getClimateOfProv(Integer.toString(provId));
+    }
+    
+    public boolean hasRegions() {
+        return regions != null;
+    }
+    
+    public java.util.Map<String, List<String>> getRegions() {
+        if (regionList == null) {
+            regionList = new HashMap<String, List<String>>(regions.size());
+            for (GenericList cont : regions.lists) {
+                regionList.put(cont.getName(), cont.getList());
+            }
+        }
+        return regionList;
+    }
+    
+    public List<String> getRegion(String name) {
+        return getRegions().get(name);
+    }
+    
+    public List<String> getRegionsOfProv(String provId) {
+        List<String> ret = new ArrayList<String>();
+        for (java.util.Map.Entry<String, List<String>> entry : getRegions().entrySet()) {
+            if (entry.getValue().contains(provId)) {
+                ret.add(entry.getKey());
+            }
+        }
+        
+        if (ret.size() == 0)
+            ret.add("(none)");
+        
+        return ret;
+    }
+    
+    public List<String> getRegionsOfProv(int provId) {
+        return getRegionsOfProv(Integer.toString(provId));
     }
     
     public java.util.Map<String, List<String>> getNatives() {
@@ -158,9 +229,8 @@ public final class Map {
             }
             Collections.sort(usedIds);
             
-            final int sea_starts = Integer.parseInt(getString("sea_starts"));
-            final List<String> unusedIds = new ArrayList<String>(sea_starts - usedIds.size());
-            for (int i = 1; i < sea_starts; i++) {
+            final List<String> unusedIds = new ArrayList<String>();
+            for (int i : getLandProvs()) {
                 final String sid = Integer.toString(i);
                 final int idx = Collections.binarySearch(usedIds, sid);
                 if (idx < 0) {
@@ -177,7 +247,7 @@ public final class Map {
     }
     
     public String getNativeTypeOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : nativeList.entrySet()) {
+        for (java.util.Map.Entry<String, List<String>> entry : getNatives().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
@@ -191,5 +261,100 @@ public final class Map {
     
     public String getString(String key) {
         return mapData.getString(key);
+    }
+    
+    public Iterable<Integer> getLandProvs() {
+        if (isInNomine)
+            return new INLandProvIterator();
+        return new LandProvIterator(mapData.getInt("sea_starts"));
+    }
+    
+    public boolean isLand(int provId) {
+        if (provId <= 0)
+            return false;
+        
+        if (isInNomine)
+            return isLand[provId];
+        return provId < mapData.getInt("sea_starts");
+    }
+
+    public boolean isInNomine() {
+        return isInNomine;
+    }
+
+    public int getFirstSeaProv() {
+        if (isInNomine) {
+            for (int i = 1; i < isLand.length; i++) {
+                if (!isLand[i])
+                    return i;
+            }
+            return isLand.length;
+        } else {
+            return Integer.parseInt(mapData.getString("sea_starts"));
+        }
+    }
+    
+    private final class INLandProvIterator
+            implements Iterable<Integer>, Iterator<Integer> {
+
+        private final int numProvs;
+        private int index;
+        
+        public INLandProvIterator() {
+            this.numProvs = mapData.getInt("max_provinces");
+            index = 1;
+        }
+        
+        public Iterator<Integer> iterator() {
+            return this;
+        }
+
+        public boolean hasNext() {
+            while (++index < numProvs) {
+                if (isLand[index])
+                    return true;
+            }
+            
+            return false;
+        }
+
+        public Integer next() {
+            return index++;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
+    
+    private static final class LandProvIterator
+            implements Iterable<Integer>, Iterator<Integer> {
+        
+        private final int seaStarts;
+        private int index;
+
+        public LandProvIterator(int seaStarts) {
+            // requires a parameter so we can make this class static
+            this.seaStarts = seaStarts;
+            index = 1;
+        }
+
+        public Iterator<Integer> iterator() {
+            return this;
+        }
+
+        public boolean hasNext() {
+            return index < seaStarts;
+        }
+
+        public Integer next() {
+            return index++;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
     }
 }

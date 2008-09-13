@@ -69,7 +69,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public void preloadProvs() {
-        dataSource.preloadProvinces(Integer.parseInt(Main.map.getString("sea_starts")));
+        dataSource.preloadProvinces(Main.map.getFirstSeaProv());
     }
     
     public void preloadCountries() {
@@ -108,11 +108,9 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     public List<String> getCountries(String date) {
         final java.util.Map<String, Object> ret = new HashMap<String, Object>();
-        final int seaStart = Integer.parseInt(Main.map.getString("sea_starts"));
         
-        for (ProvinceData.Province p : provinceData.getAllProvs()) {
-            if (p.getId() >= seaStart)
-                break;
+        for (Integer id : Main.map.getLandProvs()) {
+            ProvinceData.Province p = provinceData.getProvByID(id);
             
             String owner = EU3History.getHistString(dataSource.getProvince(p.getId()), "owner", date);
             
@@ -139,11 +137,9 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     public List<String> getTags(String date) {
         final java.util.Map<String, Object> ret = new HashMap<String, Object>();
-        final int seaStart = Integer.parseInt(Main.map.getString("sea_starts"));
         
-        for (ProvinceData.Province p : provinceData.getAllProvs()) {
-            if (p.getId() >= seaStart)
-                break;
+        for (Integer id : Main.map.getLandProvs()) {
+            ProvinceData.Province p = provinceData.getProvByID(id);
             
             String owner = EU3History.getHistString(dataSource.getProvince(p.getId()), "owner", date);
             
