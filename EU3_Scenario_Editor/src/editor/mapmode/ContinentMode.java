@@ -36,7 +36,7 @@ public class ContinentMode extends GroupMode {
     }
     
     public String getTooltipExtraText(final Province current) {
-        if (current.getId() == 0 || current.getId() >= SEA_STARTS)
+        if (!Main.map.isLand(current.getId()))
             return "";
         
         return "Continent: " + Main.map.getContinentOfProv(current.getId());

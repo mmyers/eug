@@ -55,7 +55,7 @@ public class CustomMode extends ProvincePaintingMode {
     
     public String getTooltipExtraText(final Province current) {
         // Default is to only show extra text for land provinces
-        if (current.getId() == 0 || current.getId() >= SEA_STARTS)
+        if (!editor.Main.map.isLand(current.getId()))
             return "";
         
         final String prop = mapPanel.getModel().getHistString(current.getId(), name);

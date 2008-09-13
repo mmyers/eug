@@ -35,7 +35,10 @@ final class Utilities {
 //    };
     
     static boolean isNotACountry(final String tag) {
-        if (tag.length() == 0 || tag.equals("---") || tag.equalsIgnoreCase("XXX") || tag.equalsIgnoreCase("none"))
+        // Tested and found that .equals is much faster than .matches, even if
+        // it's done several times and .matches is done once.
+        if (tag.length() == 0 || tag.equals("---") ||
+                tag.equalsIgnoreCase("XXX") || tag.equalsIgnoreCase("none"))
             return true;
         return false;
         
@@ -62,8 +65,10 @@ final class Utilities {
     /** Color used if a land province does not have a defined trade good. */
     static final Color COLOR_NO_GOODS = Color.RED;
     
+    /** Settings used when loading all data files in this class. */
     private static final ParserSettings settings =
             ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
+    
     
     private static final GenericObject countries = EUGFileIO.load(
             Main.filenameResolver.resolveFilename("common/countries.txt"),
@@ -219,18 +224,47 @@ final class Utilities {
     private static final java.util.Map<ColorPair, Paint> imgCache =
             new HashMap<ColorPair, Paint>();
     
-    private static final Rectangle imageRect = new Rectangle(0,0,8,1);
+    private static final Rectangle imageRect = new Rectangle(0,0,8,8);
     
+    /*
+     * The TexturePaints use 8x8 rectangles like the following (where x is the
+     * background color and o is the foreground color):
+     * 
+     * ooxxxxoo
+     * oxxxxooo
+     * xxxxoooo
+     * xxxoooox
+     * xxooooxx
+     * xooooxxx
+     * ooooxxxx
+     * oooxxxxo
+     * 
+     * Tiling this produces diagonally striped paint.
+     */
     static Paint createPaint(final Color c1, final Color c2) {
         final ColorPair cp = new ColorPair(c1, c2);
         Paint ret = imgCache.get(cp);
         if (ret == null) {
-            final BufferedImage img = new BufferedImage(8, 1, BufferedImage.TYPE_INT_ARGB);
+            final BufferedImage img = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
             final Graphics2D g = img.createGraphics();
+            g.setBackground(c2);
+            g.clearRect(0, 0, 8, 8);
+            
             g.setColor(c1);
-            g.drawLine(0,0,3,0);
-            g.setColor(c2);
-            g.drawLine(4,0,7,0);
+            g.drawLine(0,0,1,0);
+            g.drawLine(6,0,7,0);
+            
+            g.drawLine(0,1,0,1);
+            g.drawLine(5,1,7,1);
+            
+            g.drawLine(4, 2, 7, 2);
+            g.drawLine(3, 3, 6, 3);
+            g.drawLine(2, 4, 5, 4);
+            g.drawLine(1, 5, 4, 5);
+            g.drawLine(0, 6, 3, 6);
+            
+            g.drawLine(0, 7, 2, 7);
+            g.drawLine(7, 7, 7, 7);
             g.dispose();
             
             ret = new TexturePaint(img, imageRect);
@@ -247,14 +281,19 @@ final class Utilities {
             this.c1 = c1;
             this.c2 = c2;
         }
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof ColorPair))
                 return false;
             final ColorPair cp = (ColorPair) other;
             return c1.equals(cp.c1) && c2.equals(cp.c2);
         }
+        @Override
         public int hashCode() {
-            return c1.hashCode() * c2.hashCode();
+            int hash = 7;
+            hash = 29 * hash + (this.c1 != null ? this.c1.hashCode() : 0);
+            hash = 29 * hash + (this.c2 != null ? this.c2.hashCode() : 0);
+            return hash;
         }
     }
 }

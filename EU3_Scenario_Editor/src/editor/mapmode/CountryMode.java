@@ -39,7 +39,7 @@ public class CountryMode extends ProvincePaintingMode {
     
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (id == 0 || id >= SEA_STARTS)
+        if (!editor.Main.map.isLand(id))
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(id, "owner"));

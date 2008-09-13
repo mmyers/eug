@@ -99,7 +99,7 @@ public class ProvReligionMode extends ProvincePaintingMode {
     
     
     public String getTooltipExtraText(final Province current) {
-        if (current.getId() == 0 || current.getId() >= SEA_STARTS)
+        if (!editor.Main.map.isLand(current.getId()))
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(current.getId(), "religion"));

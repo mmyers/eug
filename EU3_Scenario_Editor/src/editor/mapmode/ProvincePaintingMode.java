@@ -2,7 +2,6 @@ package editor.mapmode;
 
 import editor.Main;
 import editor.MapPanel;
-import editor.ProvinceData.Province;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -22,7 +21,7 @@ import java.awt.Paint;
  */
 public abstract class ProvincePaintingMode extends MapMode {
     
-    protected static final int SEA_STARTS = Integer.parseInt(Main.map.getString("sea_starts"));
+//    protected static final int SEA_STARTS = Integer.parseInt(Main.map.getString("sea_starts"));
     private static final Paint background = new Color(15, 100, 255);
     // new GradientPaint(0, 0, Color.BLUE.brighter(), 0, mapPanel.getHeight(), Color.CYAN.darker(), true)
     
@@ -37,18 +36,34 @@ public abstract class ProvincePaintingMode extends MapMode {
     public void paint(final Graphics2D g) {
         paintBackground(g);
         
-        Province[] provinces = mapPanel.getModel().getProvinceData().getAllProvs();
+        paintingStarted(g);
         
         // First, paint PTI
         paintTerraIncognita(g);
         
         // Now, send the rest to the subclass.
-        for (int i = 1; i < SEA_STARTS; i++) {
-            paintProvince(g, i);
+        int maxProvinces = Integer.parseInt(Main.map.getString("max_provinces"));
+        for (int i = 1; i < maxProvinces; i++) {
+            if (Main.map.isLand(i))
+                paintProvince(g, i);
         }
-        for (int i = SEA_STARTS; i < provinces.length; i++) {
-            paintSeaZone(g, i);
-        }
+        
+//        final int numProvs = mapPanel.getModel().getProvinceData().getAllProvs().length;
+//        for (int i = SEA_STARTS; i < numProvs; i++) {
+//            paintSeaZone(g, i);
+//        }
+        
+        paintingEnded(g);
+    }
+    
+    /**
+     * Called after the background is painted, but before any provinces have
+     * been painted. Subclasses may override this to do some processing (e.g.
+     * caching) before having to paint.
+     * @param g the <code>Graphics2D</code> object to paint with.
+     */
+    protected void paintingStarted(final Graphics2D g) {
+        // do nothing, but allow subclasses to override
     }
     
     protected void paintTerraIncognita(final Graphics2D g) {
@@ -63,6 +78,16 @@ public abstract class ProvincePaintingMode extends MapMode {
     protected abstract void paintProvince(final Graphics2D g, int provId);
     
     protected abstract void paintSeaZone(final Graphics2D g, int id);
+    
+    /**
+     * Called after all provinces have been painted. Subclasses may override
+     * this, but will typically only do so if also overriding
+     * {@link #paintingStarted}.
+     * @param g the <code>Graphics2D</code> object to paint with.
+     */
+    protected void paintingEnded(final Graphics2D g) {
+        // do nothing, but allow subclasses to override
+    }
 
     public boolean paintsBorders() {
         return true;

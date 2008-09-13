@@ -55,7 +55,7 @@ public class SingleCountryMode extends ProvincePaintingMode {
     }
     
     public String getTooltipExtraText(Province current) {
-        if (current.getId() == 0 || current.getId() >= SEA_STARTS)
+        if (!editor.Main.map.isLand(current.getId()))
             return "";
         
         final String owner = mapPanel.getModel().getHistString(current.getId(), "owner");

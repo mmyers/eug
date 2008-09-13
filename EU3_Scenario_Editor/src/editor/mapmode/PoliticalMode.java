@@ -60,7 +60,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
     
     public String getTooltipExtraText(final Province curr) {
         final int id = curr.getId();
-        if (id == 0 || id >= SEA_STARTS)
+        if (!editor.Main.map.isLand(id))
             return "";
         
         final String owner = Text.getText(mapPanel.getModel().getHistString(id, "owner"));

@@ -36,7 +36,7 @@ public class ClimateMode extends GroupMode {
     }
     
     public String getTooltipExtraText(final Province current) {
-        if (current.getId() == 0 || current.getId() >= SEA_STARTS)
+        if (!editor.Main.map.isLand(current.getId()))
             return "";
         
         return "Climate: " + Main.map.getClimateOfProv(current.getId());

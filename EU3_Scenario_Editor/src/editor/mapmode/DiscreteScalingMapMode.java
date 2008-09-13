@@ -100,7 +100,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (id == 0 || id >= SEA_STARTS)
+        if (!editor.Main.map.isLand(id))
             return "";
         
         String value = mapPanel.getModel().getHistString(id, prop);
