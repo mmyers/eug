@@ -77,6 +77,7 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
      * this <code>GenericList</code>).
      * @since EUGFile 1.06.00pre3
      */
+    @SuppressWarnings("unchecked")
     public List<String> getList() {
         return (List<String>) list.clone();
     }
