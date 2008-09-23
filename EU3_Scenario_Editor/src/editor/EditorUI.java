@@ -97,14 +97,14 @@ public final class EditorUI extends javax.swing.JFrame {
             
             if (defines.containsChild("start_date")) {
                 GenericObject startDate = defines.getChild("start_date");
-                yearSpinner.setModel(new SpinnerNumberModel(startDate.getInt("year"), 0, 50000, 1));
-                monthSpinner.setModel(new SpinnerNumberModel(startDate.getInt("month"), 0, 12, 1));
-                daySpinner.setModel(new SpinnerNumberModel(startDate.getInt("day"), 0, 31, 1));
+                yearSpinner.setValue(startDate.getInt("year"));
+                monthSpinner.setValue(startDate.getInt("month"));
+                daySpinner.setValue(startDate.getInt("day"));
             } else {
                 // must not be In Nomine
-                yearSpinner.setModel(new SpinnerNumberModel(1453, 0, 50000, 1));
-                monthSpinner.setModel(new SpinnerNumberModel(5, 0, 12, 1));
-                daySpinner.setModel(new SpinnerNumberModel(29, 0, 31, 1));
+                yearSpinner.setValue(1453);
+                monthSpinner.setValue(5);
+                daySpinner.setValue(29);
             }
             
             readBookmarks();
@@ -264,15 +264,18 @@ public final class EditorUI extends javax.swing.JFrame {
         jLabel2.setText("Date: ");
         toolBar.add(jLabel2);
 
+        yearSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 50000, 1));
         yearSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(yearSpinner, "#####"));
         yearSpinner.setMaximumSize(new java.awt.Dimension(100, 30));
         yearSpinner.setPreferredSize(new java.awt.Dimension(60, 20));
         toolBar.add(yearSpinner);
 
+        monthSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 12, 1));
         monthSpinner.setMaximumSize(new java.awt.Dimension(100, 30));
         monthSpinner.setPreferredSize(new java.awt.Dimension(40, 20));
         toolBar.add(monthSpinner);
 
+        daySpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 31, 1));
         daySpinner.setMaximumSize(new java.awt.Dimension(100, 30));
         daySpinner.setPreferredSize(new java.awt.Dimension(40, 20));
         toolBar.add(daySpinner);
