@@ -29,13 +29,14 @@ public final class MapData {
      */
     private final List<Integer[]> borders;
     
+    private static final int BLACK = 0xFF000000; // java.awt.Color.BLACK.getRGB();
+    
     public MapData(final BufferedImage img, final int numProvs) {
         provLines = new HashMap<Integer, List<Integer[]>>(numProvs);
         final java.util.Map<Integer[], Object> tmpBorders =
                 new HashMap<Integer[], Object>(numProvs*32);
         
         int rgb;
-        final int black = java.awt.Color.BLACK.getRGB();
         
         final int width = img.getWidth();
         final int height = img.getHeight();
@@ -63,7 +64,7 @@ public final class MapData {
                 points[2] = x;
                 
                 provLines.get(rgb).add(points);
-                if (rgb != black && x < width && rgbLine[x] != black) { // it's PTI, so don't bother with a border
+                if (rgb != BLACK && x < width && rgbLine[x] != BLACK) { // it's PTI, so don't bother with a border
                     tmpBorders.put(new Integer[] {x,y}, null);
                 }
                 
@@ -81,7 +82,7 @@ public final class MapData {
                 do {
                     y++;
                 } while (y < height && rgb == rgbCol[y]);
-                if (rgb != black && y < height && rgbCol[y] != black) { // it's PTI, so don't bother with a border
+                if (rgb != BLACK && y < height && rgbCol[y] != BLACK) { // it's PTI, so don't bother with a border
                     tmpBorders.put(new Integer[] {x,y}, null);
                 }
             }
