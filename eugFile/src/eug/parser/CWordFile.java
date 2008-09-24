@@ -119,8 +119,10 @@ public class CWordFile {
                 return true;
             }
             
-            tokenizer = new EUGScanner(new BufferedReader(new FileReader(inFile), (int)inFile.length()));
+            tokenizer = new EUGScanner(new BufferedReader(new FileReader(inFile),
+                    Math.min(65536, (int)inFile.length()))); // safeguard for very large files
             tokenizer.setCommentsIgnored(settings.isIgnoreComments());
+            tokenizer.setFileName(filename);
             return true;
         } catch (FileNotFoundException ex) {
             return false;
@@ -134,6 +136,7 @@ public class CWordFile {
      */
     private void openStringStream(String string) {
         tokenizer = new EUGScanner(new StringReader(string));
+        tokenizer.setFileName("(string)");
     }
     
     /**
@@ -320,6 +323,9 @@ public class CWordFile {
                                 lastComment = null;
                                 current_node = tmpObj;
                             }
+                            break;
+                        case EOF:
+                            warn("Reached end of file after " + name + " (unclosed bracket somewhere?)");
                             break;
                         default:
                             warn("Unexpected token type: " + tokenType);
@@ -536,7 +542,8 @@ public class CWordFile {
      * @since EUGFile 1.02.00
      */
     private void warn(final String text) {
-        System.err.println(text);
+        if (settings.isPrintWarnings())
+            System.err.println(text);
         if (settings.isWarningsAreErrors())
             throw new ParserException(text);
     }
