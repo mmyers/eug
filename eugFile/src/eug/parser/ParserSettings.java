@@ -58,6 +58,13 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
     private boolean printTimingInfo;
     
     /**
+     * Indicates whether to print warning messages to the console.
+     * <p>
+     * The default value is <code>true</code>.
+     */
+    private boolean printWarnings;
+    
+    /**
      * Indicates whether or not the parser should try to recover after, e.g.,
      * an extra '}'.
      * <p>
@@ -78,6 +85,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
         setAllowSingleTokens(false);
         setIgnoreComments(false);
         setPrintTimingInfo(true);
+        setPrintWarnings(true);
         setTryToRecover(true);
         setWarningsAreErrors(false);
     }
@@ -86,6 +94,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * Indicates whether or not lists should be allowed.
      * <p>
      * The default value is <code>true</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setAllowLists(boolean allow) {
         allowLists = allow;
@@ -96,6 +105,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * Indicates whether or not single words should be allowed.
      * <p>
      * The default value is <code>false</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setAllowSingleTokens(boolean allow) {
         allowSingleTokens = allow;
@@ -106,6 +116,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * Indicates whether or not comments should be ignored.
      * <p>
      * The default value is <code>false</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setIgnoreComments(boolean ignore) {
         ignoreComments = ignore;
@@ -116,9 +127,21 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * Indicates whether to display info on how long the loading took.
      * <p>
      * The default value is <code>true</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setPrintTimingInfo(boolean info) {
         printTimingInfo = info;
+        return this;
+    }
+    
+    /**
+     * Indicates whether to print warnings to the console.
+     * <p>
+     * The default value is <code>true</code>.
+     * @return a reference to this object.
+     */
+    public ParserSettings setPrintWarnings(boolean print) {
+        printWarnings = print;
         return this;
     }
     
@@ -127,6 +150,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * an extra '}'.
      * <p>
      * The default value is <code>true</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setTryToRecover(boolean recover) {
         tryToRecover = recover;
@@ -137,6 +161,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
      * Indicates whether or not warnings should be treated as errors.
      * <p>
      * The default value is <code>false</code>.
+     * @return a reference to this object.
      */
     public ParserSettings setWarningsAreErrors(boolean errors) {
         warningsAreErrors = errors;
@@ -158,6 +183,10 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
     public boolean isPrintTimingInfo() {
         return printTimingInfo;
     }
+    
+    public boolean isPrintWarnings() {
+        return printWarnings;
+    }
 
     public boolean isTryToRecover() {
         return tryToRecover;
@@ -171,6 +200,7 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
     private static final ParserSettings defaults = new ParserSettings();
     private static final ParserSettings noCommentSettings = new ParserSettings().setIgnoreComments(true);
     private static final ParserSettings strictSettings = new ParserSettings().setTryToRecover(false).setWarningsAreErrors(true);
+    private static final ParserSettings quietSettings = new ParserSettings().setPrintTimingInfo(false);
     
     
     /**
@@ -201,6 +231,16 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
         return strictSettings.clone();
     }
     
+    /**
+     * Returns an instance of <code>ParserSettings</code> that is equal to the
+     * defaults, except that <code>printTimingInfo</code> is <code>false</code>.
+     * @return a <code>ParserSettings</code> object that does not print timing
+     * data to the console.
+     */
+    public static ParserSettings getQuietSettings() {
+        return quietSettings.clone();
+    }
+    
     
     @Override
     public ParserSettings clone() {
@@ -225,14 +265,18 @@ public final class ParserSettings implements Cloneable, java.io.Serializable {
                 (tryToRecover == other.tryToRecover) &&
                 (warningsAreErrors == other.warningsAreErrors);
     }
-    
+
     @Override
     public int hashCode() {
-        return Boolean.valueOf(allowLists).hashCode() +
-                Boolean.valueOf(allowSingleTokens).hashCode() +
-                Boolean.valueOf(ignoreComments).hashCode() +
-                Boolean.valueOf(printTimingInfo).hashCode() +
-                Boolean.valueOf(tryToRecover).hashCode() +
-                Boolean.valueOf(warningsAreErrors).hashCode();
+        int hash = 7;
+        hash = 53 * hash + (this.allowLists ? 1 : 0);
+        hash = 53 * hash + (this.allowSingleTokens ? 1 : 0);
+        hash = 53 * hash + (this.ignoreComments ? 1 : 0);
+        hash = 53 * hash + (this.printTimingInfo ? 1 : 0);
+        hash = 53 * hash + (this.printWarnings ? 1 : 0);
+        hash = 53 * hash + (this.tryToRecover ? 1 : 0);
+        hash = 53 * hash + (this.warningsAreErrors ? 1 : 0);
+        return hash;
     }
+    
 }
