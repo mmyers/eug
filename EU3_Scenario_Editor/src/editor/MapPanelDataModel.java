@@ -117,12 +117,7 @@ public class MapPanelDataModel implements java.io.Serializable {
             if (owner == null || owner.length() == 0 || owner.equals("none") || owner.equals("XXX")) {
                 continue;
             } else {
-                String text = Text.getText(owner);
-                if (text == null) {
-                    System.out.println("Text for " + owner + " is null!");
-                    continue;
-                }
-                ret.put(text, null);
+                ret.put(Text.getText(owner), null);
             }
         }
         
