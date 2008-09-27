@@ -6,17 +6,10 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import editor.Text;
-import eug.parser.EUGFileIO;
-import eug.parser.ParserSettings;
-import eug.shared.GenericList;
-import eug.shared.GenericObject;
-import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.HashMap;
 
 /**
  *
@@ -38,7 +31,7 @@ public class GoodsMode extends ProvincePaintingMode {
         final String goods = mapPanel.getModel().getHistString(provId, "trade_goods");
         if (goods == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
-        } else if (goods.length() == 0 || goods.equals("none")) {
+        } else if (goods.length() == 0 || goods.equalsIgnoreCase("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_GOODS);
         } else {
             mapPanel.paintProvince(g, provId, Utilities.getGoodsColor(goods));
@@ -56,7 +49,7 @@ public class GoodsMode extends ProvincePaintingMode {
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(current.getId(), "trade_goods"));
-        if (ret.equals(""))
+        if (ret.length() == 0)
             return "";
         return "Goods: " + ret;
     }

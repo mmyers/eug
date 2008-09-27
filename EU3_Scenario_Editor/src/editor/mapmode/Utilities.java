@@ -144,7 +144,7 @@ final class Utilities {
         if (ret == null) {
             for (GenericObject group : religions.children) {
                 for (GenericObject rel : group.children) {
-                    if (rel.name.equals(religion)) {
+                    if (rel.name.equalsIgnoreCase(religion)) {
                         // found it
                         GenericList color = rel.getList("color");
                         if (color == null) {
@@ -175,7 +175,7 @@ final class Utilities {
         
         if (ret == null) {
             for (GenericObject def : goods.children) {
-                if (def.name.equals(good)) {
+                if (def.name.equalsIgnoreCase(good)) {
                     // found it
                     GenericList color = def.getList("color");
                     if (color == null) {

@@ -41,7 +41,7 @@ public class CtryReligionMode extends CountryMode {
         
         if (religion == null) {
             return Utilities.COLOR_NO_HIST;
-        } else if (religion.length() == 0 || religion.equals("none")) {
+        } else if (religion.length() == 0 || religion.equalsIgnoreCase("none")) {
             return Utilities.COLOR_NO_RELIGION;
         } else {
             return Utilities.getReligionColor(religion);

@@ -24,22 +24,6 @@ import java.util.HashMap;
  */
 public class ProvReligionMode extends ProvincePaintingMode {
     
-    private final GenericObject religions = EUGFileIO.load(
-            Main.filenameResolver.resolveFilename("common/religion.txt"),
-            ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-            );
-    private final java.util.Map<String, Color> relColorCache =
-            new HashMap<String, Color>();
-    
-    /** Color used if the province history cannot be found. */
-    private static final Color COLOR_NO_HIST = Color.RED;
-    /** Color used if the country definition cannot be found. */
-    private static final Color COLOR_NO_CTRY_DEF = Color.BLACK;
-    /** Color used if the religion definition cannot be found. */
-    private static final Color COLOR_NO_RELIGION_DEF = Color.BLACK;
-    /** Color used if a land province does not have a defined religion. */
-    private static final Color COLOR_NO_RELIGION = Color.RED;
-    
     /**
      * Creates a new instance of ProvReligionMode.
      */
@@ -54,11 +38,11 @@ public class ProvReligionMode extends ProvincePaintingMode {
     protected void paintProvince(final Graphics2D g, int provId) {
         final String religion = mapPanel.getModel().getHistString(provId, "religion");
         if (religion == null) {
-            mapPanel.paintProvince(g, provId, COLOR_NO_HIST);
-        } else if (religion.length() == 0 || religion.equals("none")) {
-            mapPanel.paintProvince(g, provId, COLOR_NO_RELIGION);
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
+        } else if (religion.length() == 0 || religion.equalsIgnoreCase("none")) {
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_RELIGION);
         } else {
-            mapPanel.paintProvince(g, provId, getReligionColor(religion));
+            mapPanel.paintProvince(g, provId, Utilities.getReligionColor(religion));
         }
     }
     
@@ -67,37 +51,7 @@ public class ProvReligionMode extends ProvincePaintingMode {
         return;
     }
     
-    private Color getReligionColor(String religion) {
-        religion = religion.toLowerCase();
-        
-        Color ret = relColorCache.get(religion);
-        
-        if (ret == null) {
-            for (GenericObject group : religions.children) {
-                for (GenericObject rel : group.children) {
-                    if (rel.name.equals(religion)) {
-                        // found it
-                        GenericList color = rel.getList("color");
-                        if (color == null) {
-                            System.err.println("color for " + religion + " is null");
-                            return COLOR_NO_RELIGION_DEF;
-                        }
-                        ret = new Color(
-                                Float.parseFloat(color.get(0)),
-                                Float.parseFloat(color.get(1)),
-                                Float.parseFloat(color.get(2))
-                                );
-                        relColorCache.put(religion, ret);
-                        return ret;
-                    }
-                }
-            }
-            return COLOR_NO_RELIGION_DEF;
-        }
-        return ret;
-    }
-    
-    
+    @Override
     public String getTooltipExtraText(final Province current) {
         if (!editor.Main.map.isLand(current.getId()))
             return "";

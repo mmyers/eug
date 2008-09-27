@@ -37,16 +37,16 @@ public final class PoliticalMode extends ProvincePaintingMode {
             mapPanel.paintProvince(g, provId, Utilities.getCtryColor("NAT"));
         } else if (controller == null) {
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.COLOR_NO_HIST);
-            if (p != null)
+//            if (p != null)
                 mapPanel.paintProvince(g, provId, p);
-            else
-                System.err.println("Unknown problem in PoliticalMode.java");
-        } else if (!owner.equals(controller)) {
+//            else
+//                System.err.println("Unknown problem in PoliticalMode.java");
+        } else if (!owner.equalsIgnoreCase(controller)) {
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.getCtryColor(controller));
-            if (p != null)
+//            if (p != null)
                 mapPanel.paintProvince(g, provId, p);
-            else
-                System.err.println("Unknown problem in PoliticalMode.java");
+//            else
+//                System.err.println("Unknown problem in PoliticalMode.java");
         } else {
             mapPanel.paintProvince(g, provId, Utilities.getCtryColor(owner));
         }
@@ -63,16 +63,19 @@ public final class PoliticalMode extends ProvincePaintingMode {
         if (!editor.Main.map.isLand(id))
             return "";
         
-        final String owner = Text.getText(mapPanel.getModel().getHistString(id, "owner"));
-        final String controller = Text.getText(mapPanel.getModel().getHistString(id, "controller"));
+        String owner = mapPanel.getModel().getHistString(id, "owner");
+        String controller = mapPanel.getModel().getHistString(id, "controller");
         
         if (owner == null && controller == null)
             return "";
         
+        owner = Text.getText(owner);
+        controller = Text.getText(controller);
+        
         final StringBuilder ret = new StringBuilder();
         if (owner != null && !Utilities.isNotACountry(owner))
             ret.append("Owner: ").append(owner).append("<br />");
-        if (controller != null && !controller.equals(owner))
+        if (controller != null && !controller.equalsIgnoreCase(owner))
             ret.append("Controller: ").append(Utilities.isNotACountry(controller) ? "none" : controller);
         
         return ret.toString();

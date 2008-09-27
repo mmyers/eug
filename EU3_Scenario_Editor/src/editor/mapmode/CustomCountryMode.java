@@ -50,7 +50,7 @@ public class CustomCountryMode extends CountryMode {
 //        if (noCountryPattern.matcher(country).matches())
 //            country = "NAT";
         
-        if (value.equals(mapPanel.getModel().getHistString(country, name)))
+        if (value.equals(mapPanel.getModel().getHistString(country, name).toLowerCase()))
             return foundColor;
         else
             return notFoundColor;
