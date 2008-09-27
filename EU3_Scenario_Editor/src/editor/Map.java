@@ -59,7 +59,9 @@ public final class Map {
         mapData = EUGFileIO.load(Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
 //        System.out.println("default.map:");
 //        System.out.println(mapData);
-        
+        if (mapData == null) {
+            throw new RuntimeException("Failed to load map file");
+        }
         isInNomine = mapData.getString("sea_starts").length() == 0;
         
         System.out.println(isInNomine ? "In Nomine" : "Not In Nomine");
@@ -107,9 +109,14 @@ public final class Map {
                 isLand[i] = true;   // unfortunately, the default is false
             }
             
-            for (String provId : mapData.getList("sea_starts")) {
-                int id = Integer.parseInt(provId);
-                isLand[id] = false;
+            GenericList seaProvs = mapData.getList("sea_starts");
+            if (seaProvs == null) {
+                System.err.println("No sea_starts found in default.map; weird things might start happening now");
+            } else {
+                for (String provId : seaProvs) {
+                    int id = Integer.parseInt(provId);
+                    isLand[id] = false;
+                }
             }
         }
     }
