@@ -49,14 +49,14 @@ package eug.parser;
         return yytext().substring(lastIdxOfHash+1).trim();
     }
 
-    private static final java.util.regex.Pattern commentPattern =
-            java.util.regex.Pattern.compile("#[^\r\n]*(\r|\n|\r\n)");
+    /*private static final java.util.regex.Pattern commentPattern =
+            java.util.regex.Pattern.compile("#[^\r\n]*(\r|\n|\r\n)");*/
 
-    private void badChar(char c) {
+    /*private void badChar(char c) {
         System.err.println("Illegal character: \'" + c +
             "\' (#" + Integer.toHexString((int)c) + 
             ") on line "+yyline+", column "+yycolumn);
-    }
+    }*/
 
     /**
      * Reads the next token from the input reader.
@@ -214,15 +214,16 @@ package eug.parser;
 
 %standalone
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨] //[A-Za-zÀ-ÿ_\[\]\-'´¨]
+ALPHA                       = [[:letter:]_\[\]\-'´¨,]   //[A-Za-zÀ-ÿ_\[\]\-'´¨]
 DIGIT                       = [0-9\.\-\+]
 ALNUM                       = {ALPHA}|{DIGIT}
 
 NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
+COMMENT_CHAR                = [#;!]
 
-COMMENT                     = "#" {NONNEWLINE}* /* {NEWLINE}? */
+COMMENT                     = {COMMENT_CHAR} {NONNEWLINE}*
 QUOTED_STR                  = \" [^\"]* \"
 
 /* Note: UNQUOTED_STR matches numbers, too. */

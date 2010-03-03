@@ -24,69 +24,27 @@ public class CWordFile {
     /**
      * The current token.
      */
-    protected String m_word;
+    protected String token;
     
     private String lastComment;
     
     /**
-     * The type of the {@link #m_word current token}.
+     * The type of the {@link #token current token}.
      */
     protected TokenType tokenType;
     
     /**
      * The number of errors encountered.
      */
-    protected int m_errors = 0;
+    protected int numErrors = 0;
     
     /**
      * The level of debugging, on a scale of 0 to 10.
      */
-    private static final int debugLevel = 2;
+    private static final int DEBUG_LEVEL = 2;
     
-    
-    // Loading options
     
     protected ParserSettings settings;
-    
-//    /**
-//     * Whether to display info on how long the loading took.
-//     */
-//    public static boolean timingInfo = false;
-//
-//    /**
-//     * Whether to ignore comment tokens.
-//     */
-//    protected boolean commentsIgnored = true;
-//
-//    /**
-//     * Whether lists are allowed to be parsed.
-//     * @since EUGFile 1.02.00
-//     */
-//    protected boolean allowLists = true;
-//
-//    /**
-//     * Whether single words (that are not part of a variable) can be parsed.
-//     * Any such token will be given a default value of 1 (e.g., 1001 1002 will
-//     * be parsed as 1001 = 1 1002 = 1).
-//     * <p>
-//     * This is only necessary for reading Victoria AI files, as far as I know.
-//     * @since EUGFile 1.02.00
-//     */
-//    protected boolean allowSingleTokens = false;
-//
-//    /**
-//     * Whether the strictest checking should be enabled.
-//     * @since EUGFile 1.02.00
-//     */
-//    protected boolean warningsAreErrors = false;
-//
-//    /**
-//     * Whether we will try to recover after, e.g., an extra '}'.
-//     * @since EUGfile 1.06.00pre1
-//     */
-//    protected boolean tryToRecover = true;
-    
-    // End of loading options
     
     
     // used during loading
@@ -153,7 +111,7 @@ public class CWordFile {
      */
     protected final void getNextToken() {
         tokenType = tokenizer.nextToken();
-        m_word = tokenizer.lastStr();
+        token = tokenizer.lastStr();
     }
     
     /**
@@ -187,8 +145,8 @@ public class CWordFile {
             closeInStream();
         }
         
-        if (m_errors > 0)
-            System.out.println("There were " + m_errors + " errors during loading.");
+        if (numErrors > 0)
+            System.out.println("There were " + numErrors + " errors during loading.");
         
         if (settings.isPrintTimingInfo())
             System.out.println("Loading took " + (System.nanoTime()-startTime) + " ns.\n");
@@ -235,8 +193,8 @@ public class CWordFile {
         }
         
         //Tell some things about the current state:
-        if (m_errors > 0)
-            System.out.println("There were " + m_errors + " errors during loading.");
+        if (numErrors > 0)
+            System.out.println("There were " + numErrors + " errors during loading.");
 //        System.out.println("Read " + tokenizer.getCharsRead() + " bytes.");
         if (settings.isPrintTimingInfo())
             System.out.println("Loading took " + (System.nanoTime()-startTime) + " ns.\n");
@@ -262,7 +220,7 @@ public class CWordFile {
         
         switch (tokenType) {
             case IDENT:
-                String name = m_word;
+                final String name = token;
                 getNextToken();
                 
                 // A little weirdness here, brought on by Java's lack of a
@@ -294,10 +252,9 @@ public class CWordFile {
 //                            break;
                         case ULSTRING:
                         case DLSTRING:
-                            String val = m_word;
                             boolean quotes = (tokenType == TokenType.DLSTRING);
                             
-                            current_node.addString(name, val, quotes,
+                            current_node.addString(name, token, quotes,
                                     lastComment, readInlineComment());
                             
                             lastComment = null;
@@ -305,7 +262,7 @@ public class CWordFile {
                         case LBRACE:
                             // Lookahead
                             tokenizer.setCommentsIgnored(true);
-                            TokenType type = tokenizer.nextToken();
+                            final TokenType type = tokenizer.nextToken();
                             tokenizer.pushBack();
                             tokenizer.setCommentsIgnored(settings.isIgnoreComments());
                             if (type == TokenType.DLSTRING || type == TokenType.ULSTRING) {
@@ -364,16 +321,16 @@ public class CWordFile {
                 // comment ended. If >= 2, the old comment is added to the root
                 // node.
                 if (lastComment == null || lastComment.length() == 0) {
-                    lastComment = m_word;
+                    lastComment = token;
                     newlinesSinceComment = 0;
                 } else if (newlinesSinceComment >= 2) {
                     current_node.getRoot().addGeneralComment(lastComment);
-                    lastComment = m_word;
+                    lastComment = token;
                     // Reset the newline count.
                     newlinesSinceComment = 0;
                 } else {
                     // Append to previous comment string.
-                    lastComment += "\n" + m_word;
+                    lastComment += "\n" + token;
                     newlinesSinceComment = 0;
                 }
                 break;
@@ -387,15 +344,15 @@ public class CWordFile {
                 
                 // Changed in 1.02.00 to check allowSingleTokens
                 if (settings.isAllowSingleTokens()) {
-                    current_node.addString(m_word, "1", false, lastComment,
+                    current_node.addString(token, "1", false, lastComment,
                             readInlineComment());
                 } else {
-                    warn("Warning: Illegal string: " + m_word);
+                    warn("Warning: Illegal string: " + token);
                 }
                 break;
             case DLSTRING:
                 // Shouldn't happen.
-                warn("Warning: Illegal string: \"" + m_word + "\"");
+                warn("Warning: Illegal string: \"" + token + "\"");
                 break;
             case NEWLINE:
                 // Only used for matching header comments to objects.
@@ -403,7 +360,7 @@ public class CWordFile {
                 break;
             default:
                 // Shouldn't happen.
-                System.err.println("Token type: " + tokenType + "\nm_word: " + m_word);
+                System.err.println("Token type: " + tokenType + "\nm_word: " + token);
                 break;
         }
         
@@ -427,10 +384,10 @@ public class CWordFile {
             getNextToken();
             switch (tokenType) {
                 case ULSTRING:
-                    list.add(m_word, false);
+                    list.add(token, false);
                     break;
                 case DLSTRING:
-                    list.add(m_word, true);
+                    list.add(token, true);
                     break;
                 case RBRACE:
                     break readlist;
@@ -452,7 +409,7 @@ public class CWordFile {
         //    -> Check for an inline comment and return the parent.
         
         if (!ok) {
-            GenericObject child = parent.createChild(name);
+            final GenericObject child = parent.createChild(name);
             for (String var : list) {
                 if (var.contains(" ")) {
                     child.addString("\"" + var + "\"", "1");
@@ -487,7 +444,7 @@ public class CWordFile {
         getNextToken();
         
         if (tokenType == TokenType.COMMENT) {
-            comment = m_word;   // Got the comment; now look for a newline.
+            comment = token;   // Got the comment; now look for a newline.
 //            System.out.println(comment);
             
             getNextToken();
@@ -531,7 +488,7 @@ public class CWordFile {
     private void error(final String text) {
         System.out.println(text); //+" on line "+tokenizer.getLine()+", column "+tokenizer.getColumn());
         JOptionPane.showMessageDialog(null, text, "Error", JOptionPane.ERROR_MESSAGE);
-        m_errors++;
+        numErrors++;
     }
     
     /**
@@ -550,14 +507,14 @@ public class CWordFile {
     
     /**
      * Prints the given text to standard out if <code>level</code> &lt;=
-     * {@link #debugLevel}.
+     * {@link #DEBUG_LEVEL}.
      * @param text the text to print out.
      * @param level the level of importance.
      * @return <code>true</code>. This is only so that this method can be used
      * in assertions.
      */
     private static boolean debug(final String text, int level) {
-        if (level <= debugLevel) {
+        if (level <= DEBUG_LEVEL) {
             System.out.println("DEBUG: " + text);
         }
         return true;

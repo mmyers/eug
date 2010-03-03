@@ -37,6 +37,10 @@ package eug.parser;
 
     private boolean commentsIgnored = false;
 
+    /** Name of the current file (must be set by {@link #setFileName}).
+     * @since EUGFile 1.07.00
+     */
+    private String filename = "(unknown file)";
 
     private static final java.util.regex.Pattern whitespacePattern =
             java.util.regex.Pattern.compile("\\s+");
@@ -78,7 +82,7 @@ package eug.parser;
     private void badChar(char c) {
         System.err.println("Illegal character: \'" + c +
             "\' (#" + Integer.toHexString((int)c) + 
-            ") on line "+yyline+", column "+yycolumn);
+            ") on line " + yyline + ", column " + yycolumn + " of " + filename);
     }
 
     /**
@@ -112,6 +116,15 @@ package eug.parser;
      */
     public void setCommentsIgnored(boolean ignored) {
         commentsIgnored = ignored;
+    }
+
+    /**
+     * Sets the name of the current file (used for printing helpful errors).
+     * @param filename the name of the current file.
+     * @since EUGFile 1.07.00
+     */
+    public void setFileName(String filename) {
+        this.filename = filename;
     }
 
     /**
@@ -286,7 +299,7 @@ package eug.parser;
 
 %standalone
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨] //[A-Za-zÀ-ÿ_\[\]\-'´¨]
+ALPHA                       = [[:letter:]_\[\]\-'´¨,]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
 DIGIT                       = [0-9\.\-\+]
 ALNUM                       = {ALPHA}|{DIGIT}
 
@@ -294,10 +307,11 @@ NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
 WHITE_SPACE_CHAR            = [\n\r\ \t\b\012]
-NON_OPERATOR             = [^(=|{|}|#)]
+/* NON_OPERATOR                = [^(=|{|}|#)] */
+COMMENT_CHAR                = [#;!] /* yes, really! */
 
-COMMENT                     = "#" {NONNEWLINE}*
-COMMENT_NEWLINE             = "#" {NONNEWLINE}* {NEWLINE}
+COMMENT                     = {COMMENT_CHAR} {NONNEWLINE}*
+COMMENT_NEWLINE             = {COMMENT_CHAR} {NONNEWLINE}* {NEWLINE}
 QUOTED_STR                  = \" [^\"]* \"
 
 /* Note: UNQUOTED_STR matches numbers, too. */

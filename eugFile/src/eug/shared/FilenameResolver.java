@@ -8,6 +8,7 @@ package eug.shared;
 
 import eug.parser.EUGFileIO;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,8 +28,6 @@ import java.util.List;
 public final class FilenameResolver {
     
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    
-    private static final String defaultMainDir = "C:/Program Files/Paradox Interactive/Eu3 - DEMO";
     
     /** The base directory. */
     private String mainDirName;
@@ -83,11 +82,11 @@ public final class FilenameResolver {
     }
     
     private void initDirNames(File cfgFile) {
-        GenericObject cfg = EUGFileIO.load(cfgFile);
+        final GenericObject cfg = EUGFileIO.load(cfgFile);
         
         if (cfg == null) {
-            setMainDirectory(defaultMainDir);
-            setModName("");
+            throw new RuntimeException("Failed to load config from "
+                    + cfgFile.getName());
         } else {
             setMainDirectory(cfg.getString("maindir"));
             setModName(cfg.getString("moddir"));
@@ -120,11 +119,13 @@ public final class FilenameResolver {
             modDirName = mainDirName + modPrefix + modName + "/";
             
             if (modFile) {
-                GenericObject mod = EUGFileIO.load(mainDirName + modPrefix + modName + ".mod");
+                final GenericObject mod = EUGFileIO.load(
+                        mainDirName + modPrefix + modName + ".mod");
                 if (mod == null) {
                     modFile = false;
-                    extended = null;
-                    replaced = null;
+                    // These used to be set to null, but that can cause problems.
+                    extended = new ArrayList<String>();
+                    replaced = new ArrayList<String>();
                 } else {
                     extended = mod.getStrings("extend");
                     replaced = mod.getStrings("replace");
@@ -149,7 +150,7 @@ public final class FilenameResolver {
      * @see resolveFilename(String)
      */
     public String resolveDirectory(String dirName) {
-        if (dirName.startsWith("/") || dirName.startsWith("\\"))
+        if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
         if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
             dirName += FILE_SEPARATOR;
@@ -157,7 +158,7 @@ public final class FilenameResolver {
         if (!usingMod)
             return mainDirName + dirName;
         
-        String[] splitPath = splitParent(dirName);
+        final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
             if (replaced.contains(splitPath[0])) {
@@ -187,7 +188,7 @@ public final class FilenameResolver {
      * @param dirName the name of the directory to list files in.
      */
     public File[] listFiles(String dirName) {
-        if (dirName.startsWith("/") || dirName.startsWith("\\"))
+        if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
         if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
             dirName += FILE_SEPARATOR;
@@ -195,19 +196,20 @@ public final class FilenameResolver {
         if (!usingMod)
             return new File(mainDirName + dirName).listFiles();
         
-        String[] splitPath = splitParent(dirName);
+        final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
             if (replaced.contains(splitPath[0])) {
                 return new File(modDirName + dirName).listFiles();
             } else if (extended.contains(splitPath[0])) {
-                java.util.List<File> ret = new java.util.ArrayList<File>();
-                
-                for (File f : new File(mainDirName + dirName).listFiles()) {
+                final java.util.List<File> ret = new java.util.ArrayList<File>();
+
+                final File[] files = new File(mainDirName + dirName).listFiles();
+                for (File f : files) {
                     ret.add(f);
                 }
                 
-                File moddedDir = new File(modDirName + dirName);
+                final File moddedDir = new File(modDirName + dirName);
                 if (moddedDir.exists()) {
                     for (File f : moddedDir.listFiles()) {
                         ret.add(f);
@@ -239,14 +241,14 @@ public final class FilenameResolver {
      * @see resolveDirectory(String)
      */
     public String resolveFilename(String filename) {
-        if (filename.startsWith("/") || filename.startsWith("\\"))
+        if (filename.charAt(0) == '/' || filename.charAt(0) == '\\')
             filename = filename.substring(1);
         
         if (!usingMod) {
             return mainDirName + filename;
         }
         
-        String[] splitPath = splitParent(filename);
+        final String[] splitPath = splitParent(filename);
         
         if (modFile) {
             // EU3-style mod
@@ -278,6 +280,7 @@ public final class FilenameResolver {
         }
     }
     
+    // Yes, there's probably no reason to have this method, but it works, so I'll leave it. -MM Sept 08
     private static final String[] splitParent(String path) {
         int separatorIdx = path.indexOf('/');
         if (separatorIdx < 0) {
@@ -291,31 +294,6 @@ public final class FilenameResolver {
             path.substring(separatorIdx)
         };
     }
-    
-    // Inner classes to make the EU3 methods easier.
-    // No longer used.
-    
-//    private static final class ProvFilter implements FilenameFilter {
-//        private final String id;
-//        public ProvFilter(int id) {
-//            this.id = Integer.toString(id);
-//        }
-//        public boolean accept(File dir, String name) {
-//            return name.startsWith(id) &&
-//                    !name.endsWith("~") &&
-//                    !Character.isDigit(name.charAt(id.length()));
-//        }
-//    }
-//
-//    private static final class TagFilter implements FilenameFilter {
-//        private final String tag;
-//        public TagFilter(String tag) {
-//            this.tag = tag.toUpperCase();
-//        }
-//        public boolean accept(File dir, String name) {
-//            return name.toUpperCase().startsWith(tag) && !name.endsWith("~");
-//        }
-//    }
     
     /**
      * EU3-specific method to find the province history file for the given
@@ -339,7 +317,10 @@ public final class FilenameResolver {
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
                 // Otherwise, try to return the vanilla file.
-                String filename = getFile(modDirName + "history/provinces", Integer.toString(provId), true);
+                final String filename = getFile(
+                        modDirName + "history/provinces",
+                        Integer.toString(provId),
+                        true);
                 if (filename != null)
                     return filename;
                 else
@@ -369,7 +350,8 @@ public final class FilenameResolver {
             if (replaced.contains("history")) {
                 return getFile(modDirName + "history/countries", tag, false);
             } else if (extended.contains("history")) {
-                String filename = getFile(modDirName + "history/countries", tag, false);
+                final String filename = getFile(
+                        modDirName + "history/countries", tag, false);
                 if (filename != null)
                     return filename;
                 else
@@ -386,13 +368,15 @@ public final class FilenameResolver {
         return getFile(mainDirName + "history/countries", tag, false);
     }
     
-    private java.util.Map<String, String[]> directories =
+    private final java.util.Map<String, String[]> directories =
             new java.util.HashMap<String, String[]>();
     
     private String getFile(final String dirname, final String start, final boolean exactMatch) {
         String[] array = directories.get(dirname);
         if (array == null) {
             array = new File(dirname).list();
+            if (array == null)
+                throw new RuntimeException("Failed to open directory " + dirname);
             directories.put(dirname, array);
         }
         

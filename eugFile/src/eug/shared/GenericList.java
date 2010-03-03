@@ -13,8 +13,8 @@ import java.util.Vector;
  * This class represents a list from the saved game. For example:<br>
  * <code>ownedprovinces = { 45 46 55}</code>
  * <p>
- * Since this class implements <code>Iterable&lt;String&gt;</code>, it can be used with a
- * for-each loop:<br>
+ * Since this class implements <code>Iterable&lt;String&gt;</code>, it can be
+ * used with a for-each loop:<br>
  * <pre>
  *       GenericObject country = ...;
  *       for (String id : country.getList("ownedprovinces")) {
@@ -22,13 +22,14 @@ import java.util.Vector;
  *       }
  * </pre>
  */
-public final class GenericList implements WritableObject, Iterable<String>, Cloneable {
+public final class GenericList
+        implements WritableObject, Iterable<String>, Cloneable {
     
     private HeaderComment headComment = null;
     private InlineComment inlineComment = null;
     
     //modif leo - attributs en public
-    private Vector<String> list;
+    private final Vector<String> list;
     private String varname;
     private boolean quotes = false;
     
@@ -201,11 +202,13 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
         return list.contains(val);
     }
     
-    public void toFileString(final BufferedWriter bw, int depth) throws IOException {
+    public void toFileString(final BufferedWriter bw, int depth)
+            throws IOException {
         toFileString(bw, depth, Style.DEFAULT);
     }
     
-    public void toFileString(final BufferedWriter bw, int depth, Style style) throws IOException {
+    public void toFileString(final BufferedWriter bw, int depth, Style style)
+            throws IOException {
         
         if (headComment != null)
             headComment.toFileString(bw, depth, style);
@@ -257,10 +260,12 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
     
     // Implement Serializable so that any list that uses this comparator can be
     // serialized.
-    private static final class NumberStringComparator implements Comparator<String>, Serializable {
+    private static final class NumberStringComparator
+            implements Comparator<String>, Serializable {
         private static final long serialVersionUID = 1L;
         public final int compare(String o1, String o2) {
-            return Double.valueOf(o1).compareTo(Double.valueOf(o2));
+            return Double.compare(
+                    Double.parseDouble(o1), Double.parseDouble(o2));
         }
     }
     
@@ -279,9 +284,11 @@ public final class GenericList implements WritableObject, Iterable<String>, Clon
         else if (!(obj instanceof GenericList))
             return false;
         
-        GenericList gl = (GenericList) obj;
+        final GenericList gl = (GenericList) obj;
         
-        return (quotes == gl.quotes) && varname.equals(gl.varname) && list.equals(gl.list);
+        return (quotes == gl.quotes)
+                && varname.equals(gl.varname)
+                && list.equals(gl.list);
     }
 
     @Override

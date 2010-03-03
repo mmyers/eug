@@ -24,7 +24,7 @@ import java.util.ArrayList;
 %%
 
 %{
-    private static ListScanner scanner;
+    private static volatile ListScanner scanner; // volatile so lazy initialization works
 
     /**
      * Returns the shared instance of <code>ListScanner</code>. If it has
@@ -123,14 +123,15 @@ import java.util.ArrayList;
 /* %switch */
 %table
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨]
+ALPHA                       = [[:letter:]_\[\]\-'´¨,]
 DIGIT                       = [0-9\.\-]
 
 WHITE_SPACE_CHAR            = [\r\n\ \t\b\012]
 //NEWLINE                     = [\r\n]
 NONNEWLINE                  = [^\r\n]
+COMMENT_CHAR                = [#;!]
 
-COMMENT                     = "#" {NONNEWLINE}* /* NEWLINE */
+COMMENT                     = {COMMENT_CHAR} {NONNEWLINE}*
 QUOTED_STR                  = \" [^\"]* \"
 
 /* Note: UNQUOTED_STR matches numbers, too. */
