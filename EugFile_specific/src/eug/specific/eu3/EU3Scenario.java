@@ -68,10 +68,10 @@ public class EU3Scenario implements EU3DataSource {
     }
     
     public List<GenericObject> getWars() {
-        List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<GenericObject>();
         
         for (File file : resolver.listFiles("history/wars")) {
-            GenericObject obj = EUGFileIO.load(file, settings);
+            final GenericObject obj = EUGFileIO.load(file, settings);
             if (obj != null)
                 ret.add(obj);
         }
@@ -80,13 +80,13 @@ public class EU3Scenario implements EU3DataSource {
     }
     
     public List<GenericObject> getWars(final String date) {
-        List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<GenericObject>();
         
         for (File file : resolver.listFiles("history/wars")) {
-            GenericObject obj = EUGFileIO.load(file, settings);
+            final GenericObject obj = EUGFileIO.load(file, settings);
             if (obj != null) {
-                List<String> participants =
-                        EU3History.getHistStrings(obj, date, "add_attacker", "rem_attacker");
+                final List<String> participants = EU3History.getHistStrings(
+                        obj, date, "add_attacker", "rem_attacker");
                 
                 if (!participants.isEmpty())
                     ret.add(obj);
@@ -97,8 +97,9 @@ public class EU3Scenario implements EU3DataSource {
     }
 
     public void removeWar(String name) {
-        String filename = resolver.resolveFilename("history/wars/" + name + ".txt");
-        File file = new File(filename);
+        final String filename =
+                resolver.resolveFilename("history/wars/" + name + ".txt");
+        final File file = new File(filename);
         if (file.exists()) {
             if (!file.delete())
                 System.err.println("Could not delete " + filename);
@@ -136,10 +137,11 @@ public class EU3Scenario implements EU3DataSource {
             filename = resolver.resolveDirectory("history") + "countries/" + filename;
         }
         
-        File file = new File(filename);
-        String backupFilename = getBackupFilename(filename);
+        final File file = new File(filename);
+        final String backupFilename = getBackupFilename(filename);
         if (file.exists()) {
-            file.renameTo(new File(backupFilename));
+            if (!file.renameTo(new File(backupFilename)))
+                System.err.println("Backup of " + file.getName() + " failed");
         }
         
         saveFile(filename, data);
@@ -155,18 +157,20 @@ public class EU3Scenario implements EU3DataSource {
             filename = resolver.resolveDirectory("history") + "provinces/" + filename;
         }
         
-        File file = new File(filename);
+        final File file = new File(filename);
         if (file.exists()) {
-            String backupFilename = getBackupFilename(filename);
-            file.renameTo(new File(backupFilename));
+            final String backupFilename = getBackupFilename(filename);
+            if (!file.renameTo(new File(backupFilename)))
+                System.err.println("Backup of " + file.getName() + " failed");
         }
         
         saveFile(filename, data);
     }
 
     public void saveWar(String name, String data) {
-        String filename = resolver.resolveFilename("history/wars/" + name + ".txt");
-        File file = new File(filename);
+        String filename =
+                resolver.resolveFilename("history/wars/" + name + ".txt");
+        final File file = new File(filename);
 //        if (!file.exists()) {
 //            // we were given the war name, not the filename
 //            // or is this reasonable? Left commented out for now.
@@ -185,13 +189,14 @@ public class EU3Scenario implements EU3DataSource {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
             filename = resolver.resolveDirectory("history") + "wars/" + filename;
         } else {
-            file.renameTo(new File(getBackupFilename(filename)));
+            if (!file.renameTo(new File(getBackupFilename(filename))))
+                System.err.println("Backup of " + file.getName() + " failed");
         }
         saveFile(filename, data);
     }
     
     private static final String getBackupFilename(String filename) {
-        File f = new File(filename);
+        final File f = new File(filename);
         return f.getParent() + File.separatorChar + "~" + f.getName();
     }
     
@@ -237,7 +242,7 @@ public class EU3Scenario implements EU3DataSource {
         for (int id = start; id < end; id++) {
             hist = historyCache.get(id);
             if (hist == null) {
-                String histFile = resolver.getProvinceHistoryFile(id);
+                final String histFile = resolver.getProvinceHistoryFile(id);
                 
                 if (histFile == null) {
 //                    System.err.println("Cannot find province history file for ID " + id);
@@ -267,7 +272,7 @@ public class EU3Scenario implements EU3DataSource {
             
             hist = historyCache.get(tag);
             if (hist == null) {
-                String histFile = resolver.getCountryHistoryFile(tag);
+                final String histFile = resolver.getCountryHistoryFile(tag);
                 
                 if (histFile == null) {
 //                    System.err.println("Cannot find country history file for " + tag);
@@ -289,7 +294,7 @@ public class EU3Scenario implements EU3DataSource {
     private final GenericObject getProvHistory(final int id) {
         GenericObject hist = historyCache.get(id);
         if (hist == null) {
-            String histFile = resolver.getProvinceHistoryFile(id);
+            final String histFile = resolver.getProvinceHistoryFile(id);
             
             if (histFile == null) {
                 System.err.println("Cannot find province history file for ID " + id);
@@ -312,7 +317,7 @@ public class EU3Scenario implements EU3DataSource {
     private final GenericObject getCtryHistory(final String tag) {
         GenericObject hist = historyCache.get(tag);
         if (hist == null) {
-            String histFile = resolver.getCountryHistoryFile(tag);
+            final String histFile = resolver.getCountryHistoryFile(tag);
             
             if (histFile == null) {
                 System.err.println("Cannot find country history file for " + tag);
@@ -337,29 +342,41 @@ public class EU3Scenario implements EU3DataSource {
         
         final File file = new File(filename);
         final char[] data = new char[(int)file.length()];
+        FileReader reader = null;
         try {
-            final FileReader reader = new FileReader(file);
+            reader = new FileReader(file);
             if (reader.read(data) != data.length)
                 System.err.println("???");
-            reader.close();
             return String.valueOf(data);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {}
+            }
         }
         return null;
     }
     
     private final void saveFile(final String filename, final String data) {
+        FileWriter writer = null;
         try {
-            final FileWriter writer = new FileWriter(filename);
+            writer = new FileWriter(filename);
             writer.write(data);
-            writer.close();
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ex) {}
+            }
         }
     }
 }

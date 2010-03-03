@@ -12,11 +12,6 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Scenario;
 import eug.shared.Style;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +24,9 @@ import java.util.Map;
  */
 public class EU3SaveGame extends Scenario implements EU3DataSource {
     
-//    public static final String eu3FolderPath = "c:/program files/paradox interactive/europa universalis iii/";
-//    public static final String modName = "";
+    private final String savePath;
     
-    private String savePath;
-    
-    private FilenameResolver resolver;
+    private final FilenameResolver resolver;
     
     private Map<String, GenericObject> countryMap;
 //    private List<GenericObject> provinces;
@@ -75,31 +67,38 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
         return new EU3SaveGame(EUGFileIO.load(filename), filename, resolver);
     }
     
-    /** Load English display names from all files in the localisation dir. */
-    private void initDisplayNames() {
-        displayNames = new HashMap<String, String>();
-        
-        for (File f : resolver.listFiles("localisation")) {
-            try {
-                BufferedReader r = new BufferedReader(new FileReader(f), (int)f.length());
-                String line;
-                while ((line = r.readLine()) != null) {
-                    String[] array = line.split(";");
-                    displayNames.put(array[0], array[1]);
-                }
-                r.close();
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+//    /** Load English display names from all files in the localisation dir. */
+    // not currently used (Sept 08)
+//    private void initDisplayNames() {
+//        displayNames = new HashMap<String, String>();
+//        
+//        for (File f : resolver.listFiles("localisation")) {
+//            BufferedReader r = null;
+//            try {
+//                r = new BufferedReader(new FileReader(f), (int)f.length());
+//                String line;
+//                while ((line = r.readLine()) != null) {
+//                    String[] array = line.split(";");
+//                    displayNames.put(array[0], array[1]);
+//                }
+//            } catch (FileNotFoundException ex) {
+//                ex.printStackTrace();
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//            } finally {
+//                if (r != null) {
+//                    try {
+//                        r.close();
+//                    } catch (IOException ex) {} // must never throw exception from 'finally' block
+//                }
+//            }
+//        }
+//    }
     
     private void initProvs() {
         provinces = new ArrayList<GenericObject>(1500);
         for (int i = 1; /* loop until broken */; i++) {
-            GenericObject prov = root.getChild(Integer.toString(i));
+            final GenericObject prov = root.getChild(Integer.toString(i));
             if (prov == null) {
                 lastProvId = i-1;
                 break;
@@ -109,7 +108,8 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
 //        System.out.println(lastProvId + " provinces");
     }
     
-    private static final java.util.regex.Pattern tagPattern = java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
+    private static final java.util.regex.Pattern tagPattern =
+            java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
     private void initCountries() {
         countryMap = new HashMap<String, GenericObject>(100);
         for (GenericObject obj : root.children) {
@@ -173,18 +173,18 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     }
     
     public List<GenericObject> getWars() {
-        List<GenericObject> ret = root.getChildren("active_war");
+        final List<GenericObject> ret = root.getChildren("active_war");
         ret.addAll(root.getChildren("previous_war"));
         return ret;
     }
     
     public List<GenericObject> getWars(String date) {
-        List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<GenericObject>();
         
         // Only check wars if the date is in the past
         if (EU3History.DATE_COMPARATOR.isBefore(date, getDate())) {
             for (GenericObject war : root.getChildren("active_war")) {
-                List<String> participants =
+                final List<String> participants =
                         EU3History.getHistStrings(war, date, "add_attacker", "rem_attacker");
                 
                 if (!participants.isEmpty())
@@ -192,7 +192,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
             }
         
             for (GenericObject war : root.getChildren("previous_war")) {
-                List<String> participants =
+                final List<String> participants =
                         EU3History.getHistStrings(war, date, "add_attacker", "rem_attacker");
                 
                 if (!participants.isEmpty())
@@ -235,23 +235,23 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
     }
     
     public void saveCountry(String tag, String cname, final String data) {
-        GenericObject country = getCountryMap().get(tag);
+        final GenericObject country = getCountryMap().get(tag);
         country.clear();
-        GenericObject newCountry = EUGFileIO.loadFromString(data);
+        final GenericObject newCountry = EUGFileIO.loadFromString(data);
         country.addAllChildren(newCountry.getChild(tag));
         hasUnsavedChanges = true;
     }
     
     public void saveProvince(int id, String pname, final String data) {
-        GenericObject province = getProvinces().get(id-1);
+        final GenericObject province = getProvinces().get(id-1);
         province.clear();
-        GenericObject newProvince = EUGFileIO.loadFromString(data);
+        final GenericObject newProvince = EUGFileIO.loadFromString(data);
         province.addAllChildren(newProvince.getChild(Integer.toString(id)));
         hasUnsavedChanges = true;
     }
 
     public void saveWar(String name, String data) {
-        GenericObject newWar = EUGFileIO.loadFromString(data);
+        final GenericObject newWar = EUGFileIO.loadFromString(data);
         for (GenericObject war : getWars()) {
             if (war.getString("name").equals(name)) {
                 war.clear();
@@ -372,7 +372,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
             root.setString("emperor", newTag);
         
         // Papacy and cardinals
-        GenericObject papacy = root.getChild("papacy");
+        final GenericObject papacy = root.getChild("papacy");
         if (papacy.getString("controller").equals(oldTag))
             papacy.setString("controller", newTag);
         
@@ -381,7 +381,7 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
                 cardinal.setString("controller", newTag);
         
         // Trade
-        GenericObject trade = root.getChild("trade");
+        final GenericObject trade = root.getChild("trade");
         for (GenericObject cot : trade.getChildren("cot")) {
             for (GenericObject ctry : cot.children) {
                 if (ctry.name.equals(oldTag)) {
