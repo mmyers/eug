@@ -9,6 +9,7 @@ package eug.shared;
 import eug.parser.EUGFileIO;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -377,12 +378,15 @@ public final class FilenameResolver {
             array = new File(dirname).list();
             if (array == null)
                 throw new RuntimeException("Failed to open directory " + dirname);
+            Arrays.sort(array);
             directories.put(dirname, array);
         }
         
         final int length = start.length();
-        
-        for (String name : array) {
+
+        int index = -Arrays.binarySearch(array, start)-1;
+        String name = array[index];
+        /*for (String name : array)*/ {
             if (name.substring(0, length).equalsIgnoreCase(start) && //!name.contains("~") &&
                     (!exactMatch || !Character.isLetterOrDigit(name.charAt(length)))) {
                 return new File(dirname + File.separatorChar + name).getAbsolutePath();
