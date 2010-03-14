@@ -378,13 +378,13 @@ public final class FilenameResolver {
             array = new File(dirname).list();
             if (array == null)
                 throw new RuntimeException("Failed to open directory " + dirname);
-            Arrays.sort(array);
+            Arrays.sort(array, String.CASE_INSENSITIVE_ORDER);
             directories.put(dirname, array);
         }
         
         final int length = start.length();
 
-        int index = -Arrays.binarySearch(array, start)-1;
+        int index = -Arrays.binarySearch(array, start, String.CASE_INSENSITIVE_ORDER) - 1;
         String name = array[index];
         /*for (String name : array)*/ {
             if (name.substring(0, length).equalsIgnoreCase(start) && //!name.contains("~") &&
