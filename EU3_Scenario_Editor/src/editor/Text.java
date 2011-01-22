@@ -51,19 +51,27 @@ public final class Text {
             reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(1024000, (int)f.length()));
             try {
                 while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("#"))
+                    if (line.charAt(0) == '#')
                         continue;
-                    splitLine = semicolon.split(line); //line.split(";");
-                    if (splitLine.length < 2) {
-                        if (!line.contains(";")) {
-                            // If it contains ";", then it's probably just a line like ;;;;;;;;;;;;
-                            // If not, we need to know what it is.
-                            System.err.println("Malformed line in file " + f.getPath() + ":");
-                            System.err.println(line);
-                        }
-                        continue;
+//                    splitLine = semicolon.split(line); //line.split(";");
+//                    if (splitLine.length < 2) {
+//                        if (!line.contains(";")) {
+//                            // If it contains ";", then it's probably just a line like ;;;;;;;;;;;;
+//                            // If not, we need to know what it is.
+//                            System.err.println("Malformed line in file " + f.getPath() + ":");
+//                            System.err.println(line);
+//                        }
+//                        continue;
+//                    }
+//                    text.put(splitLine[0].toLowerCase(), splitLine[1]); // English
+
+                    int firstSemi = line.indexOf(';');
+                    int secondSemi = line.indexOf(';', firstSemi + 1);
+                    if (firstSemi < 0 || secondSemi < 0) {
+                        System.err.println("Malformed line in file " + f.getPath() + ":");
+                        System.err.println(line);
                     }
-                    text.put(splitLine[0].toLowerCase(), splitLine[1]);   // English
+                    text.put(line.substring(0, firstSemi), line.substring(firstSemi + 1, secondSemi));
                 }
             } finally {
                 reader.close();
@@ -72,6 +80,8 @@ public final class Text {
     }
     
     public static String getText(final String key) {
+        if (key == null)
+            return null; // is this a good idea? Won't this just pass the NPE further down the line?
         final String ret = text.get(key.toLowerCase());
         return (ret == null ? key : ret);
     }
