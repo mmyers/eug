@@ -7,10 +7,13 @@
 package editor.mapmode;
 
 import editor.MapPanel;
+import editor.MapPanelDataModel;
 import editor.ProvinceData.Province;
 import editor.Text;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -19,6 +22,9 @@ import java.awt.Paint;
  */
 public final class ReligionMode extends ProvincePaintingMode {
     
+    private String lastDate = null;
+    private final java.util.Map<String, String> ctryReligions =
+            new HashMap<String, String>();
     
     /**
      * Creates a new instance of ReligionMode.
@@ -30,6 +36,22 @@ public final class ReligionMode extends ProvincePaintingMode {
     public ReligionMode(MapPanel panel) {
         super(panel);
     }
+
+    @Override
+    protected void paintingStarted(final Graphics2D g) {
+        final MapPanelDataModel model = mapPanel.getModel();
+        if (lastDate != null && lastDate.equals(model.getDate()))
+            return;
+
+        ctryReligions.clear();
+
+        final List<String> tags = model.getTags();
+        for (String tag : tags) {
+            ctryReligions.put(tag.toUpperCase(), model.getHistString(tag, "religion"));
+        }
+
+        lastDate = model.getDate();
+    }
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final String religion = mapPanel.getModel().getHistString(provId, "religion");
@@ -39,9 +61,10 @@ public final class ReligionMode extends ProvincePaintingMode {
         } else if (religion.length() == 0 || religion.equalsIgnoreCase("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_RELIGION);
         } else {
-            final String owner = mapPanel.getModel().getHistString(provId, "owner");
-            final String ownerRel = (Utilities.isNotACountry(owner) ? null : mapPanel.getModel().getHistString(owner, "religion"));
-            
+            final String owner = mapPanel.getModel().getHistString(provId, "owner").toUpperCase();
+            //final String ownerRel = (Utilities.isNotACountry(owner) ? null : mapPanel.getModel().getHistString(owner, "religion"));
+            final String ownerRel = ctryReligions.get(owner);
+
             if (ownerRel == null || religion.equalsIgnoreCase(ownerRel)) {
                 mapPanel.paintProvince(g, provId, Utilities.getReligionColor(religion));
             } else {
@@ -65,7 +88,7 @@ public final class ReligionMode extends ProvincePaintingMode {
             return "";
         
         final String rel = Text.getText(mapPanel.getModel().getHistString(id, "religion"));
-        if (rel.length() == 0)
+        if (rel == null || rel.length() == 0)
             return "";
         
         String owner = mapPanel.getModel().getHistString(id, "owner");
