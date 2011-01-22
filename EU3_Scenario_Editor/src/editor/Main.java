@@ -37,7 +37,7 @@ public class Main {
             System.out.println("Mod directory is " + filenameResolver.getModDirName());
         
 //        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 //        } catch (Exception ex) {
 //            ex.printStackTrace();
 //        }

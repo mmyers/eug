@@ -88,28 +88,8 @@ public final class MapData {
             }
         }
         
-        borders = new ArrayList<Integer[]>(tmpBorders.size());
-        for (Integer[] arr : tmpBorders.keySet()) {
-            borders.add(arr);
-        }
-        
-//            com.sun.imageio.plugins.jpeg.JPEGImageReader
+        borders = new ArrayList<Integer[]>(tmpBorders.keySet());
     }
-    
-    //        private List<Integer[]> getLinesInProv(final Point pt, double scaleFactor) {
-    //            for (List<Integer[]> list : provLines.values()) {
-    //                for (Integer[] arr : list) {
-    //                    if ((arr[0]*scaleFactor == pt.y) && (arr[1]*scaleFactor <= pt.x) && (arr[2]*scaleFactor >= pt.x)) {   // the '==' may cause problems
-    //                        return list;
-    //                    }
-    //                }
-    //            }
-    //            return null;
-    //        }
-    
-    //        private List<Integer[]> getLinesInProv(final Color c) {
-    //            return provLines.get(c.getRGB());
-    //        }
     
     public List<Integer[]> getLinesInProv(int rgb) {
         return provLines.get(rgb);

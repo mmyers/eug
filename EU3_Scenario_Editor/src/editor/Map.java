@@ -215,7 +215,7 @@ public final class Map {
             }
         }
         
-        if (ret.size() == 0)
+        if (ret.isEmpty())
             ret.add("(none)");
         
         return ret;
