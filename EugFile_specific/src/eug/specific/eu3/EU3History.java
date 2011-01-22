@@ -72,8 +72,42 @@ public final class EU3History {
 //        }
 //    };
     
-    private static final Pattern DATE_PATTERN =
-            Pattern.compile("[0-9]{1,4}\\.[0-9]{1,2}\\.[0-9]{1,2}");
+//    private static final Pattern DATE_PATTERN =
+//            Pattern.compile("[0-9]{1,4}\\.[0-9]{1,2}\\.[0-9]{1,2}");
+
+    private static boolean isDate(final String str) {
+        // As it turns out, a regex is simple but rather slow for this.
+        // Instead, this method uses a handcrafted validator.
+//        return DATE_PATTERN.matcher(str).matches();
+        final int firstDot = str.indexOf('.');
+        if (firstDot < 1)
+            return false;
+
+        final int secondDot = str.indexOf('.', firstDot + 1);
+        if (secondDot < 1 || secondDot > str.length()-2)
+            return false;
+        final int diff = secondDot - firstDot;
+        if (diff == 1 || diff > 3)
+            return false;
+
+        if (!areAllDigits(str, 0, firstDot))
+            return false;
+        if (!areAllDigits(str, firstDot + 1, secondDot))
+            return false;
+        if (!areAllDigits(str, secondDot + 1, str.length()))
+            return false;
+
+        return true;
+    }
+
+    private static boolean areAllDigits(final String str, int start, int end) {
+        for (int i = start; i < end; i++) {
+            final char c = str.charAt(i);
+            if (c < '0' || c > '9')
+                return false;
+        }
+        return true;
+    }
     
     
     public static final GenericObject getHistObject(final GenericObject history, String name) {
@@ -83,7 +117,7 @@ public final class EU3History {
         GenericObject value = history.getChild(name);
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
-            if (!DATE_PATTERN.matcher(date.name).matches()) {
+            if (!isDate(date.name)) {
                 if (!date.name.equals("advisor"))
                     System.err.println(date.name + " is not a valid date");
                 continue;
@@ -107,7 +141,7 @@ public final class EU3History {
         GenericObject value = history.getChild(name);
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
-            if (!DATE_PATTERN.matcher(dateObj.name).matches()) {
+            if (!isDate(dateObj.name)) {
                 if (!dateObj.name.equals("advisor"))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
@@ -134,7 +168,7 @@ public final class EU3History {
         String value = history.getString(name);
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
-            if (!DATE_PATTERN.matcher(date.name).matches()) {
+            if (!isDate(date.name)) {
                 if (!date.name.equals("advisor"))
                     System.err.println(date.name + " is not a valid date");
                 continue;
@@ -158,7 +192,7 @@ public final class EU3History {
         String value = history.getString(name);
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
-            if (!DATE_PATTERN.matcher(dateObj.name).matches()) {
+            if (!isDate(dateObj.name)) {
                 if (!dateObj.name.equals("advisor"))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
@@ -185,7 +219,7 @@ public final class EU3History {
         final List<String> values = history.getStrings(name);
         
         for (GenericObject dateObj : history.children) {
-            if (!DATE_PATTERN.matcher(dateObj.name).matches()) {
+            if (!isDate(dateObj.name)) {
                 if (!dateObj.name.equals("advisor"))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
@@ -237,7 +271,7 @@ public final class EU3History {
         final List<String> values = history.getStrings(adder);
         
         for (GenericObject dateObj : history.children) {
-            if (!DATE_PATTERN.matcher(dateObj.name).matches()) {
+            if (!isDate(dateObj.name)) {
                 if (!"advisor".equals(dateObj.name))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
