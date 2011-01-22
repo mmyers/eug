@@ -6,17 +6,10 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import editor.Text;
-import eug.parser.EUGFileIO;
-import eug.parser.ParserSettings;
-import eug.shared.GenericList;
-import eug.shared.GenericObject;
-import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.HashMap;
 
 /**
  *

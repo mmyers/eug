@@ -21,8 +21,8 @@ import java.util.Map;
  */
 public final class CapitalsMode extends ProvincePaintingMode {
 
-    protected Color foundColor = Color.GREEN;
-    protected Color notFoundColor = new Color(100, 100, 100); // darker than GRAY, lighter than DARK_GRAY
+    private Color foundColor = Color.GREEN;
+    private Color notFoundColor = new Color(100, 100, 100); // darker than GRAY, lighter than DARK_GRAY
     
     private final Map<Integer, String> capitals =
             new HashMap<Integer, String>(100);
