@@ -36,10 +36,11 @@ public class ContinentMode extends GroupMode {
     }
     
     public String getTooltipExtraText(final Province current) {
-        if (!Main.map.isLand(current.getId()))
+        String continent = Main.map.getContinentOfProv(current.getId());
+        if (continent.startsWith("("))
             return "";
         
-        return "Continent: " + Main.map.getContinentOfProv(current.getId());
+        return "Continent: " + continent;
     }
     
 }
