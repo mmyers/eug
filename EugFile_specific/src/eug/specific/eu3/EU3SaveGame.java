@@ -105,7 +105,6 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
             }
             provinces.add(prov);
         }
-//        System.out.println(lastProvId + " provinces");
     }
     
     private static final java.util.regex.Pattern tagPattern =
@@ -117,12 +116,11 @@ public class EU3SaveGame extends Scenario implements EU3DataSource {
                 countryMap.put(obj.name, obj);
             }
         }
-//        System.out.println(countries.size() + " countries");
     }
     
     // Lazy accessor
     private Map<String, GenericObject> getCountryMap() {
-        if (countries == null)
+        if (countryMap == null)
             initCountries();
         
         return countryMap;
