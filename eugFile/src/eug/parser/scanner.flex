@@ -70,13 +70,44 @@ package eug.parser;
         return yytext().substring(lastIdxOfHash+1).trim();
     }
 
-    private static final java.util.regex.Pattern commentPattern =
-            java.util.regex.Pattern.compile("#[^\r\n]*(\r|\n|\r\n)");
+    //private static final java.util.regex.Pattern commentPattern =
+    //        java.util.regex.Pattern.compile("#[^\r\n]*(\r|\n|\r\n)");
 
     /** Convenience method for getting an identifier from a string such as "tag =". */
     private final String getIdent() {
         // Remove comments, remove the "=", then trim whitespace.
-        return commentPattern.matcher(yytext()).replaceAll("").replace('=', ' ').replace('"', ' ').trim();
+        boolean inQuotes = false;
+        boolean hitWord = false;
+        StringBuilder ident = new StringBuilder(yylength()-2);
+        for (int i = 0; i < yylength(); i++) {
+            char c = yycharat(i);
+            if (inQuotes) { // take anything up to a quote
+                if (c == '"')
+                    return ident.substring(0, i);
+                else
+                    ident.append(c);
+            } else if (hitWord) { // stop at whitespace or equals
+                if (c == '=' || c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                    return ident.toString();
+                } else {
+                    ident.append(c);
+                }
+            } else {
+                if (c == '"') {
+                    inQuotes = true;
+                    hitWord = true;
+                } else if (c == '#' || c == ';' || c == '!') {
+                    while (yycharat(i) != '\n' && yycharat(i) != '\r') {
+                        i++;
+                    }
+                } else if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r')) {
+                    hitWord = true;
+                    ident.append(c);
+                }
+            }
+        }
+        return ident.toString(); // shouldn't reach here, but if so, just dump what we've got
+        //return commentPattern.matcher(yytext()).replaceAll("").replace('=', ' ').replace('"', ' ').trim();
     }
 
     private void badChar(char c) {
@@ -262,6 +293,19 @@ package eug.parser;
      */
     public int getTokenEnd() {
         return yychar + yylength();
+    }
+
+    /**
+     * Skips the next token or block, depending on the type of the next token.
+     * @since EUGFile 1.07.00
+     */
+    public void skipNext() {
+        TokenType current = nextToken();
+        if (current == TokenType.LBRACE) {
+            while (current != TokenType.RBRACE && current != TokenType.EOF) {
+                current = nextToken();
+            }
+        }
     }
 %} 
 
