@@ -291,10 +291,10 @@ public final class EU3History {
         public DateComparator() {
         }
         
-        private final Map<String, String[]> splitMap = new HashMap<String, String[]>(100);
-        private final Pattern dot = Pattern.compile("\\.");
+        private static final Map<String, String[]> splitMap = new HashMap<String, String[]>(100);
+        private static final Pattern dot = Pattern.compile("\\.");
 
-        private final String[] split(final String s) {
+        private static final String[] split(final String s) {
             String[] split = splitMap.get(s);
             if (split == null) {
                 split = dot.split(s);
@@ -302,9 +302,9 @@ public final class EU3History {
             }
             return split;
         }
-        private final Map<String, Integer> intMap = new HashMap<String, Integer>(100);
+        private static final Map<String, Integer> intMap = new HashMap<String, Integer>(100);
 
-        private final Integer getInt(final String s) {
+        private static final Integer getInt(final String s) {
             Integer i = intMap.get(s);
             if (i == null) {
                 i = Integer.valueOf(s);
