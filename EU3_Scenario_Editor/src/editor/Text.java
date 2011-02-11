@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.regex.Pattern;
+//import java.util.regex.Pattern;
 
 /**
  *
@@ -24,7 +24,7 @@ public final class Text {
     private static final java.util.Map<String, String> text =
             new HashMap<String, String>();
     
-    private static final Pattern semicolon = Pattern.compile(";");
+    //private static final Pattern semicolon = Pattern.compile(";");
     
     static {
         try {
@@ -39,7 +39,7 @@ public final class Text {
     private static void initText() throws FileNotFoundException, IOException {
         java.io.BufferedReader reader;
         String line;
-        String[] splitLine;
+        //String[] splitLine;
         for (File f : Main.filenameResolver.listFiles("localisation")) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -71,7 +71,7 @@ public final class Text {
                         System.err.println("Malformed line in file " + f.getPath() + ":");
                         System.err.println(line);
                     }
-                    text.put(line.substring(0, firstSemi), line.substring(firstSemi + 1, secondSemi));
+                    text.put(line.substring(0, firstSemi).toLowerCase(), line.substring(firstSemi + 1, secondSemi));
                 }
             } finally {
                 reader.close();
