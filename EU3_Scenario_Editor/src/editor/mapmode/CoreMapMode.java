@@ -35,7 +35,7 @@ public class CoreMapMode extends ProvincePaintingMode {
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final List<String> coreOf = mapPanel.getModel().isCoreOf(provId);
-        if (coreOf.contains(tag)) {
+        if (coreOf != null && coreOf.contains(tag)) {
             mapPanel.paintProvince(g, provId, coreColor);
         } else {
             mapPanel.paintProvince(g, provId, notCoreColor);
