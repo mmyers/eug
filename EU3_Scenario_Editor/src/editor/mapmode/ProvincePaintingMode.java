@@ -46,12 +46,9 @@ public abstract class ProvincePaintingMode extends MapMode {
         for (int i = 1; i < maxProvinces; i++) {
             if (Main.map.isLand(i))
                 paintProvince(g, i);
+            else
+                paintSeaZone(g, i);
         }
-        
-//        final int numProvs = mapPanel.getModel().getProvinceData().getAllProvs().length;
-//        for (int i = SEA_STARTS; i < numProvs; i++) {
-//            paintSeaZone(g, i);
-//        }
         
         paintingEnded(g);
     }
