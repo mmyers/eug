@@ -71,11 +71,11 @@ public final class GenericObject implements WritableObject, Cloneable {
         // Consider using ArrayLists instead.
         // ArrayLists would probably be a little faster, but are not thread-safe;
         // however, I don't know if thread safety will ever be an issue.
-        children = new Vector<GenericObject>();
-        lists = new Vector<GenericList>();
-        values = new Vector<ObjectVariable>();
-        generalComments = new Vector<Comment>();
-        allWritable = new Vector<WritableObject>();
+        children = new Vector<GenericObject>(0);
+        lists = new Vector<GenericList>(0);
+        values = new Vector<ObjectVariable>(0);
+        generalComments = new Vector<Comment>(0);
+        allWritable = new Vector<WritableObject>(0);
     }
     
     // </editor-fold>
