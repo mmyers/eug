@@ -122,14 +122,16 @@ public final class FilenameResolver {
             if (modFile) {
                 final GenericObject mod = EUGFileIO.load(
                         mainDirName + modPrefix + modName + ".mod");
+                extended = new ArrayList<String>();
+                replaced = new ArrayList<String>();
                 if (mod == null) {
                     modFile = false;
-                    // These used to be set to null, but that can cause problems.
-                    extended = new ArrayList<String>();
-                    replaced = new ArrayList<String>();
                 } else {
-                    extended = mod.getStrings("extend");
-                    replaced = mod.getStrings("replace");
+                    // Lowercase the strings so that resolution is case-insensitive
+                    for (String str : mod.getStrings("extend"))
+                        extended.add(str.toLowerCase());
+                    for (String str : mod.getStrings("replace"))
+                        replaced.add(str.toLowerCase());
                 }
             }
         } else {
@@ -162,9 +164,9 @@ public final class FilenameResolver {
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
-            if (replaced.contains(splitPath[0])) {
+            if (isReplaced(splitPath[0])) {
                 return modDirName + dirName;
-            } else if (extended.contains(splitPath[0])) {
+            } else if (isExtended(splitPath[0])) {
                 // XXX I don't think extending directories is done correctly
                 if (new File(modDirName + dirName).exists()) {
                     return modDirName + dirName;
@@ -200,9 +202,9 @@ public final class FilenameResolver {
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
-            if (replaced.contains(splitPath[0])) {
+            if (isReplaced(splitPath[0])) {
                 return new File(modDirName + dirName).listFiles();
-            } else if (extended.contains(splitPath[0])) {
+            } else if (isExtended(splitPath[0])) {
                 final java.util.List<File> ret = new java.util.ArrayList<File>();
 
                 final File[] files = new File(mainDirName + dirName).listFiles();
@@ -253,11 +255,11 @@ public final class FilenameResolver {
         
         if (modFile) {
             // EU3-style mod
-            if (replaced.contains(splitPath[0])) {
+            if (isReplaced(splitPath[0])) {
                 // Case 1: Directory is replaced.
                 // Return the file in the moddir, even if it doesn't exist.
                 return modDirName + filename;
-            } else if (extended.contains(splitPath[0])) {
+            } else if (isExtended(splitPath[0])) {
                 // Case 2: Directory is extended.
                 // Check if the file exists in the moddir.
                 if (new File(modDirName + filename).exists()) {
@@ -307,13 +309,13 @@ public final class FilenameResolver {
         // Can't use resolveFilename, because we don't know what the file is
         // called.
         if (usingMod) {
-            if (replaced.contains("history")) {
+            if (isReplaced("history")) {
                 // Case 1: History is replaced.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
                 // Otherwise, return null.
                 return getFile(modDirName + "history/provinces", Integer.toString(provId), true);
-            } else if (extended.contains("history")) {
+            } else if (isExtended("history")) {
                 // Case 2: History is extended.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
@@ -340,6 +342,63 @@ public final class FilenameResolver {
     private String getVanillaProvHistoryFile(final int provId) {
         return getFile(mainDirName + "history/provinces", Integer.toString(provId), true);
     }
+
+
+    /**
+     * Victoria 2-specific method to find the province history file for the
+     * given province.
+     * @return the name of the province history file, or <code>null</code> if
+     * the file could not be found.
+     * @since EUGFile 1.07.00
+     */
+    public String getVic2ProvinceHistoryFile(final int provId) {
+        // Can't use resolveFilename, because we don't know what the file is
+        // called.
+        if (usingMod) {
+            if (isReplaced("history")) {
+                // Case 1: History is replaced.
+                // If there is a file in the mod's province history folder that
+                // starts with the provId, return it.
+                // Otherwise, return null.
+                return getVic2ProvHistoryFile(modDirName + "history/provinces",
+                        Integer.toString(provId), true);
+            } else if (isExtended("history")) {
+                // Case 2: History is extended.
+                // If there is a file in the mod's province history folder that
+                // starts with the provId, return it.
+                // Otherwise, try to return the vanilla file.
+                final String filename = getVic2ProvHistoryFile(
+                        modDirName + "history/provinces",
+                        Integer.toString(provId),
+                        true);
+                if (filename != null)
+                    return filename;
+                else
+                    return getVanillaVic2ProvHistoryFile(provId);
+            } else {
+                // Case 3: History is not modded.
+                // Try to return the vanilla file.
+                return getVanillaVic2ProvHistoryFile(provId);
+            }
+        } else {
+            // No mod. Try to return the vanilla file.
+            return getVanillaVic2ProvHistoryFile(provId);
+        }
+    }
+
+    private String getVanillaVic2ProvHistoryFile(final int provId) {
+        return getVic2ProvHistoryFile(mainDirName + "history/provinces", Integer.toString(provId), true);
+    }
+
+    private String getVic2ProvHistoryFile(String dirName, String prefix, boolean exactMatch) {
+        String[] array = enumerateFiles(dirName);
+        for (String subdir : array) {
+            String ret = getFile(dirName + FILE_SEPARATOR + subdir, prefix, exactMatch);
+            if (ret != null)
+                return ret;
+        }
+        return null;
+    }
     
     /**
      * EU3-specific method to find the country history file for the given
@@ -348,9 +407,9 @@ public final class FilenameResolver {
      */
     public String getCountryHistoryFile(final String tag) {
         if (usingMod) {
-            if (replaced.contains("history")) {
+            if (isReplaced("history")) {
                 return getFile(modDirName + "history/countries", tag, false);
-            } else if (extended.contains("history")) {
+            } else if (isExtended("history")) {
                 final String filename = getFile(
                         modDirName + "history/countries", tag, false);
                 if (filename != null)
@@ -373,18 +432,14 @@ public final class FilenameResolver {
             new java.util.HashMap<String, String[]>();
     
     private String getFile(final String dirname, final String start, final boolean exactMatch) {
-        String[] array = directories.get(dirname);
-        if (array == null) {
-            array = new File(dirname).list();
-            if (array == null)
-                throw new RuntimeException("Failed to open directory " + dirname);
-            Arrays.sort(array, String.CASE_INSENSITIVE_ORDER);
-            directories.put(dirname, array);
-        }
+        String[] array = enumerateFiles(dirname);
         
         final int length = start.length();
 
         int index = -Arrays.binarySearch(array, start, String.CASE_INSENSITIVE_ORDER) - 1;
+        if (index >= array.length)
+            return null;
+        
         String name = array[index];
         /*for (String name : array)*/ {
             if (name.substring(0, length).equalsIgnoreCase(start) && //!name.contains("~") &&
@@ -393,6 +448,19 @@ public final class FilenameResolver {
             }
         }
         return null;
+    }
+
+    private String[] enumerateFiles(final String dirname) throws RuntimeException {
+        String[] array = directories.get(dirname.toLowerCase());
+        if (array == null) {
+            array = new File(dirname).list();
+            if (array == null) {
+                throw new RuntimeException("Failed to open directory " + dirname);
+            }
+            Arrays.sort(array, String.CASE_INSENSITIVE_ORDER);
+            directories.put(dirname.toLowerCase(), array);
+        }
+        return array;
     }
     
     /**
@@ -470,7 +538,7 @@ public final class FilenameResolver {
      * @since EUGFile 1.04.00pre1
      */
     public boolean isExtended(String directory) {
-        return usingMod && extended.contains(directory);
+        return usingMod && extended.contains(directory.toLowerCase());
     }
     
     /**
@@ -478,7 +546,7 @@ public final class FilenameResolver {
      * @since EUGFile 1.04.00pre1
      */
     public boolean isReplaced(String directory) {
-        return usingMod && replaced.contains(directory);
+        return usingMod && replaced.contains(directory.toLowerCase());
     }
     
 }
