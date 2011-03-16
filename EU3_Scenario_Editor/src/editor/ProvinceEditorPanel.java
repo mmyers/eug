@@ -10,7 +10,7 @@ import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
-import eug.specific.eu3.EU3History;
+import eug.specific.clausewitz.ClausewitzHistory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -211,7 +211,7 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
         
         // Discoveries
         
-        List<String> discoveredBy = EU3History.getHistStrings(provData, "discovered_by", date);
+        List<String> discoveredBy = ClausewitzHistory.getHistStrings(provData, "discovered_by", date);
         
         for (String groupOrTag : discoveredBy) {
             if (!groupOrTag.matches("\\w{3}")) {
