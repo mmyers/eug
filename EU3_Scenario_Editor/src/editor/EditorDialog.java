@@ -542,7 +542,7 @@ public class EditorDialog extends JDialog {
     }
     
     private static final ParserSettings checkSettings =
-            ParserSettings.getStrictSettings().setPrintTimingInfo(false);
+            ParserSettings.getStrictSettings().setPrintTimingInfo(false).setPrintWarnings(false);
     
     /** @return whether the data was parsed successfully or not. */
     private boolean validateText() {
@@ -679,8 +679,7 @@ public class EditorDialog extends JDialog {
     // A few private utility methods
     
     private int getLineCount() {
-        int lineCount = textPane.getDocument().getDefaultRootElement().getElementCount();
-        return lineCount;
+        return textPane.getDocument().getDefaultRootElement().getElementCount();
     }
     
     private static final Pattern newLine = Pattern.compile("\\n");
@@ -713,7 +712,7 @@ public class EditorDialog extends JDialog {
             return lineElement.getEndOffset();
     }
     
-    private final void getLineText(int lineIndex, Segment segment) {
+    private void getLineText(int lineIndex, Segment segment) {
         int start = getLineStartOffset(lineIndex);
         try {
             textPane.getDocument().getText(start, getLineEndOffset(lineIndex) - start - 1,segment);
