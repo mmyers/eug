@@ -8,7 +8,7 @@ package eug.specific.eu3;
 
 import eug.shared.GenericObject;
 import eug.shared.SpecificObject;
-import java.util.Comparator;
+import eug.specific.clausewitz.ClausewitzDataSource;
 
 /**
  *
@@ -17,10 +17,10 @@ import java.util.Comparator;
  */
 public class EU3SpecificObject extends SpecificObject {
     
-    public EU3DataSource dataSource;
+    public ClausewitzDataSource dataSource;
     
     /** Creates a new instance of EU3SpecificObject */
-    public EU3SpecificObject(GenericObject o, EU3DataSource src) {
+    public EU3SpecificObject(GenericObject o, ClausewitzDataSource src) {
         go = o;
         dataSource = src;
     }

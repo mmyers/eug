@@ -7,6 +7,7 @@
 package eug.specific.eu3;
 
 import eug.shared.GenericObject;
+import eug.specific.clausewitz.ClausewitzDataSource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class EU3Country extends EU3SpecificObject {
      * Note that some methods require that <code>src</code> be an instance of
      * {@link EU3SaveGame}.
      */
-    public EU3Country(GenericObject go, EU3DataSource src) {
+    public EU3Country(GenericObject go, ClausewitzDataSource src) {
         super(go, src);
     }
     

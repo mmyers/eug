@@ -10,6 +10,7 @@
 package eug.specific.eu3;
 
 import eug.shared.GenericObject;
+import eug.specific.clausewitz.ClausewitzDataSource;
 
 
 /**
@@ -19,7 +20,7 @@ import eug.shared.GenericObject;
 public class EU3Event  extends EU3SpecificObject {
     
     /** Creates a new instance of EU3Event */
-    public EU3Event(GenericObject g, EU3DataSource ds) {
+    public EU3Event(GenericObject g, ClausewitzDataSource ds) {
         super(g, ds);
     }
     
