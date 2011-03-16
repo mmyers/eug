@@ -46,9 +46,7 @@ public class CustomCountryMode extends CountryMode {
         
         // Special case: XXX means no one
         if (Utilities.isNotACountry(country))
-            country = "NAT";
-//        if (noCountryPattern.matcher(country).matches())
-//            country = "NAT";
+            return notFoundColor;
         
         if (value.equals(mapPanel.getModel().getHistString(country, name).toLowerCase()))
             return foundColor;

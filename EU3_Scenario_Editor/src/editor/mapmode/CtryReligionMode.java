@@ -31,7 +31,7 @@ public class CtryReligionMode extends CountryMode {
     
     protected Color getCtryColor(String country) {
         if (Utilities.isNotACountry(country))
-            country = "NAT";
+            return Utilities.COLOR_LAND_DEFAULT;
 //        if (noCountryPattern.matcher(country).matches())
 //            country = "NAT";
         else

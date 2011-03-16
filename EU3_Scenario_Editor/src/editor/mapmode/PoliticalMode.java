@@ -34,7 +34,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
         final String controller = (owner == null ? null : mapPanel.getModel().getHistString(provId, "controller"));
         
         if (owner == null) {
-            mapPanel.paintProvince(g, provId, Utilities.getCtryColor("NAT"));
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
         } else if (controller == null) {
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.COLOR_NO_HIST);
 //            if (p != null)
