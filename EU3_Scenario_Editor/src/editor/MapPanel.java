@@ -8,7 +8,7 @@ package editor;
 
 import editor.mapmode.MapMode;
 import editor.mapmode.ProvinceMode;
-import eug.specific.eu3.EU3DataSource;
+import eug.specific.clausewitz.ClausewitzDataSource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -301,14 +301,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         scalingHints.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
         scalingHints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
     }
+
+    private boolean isMapRightSideUp() {
+        return !Main.gameVersion.isMapUpsideDown();
+    }
     
     private void rescaleMap() {
-        final BufferedImageOp flipAndScale =
-                new AffineTransformOp(
-                new AffineTransform(scaleFactor, 0.0, 0.0, -scaleFactor, 0.0, 0.0),
-                scalingHints
-                );
-        
         if (scaledMapImage != null) {
             scaledMapImage.flush();
             scaledMapImage = null;
@@ -319,8 +317,23 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
                 (int) Math.ceil(mapImage.getHeight() * scaleFactor),
                 mapImage.getType()
                 );
+
+        final BufferedImageOp transform;
+        if (isMapRightSideUp()) {
+            transform =
+                new AffineTransformOp(
+                new AffineTransform(scaleFactor, 0.0, 0.0, scaleFactor, 0.0, -scaledMapImage.getHeight()),
+                scalingHints
+                );
+        } else {
+            transform =
+                new AffineTransformOp(
+                new AffineTransform(scaleFactor, 0.0, 0.0, -scaleFactor, 0.0, 0.0),
+                scalingHints
+                );
+        }
         
-        scaledMapImage.createGraphics().drawImage(mapImage, flipAndScale, 0, scaledMapImage.getHeight());
+        scaledMapImage.createGraphics().drawImage(mapImage, transform, 0, scaledMapImage.getHeight());
     }
     
     public ProvinceData.Province getProvinceAt(final Point pt) {
@@ -488,12 +501,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     }
     
     /** @since 0.6pre1 */
-    public EU3DataSource getDataSource() {
+    public ClausewitzDataSource getDataSource() {
         return model.getDataSource();
     }
     
     /** @since 0.5pre1 */
-    public void setDataSource(EU3DataSource dataSource) {
+    public void setDataSource(ClausewitzDataSource dataSource) {
         model.setDataSource(dataSource);
         model.preloadProvs();
     }
@@ -515,36 +528,5 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         overrides = new java.util.HashMap<Integer, Color>();
         createMapImage();
     }
-    
-//    private static class BoundBox {
-//        private List<Integer[]> lines;
-//        private Integer[] bounds;
-//
-//        public BoundBox(final List<Integer[]> lines) {
-//            this.lines = lines;
-//            bounds = new Integer[] {Integer.MAX_VALUE,Integer.MIN_VALUE,Integer.MAX_VALUE,Integer.MIN_VALUE};
-//            updateBounds();
-//        }
-//
-//        private void updateBounds() {
-//            int x1 = bounds[0];
-//            int x2 = bounds[1];
-//            int y1 = bounds[2];
-//            int y2 = bounds[3];
-//            for (Integer[] line : lines) {
-//                // X
-//                x1 = Math.min(line[1], x1);
-//                x2 = Math.max(line[2], x2);
-//                // Y
-//                int y = line[0];
-//                y1 = Math.min(y, y1);
-//                y2 = Math.max(y, y2);
-//            }
-//            bounds[0] = x1;
-//            bounds[1] = x2;
-//            bounds[2] = y1;
-//            bounds[3] = y2;
-//        }
-//    }
     
 }
