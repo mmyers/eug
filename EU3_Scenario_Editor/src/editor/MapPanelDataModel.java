@@ -6,8 +6,9 @@
 
 package editor;
 
-import eug.specific.eu3.EU3DataSource;
-import eug.specific.eu3.EU3History;
+import eug.shared.GenericObject;
+import eug.specific.clausewitz.ClausewitzDataSource;
+import eug.specific.clausewitz.ClausewitzHistory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     private final MapData mapData;
     
-    private EU3DataSource dataSource;
+    private ClausewitzDataSource dataSource;
     
     
     private String date;
@@ -37,7 +38,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         this(data, null);
     }
     
-    public MapPanelDataModel(final MapData data, final EU3DataSource source) {
+    public MapPanelDataModel(final MapData data, ClausewitzDataSource source) {
         provinceData = Main.provinceData;
         mapData = data;
         dataSource = source;
@@ -60,11 +61,11 @@ public class MapPanelDataModel implements java.io.Serializable {
         this.date = date;
     }
     
-    public void setDataSource(EU3DataSource source) {
+    public void setDataSource(ClausewitzDataSource source) {
         this.dataSource = source;
     }
     
-    public EU3DataSource getDataSource() {
+    public ClausewitzDataSource getDataSource() {
         return dataSource;
     }
     
@@ -77,7 +78,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public List<String> isCoreOf(int provId, String date) {
-        return EU3History.isCoreOf(dataSource.getProvinceHistory(provId), date);
+        return ClausewitzHistory.isCoreOf(dataSource.getProvinceHistory(provId), date);
     }
     
     public List<String> isCoreOf(int provId) {
@@ -86,19 +87,27 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     
     public String getHistString(int provId, String name) {
-        return EU3History.getHistString(dataSource.getProvinceHistory(provId), name, date);
+        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public List<String> getHistStrings(int provId, String name) {
-        return EU3History.getHistStrings(dataSource.getProvinceHistory(provId), name, date);
+        return ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(provId), name, date);
+    }
+    
+    public GenericObject getHistObject(int provId, String name) {
+        return ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public String getHistString(String tag, String name) {
-        return EU3History.getHistString(dataSource.getCountryHistory(tag), name, date);
+        return ClausewitzHistory.getHistString(dataSource.getCountryHistory(tag), name, date);
     }
     
     public List<String> getHistStrings(String tag, String name) {
-        return EU3History.getHistStrings(dataSource.getCountryHistory(tag), name, date);
+        return ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), name, date);
+    }
+    
+    public GenericObject getHistObject(String tag, String name) {
+        return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
     }
     
     
@@ -112,7 +121,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         for (Integer id : Main.map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
             
-            String owner = EU3History.getHistString(dataSource.getProvince(p.getId()), "owner", date);
+            String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);
             
             if (owner == null || owner.length() == 0 || owner.equals("none") || owner.equals("XXX")) {
                 continue;
@@ -136,7 +145,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         for (Integer id : Main.map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
             
-            String owner = EU3History.getHistString(dataSource.getProvince(p.getId()), "owner", date);
+            String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);
             
             if (owner == null || owner.length() == 0 || owner.equals("none") || owner.equals("XXX")) {
                 continue;
