@@ -50,7 +50,7 @@ public class ProvReligionMode extends ProvincePaintingMode {
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(current.getId(), "religion"));
-        if (ret.length() == 0)
+        if (ret == null || ret.length() == 0)
             return "";
         return "Religion: " + ret;
     }
