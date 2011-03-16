@@ -23,7 +23,7 @@ import java.util.List;
  */
 public final class Map {
     
-    private static final String MAP_DIR_NAME = "/map";
+    static final String MAP_DIR_NAME = "/map";
     
     private GenericObject mapData;
     
@@ -41,8 +41,6 @@ public final class Map {
     
     private boolean[] isLand = null;   // for In Nomine mainly
     
-    private boolean isInNomine;
-    
     /**
      * Creates a new instance of Map.
      */
@@ -53,18 +51,14 @@ public final class Map {
             ex.printStackTrace();
         }
     }
+
     
     private void loadData() throws FileNotFoundException {
         System.out.println("Map file is " + Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
         mapData = EUGFileIO.load(Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
-//        System.out.println("default.map:");
-//        System.out.println(mapData);
         if (mapData == null) {
             throw new RuntimeException("Failed to load map file");
         }
-        isInNomine = mapData.getString("sea_starts").length() == 0;
-        
-        System.out.println(isInNomine ? "In Nomine" : "Not In Nomine");
         
         String contFilename = mapData.getString("continent").replace('\\', '/');
         if (!contFilename.contains("/"))
@@ -75,14 +69,16 @@ public final class Map {
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
         
-        String climateFilename = mapData.getString("climate").replace('\\', '/');
-        if (!climateFilename.contains("/"))
-            climateFilename = MAP_DIR_NAME + '/' + climateFilename;
-        
-        climates = EUGFileIO.load(
-                Main.filenameResolver.resolveFilename(climateFilename),
-                ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                );
+        if (Main.gameVersion.hasClimateTxt()) {
+            String climateFilename = mapData.getString("climate").replace('\\', '/');
+            if (!climateFilename.contains("/"))
+                climateFilename = MAP_DIR_NAME + '/' + climateFilename;
+
+            climates = EUGFileIO.load(
+                    Main.filenameResolver.resolveFilename(climateFilename),
+                    ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
+                    );
+        }
         
         String nativesFilename = "common/natives.txt";
         
@@ -91,7 +87,7 @@ public final class Map {
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
         
-        if (isInNomine) {
+        if (Main.gameVersion.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
             if (!regFilename.contains("/"))
                 regFilename = MAP_DIR_NAME + '/' + regFilename;
@@ -102,7 +98,7 @@ public final class Map {
                     );
         }
         
-        if (isInNomine) {
+        if (Main.gameVersion.hasLandList()) {
             // Initialize boolean array
             isLand = new boolean[mapData.getInt("max_provinces")];
             for (int i = 1; i < isLand.length; i++) {
@@ -271,7 +267,7 @@ public final class Map {
     }
     
     public Iterable<Integer> getLandProvs() {
-        if (isInNomine)
+        if (Main.gameVersion.hasLandList())
             return new INLandProvIterator();
         return new LandProvIterator(mapData.getInt("sea_starts"));
     }
@@ -280,17 +276,13 @@ public final class Map {
         if (provId <= 0)
             return false;
         
-        if (isInNomine)
+        if (Main.gameVersion.hasLandList())
             return isLand[provId];
         return provId < mapData.getInt("sea_starts");
     }
 
-    public boolean isInNomine() {
-        return isInNomine;
-    }
-
     public int getFirstSeaProv() {
-        if (isInNomine) {
+        if (Main.gameVersion.hasLandList()) {
             for (int i = 1; i < isLand.length; i++) {
                 if (!isLand[i])
                     return i;
