@@ -83,7 +83,7 @@ package eug.parser;
             char c = yycharat(i);
             if (inQuotes) { // take anything up to a quote
                 if (c == '"')
-                    return ident.substring(0, i);
+                    return ident.toString();
                 else
                     ident.append(c);
             } else if (hitWord) { // stop at whitespace or equals
