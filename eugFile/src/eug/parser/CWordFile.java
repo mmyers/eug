@@ -15,7 +15,9 @@ import javax.swing.JOptionPane;
  * @author Michael Myers
  */
 public class CWordFile {
-    
+
+    protected String filename;
+
     /**
      * The tokenizer used to scan the input file.
      */
@@ -68,6 +70,8 @@ public class CWordFile {
      * @return <CODE>true</CODE> if the stream was successfully opened.
      */
     private boolean openInStream(String filename) {
+        this.filename = filename;
+
         //try to open input file
         try {
             final File inFile = new File(filename);
@@ -95,6 +99,7 @@ public class CWordFile {
     private void openStringStream(String string) {
         tokenizer = new EUGScanner(new StringReader(string));
         tokenizer.setFileName("(string)");
+        this.filename = "(reading from string)";
     }
     
     /**
@@ -103,6 +108,7 @@ public class CWordFile {
     private void closeInStream() {
         if (tokenizer != null)
             tokenizer.close();
+        filename = null;
     }
     
     /**
@@ -486,7 +492,7 @@ public class CWordFile {
      * @param text the error message to display.
      */
     private void error(final String text) {
-        System.out.println(text); //+" on line "+tokenizer.getLine()+", column "+tokenizer.getColumn());
+        System.out.println(filename + ": " + text); //+" on line "+tokenizer.getLine()+", column "+tokenizer.getColumn());
         JOptionPane.showMessageDialog(null, text, "Error", JOptionPane.ERROR_MESSAGE);
         numErrors++;
     }
@@ -500,7 +506,7 @@ public class CWordFile {
      */
     private void warn(final String text) {
         if (settings.isPrintWarnings())
-            System.err.println(text);
+            System.err.println(filename + ": " + text);
         if (settings.isWarningsAreErrors())
             throw new ParserException(text);
     }
