@@ -18,6 +18,8 @@ public class Main {
     public static final FilenameResolver filenameResolver =
             new FilenameResolver(new java.io.File("config.txt"));
     
+    public static final GameVersion gameVersion = GameVersion.detectGame(filenameResolver);
+    
     public static final Map map = new Map();  // must be initialized after filenameResolver
     
     public static final ProvinceData provinceData = new ProvinceData(map);
