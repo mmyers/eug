@@ -66,9 +66,9 @@ public final class ProvinceData {
                 }
                 
                 final int id = Integer.parseInt(arr[0]);
-                final int r = Integer.parseInt(arr[1]);
-                final int g = Integer.parseInt(arr[2]);
-                final int b = Integer.parseInt(arr[3]);
+                final int r = (int)Double.parseDouble(arr[1]);
+                final int g = (int)Double.parseDouble(arr[2]);
+                final int b = (int)Double.parseDouble(arr[3]);
                 
                 int color = ALPHA;
                 color += (r & 0xFF) << 16;
