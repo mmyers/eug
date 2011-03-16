@@ -51,7 +51,8 @@ final class Utilities {
     
     
     // Country, religion, and goods colors
-    
+
+    static final Color COLOR_LAND_DEFAULT = new Color(100, 100, 100); // darker than GRAY, lighter than DARK_GRAY
     /** Color used if the province history cannot be found. */
     static final Color COLOR_NO_HIST = Color.RED;
     /** Color used if the country definition cannot be found. */
@@ -85,19 +86,12 @@ final class Utilities {
     
     private static final java.util.Map<String, Color> relColorCache =
             new HashMap<String, Color>();
-    
-    private static final GenericObject goods = EUGFileIO.load(
-            Main.filenameResolver.resolveFilename("common/tradegoods.txt"),
-            settings
-            );
-    
-    private static final java.util.Map<String, Color> goodsColorCache =
-            new HashMap<String, Color>();
+
     
     static Color getCtryColor(String country) {
         // Special case: XXX means no one
         if (isNotACountry(country))
-            country = "NAT";
+            return COLOR_LAND_DEFAULT;
         else
             country = toUpperCase(country);
         
@@ -165,34 +159,6 @@ final class Utilities {
             return COLOR_NO_RELIGION_DEF;
         }
         
-        return ret;
-    }
-    
-    static Color getGoodsColor(String good) {
-        good = good.toLowerCase();
-        
-        Color ret = goodsColorCache.get(good);
-        
-        if (ret == null) {
-            for (GenericObject def : goods.children) {
-                if (def.name.equalsIgnoreCase(good)) {
-                    // found it
-                    GenericList color = def.getList("color");
-                    if (color == null) {
-                        System.err.println("color for " + good + " is null");
-                        return COLOR_NO_GOOD_DEF;
-                    }
-                    ret = new Color(
-                            Float.parseFloat(color.get(0)),
-                            Float.parseFloat(color.get(1)),
-                            Float.parseFloat(color.get(2))
-                            );
-                    goodsColorCache.put(good, ret);
-                    return ret;
-                }
-            }
-            return COLOR_NO_GOOD_DEF;
-        }
         return ret;
     }
     
