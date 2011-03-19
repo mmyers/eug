@@ -86,6 +86,11 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         String value = mapPanel.getModel().getHistString(provId, prop);
         if (value == null || value.length() == 0)
             value = "0";
+
+        if (value.equals("0")) {
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
+            return;
+        }
         
         int index = (int) ((Double.parseDouble(value) + min) / step);
         index = Math.max(0, Math.min(numColors-1, index));
