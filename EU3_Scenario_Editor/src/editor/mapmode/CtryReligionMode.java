@@ -55,8 +55,8 @@ public class CtryReligionMode extends CountryMode {
             return "";
         
         final String rel = Text.getText(mapPanel.getModel().getHistString(id, "religion"));
-        if (rel.length() == 0)
-            return "";
+        //if (rel.length() == 0)
+        //    return "";
         
         String owner = mapPanel.getModel().getHistString(id, "owner");
         String ctryRel = null;
@@ -76,7 +76,8 @@ public class CtryReligionMode extends CountryMode {
         final StringBuilder text = new StringBuilder("Owner: ");
         if (!owner.equals("-"))
             text.append(Text.getText(owner)).append(" ").append("(").append(owner).append(")<br />");
-        text.append("Religion: ").append(rel);
+        if (rel.length() != 0)
+            text.append("Religion: ").append(rel);
         
         if (ctryRel != null)
             text.append("<br />Owner's religion: ").append(ctryRel);
