@@ -6,7 +6,7 @@
 
 package editor;
 
-import eug.specific.eu3.EU3DataSource;
+import eug.specific.clausewitz.ClausewitzDataSource;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 
@@ -156,9 +156,9 @@ public class FileEditorDialog extends EditorDialog {
         showing.remove(d.id);
     }
     
-    private static EU3DataSource dataSource = null;
+    private static ClausewitzDataSource dataSource = null;
     
-    public static void setDataSource(EU3DataSource newSource) {
+    public static void setDataSource(ClausewitzDataSource newSource) {
         dataSource = newSource;
     }
     
