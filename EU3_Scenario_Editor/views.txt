@@ -1,0 +1,101 @@
+eu3 = {
+	provinces
+	countries
+	country-menu
+	continents-menu
+	climates-menu
+	province-religions
+	religions
+	religions-menu
+	buildings-menu
+	old-cultures-menu
+	trade-goods
+	trade-goods-menu
+	governments-menu
+	tech-groups-menu
+	cots
+	hre
+	base-tax
+	population
+	manpower
+	revolt-risk
+	natives-menu
+	wars
+}
+
+in_nomine = {
+	provinces
+	countries
+	country-menu
+	continents-menu
+	regions-menu       # regions.txt was added in In Nomine
+	climates-menu
+	province-religions
+	religions
+	religions-menu
+	buildings-menu
+	new-cultures-menu  # The format of cultures.txt changed in In Nomine and was carried over to Victoria 2
+	trade-goods
+	trade-goods-menu
+	governments-menu
+	tech-groups-menu
+	cots
+	hre
+	base-tax
+	population
+	manpower
+	revolt-risk
+	natives-menu
+	wars
+}
+
+victoria2 = {
+	provinces
+	countries
+	country-menu
+	continents-menu
+	regions-menu
+	country-religions
+	religions-menu
+	new-cultures-menu
+	#trade-goods           #
+	#victoria-goods-menu   # Not for saves, only scenarios (both disabled for now)
+	governments-menu
+	life-rating
+	wars
+}
+
+rome = {
+	provinces
+	countries
+	country-menu
+	province-religions
+	religions
+	religions-menu
+	buildings-menu
+	rome-cultures-menu
+	trade-goods
+	trade-goods-menu
+	governments-menu
+	tech-groups-menu
+	population-split
+	rome-population
+	civilization-value
+	barbarian-power
+	revolt-risk
+	wars
+}
+
+hoi3 = {
+	provinces
+	countries
+	country-menu
+	continents-menu
+	regions-menu
+	hoi3-buildings-menu
+	hoi3-goods-menu
+	governments-menu
+	manpower
+	leadership
+	wars
+}
