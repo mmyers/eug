@@ -185,7 +185,7 @@ class SetConfig extends javax.swing.JFrame {
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser(mainDirTextField.getText());
-        chooser.setDialogTitle("Select the main EU3 directory");
+        chooser.setDialogTitle("Select the main game directory");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int check = chooser.showDialog(this, "Select");
         if (check == JFileChooser.APPROVE_OPTION) {
