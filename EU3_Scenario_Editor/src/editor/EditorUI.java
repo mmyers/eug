@@ -14,12 +14,16 @@ import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Style;
+import eug.specific.clausewitz.ClausewitzSaveGame;
+import eug.specific.clausewitz.ClausewitzScenario;
 import eug.specific.eu3.EU3SaveGame;
 import eug.specific.eu3.EU3Scenario;
+import eug.specific.victoria2.Vic2SaveGame;
+import eug.specific.victoria2.Vic2Scenario;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -28,7 +32,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  *
@@ -37,14 +44,16 @@ import javax.swing.*;
  */
 public final class EditorUI extends javax.swing.JFrame {
     
-    protected transient ProvinceData.Province currentProvince = null;
+    private transient ProvinceData.Province currentProvince = null;
     
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.6.1";
+    private static final String VERSION = "0.7";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
+
+    private boolean isSavedGame = false;
     
     /**
      * Creates new form EditorUI.
@@ -53,25 +62,8 @@ public final class EditorUI extends javax.swing.JFrame {
 //        screen = this.getGraphicsConfiguration().getBounds();
         initComponents();
         
-        class PaintBordersAction extends AbstractAction {
-            PaintBordersAction() {
-                super("Toggle borders");
-                putValue(AbstractAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke('B', InputEvent.CTRL_DOWN_MASK));
-            }
-            public void actionPerformed(ActionEvent e) {
-                mapPanel.setPaintBorders(!mapPanel.isPaintBorders());
-                mapPanel.repaint();
-            }
-        }
-        
-        viewMenu.add(new PaintBordersAction());
-        
         mapPanel.initialize();
         pack();
-        
-        if (Main.map.isInNomine()) {
-            viewRegionMenu.setEnabled(true);
-        }
         
         // Make sure the window isn't too big
         final java.awt.Rectangle bounds = getGraphicsConfiguration().getBounds();
@@ -80,34 +72,76 @@ public final class EditorUI extends javax.swing.JFrame {
         mapPanel.centerMap();
         setDataSource();
         addFilters();
-        viewProvincesMenuItem.doClick();
+        //viewProvincesMenuItem.doClick();
     }
     
     private void setDataSource() {
         int choice = JOptionPane.showConfirmDialog(this, "Do you want to load a saved game?");
         if (choice == JOptionPane.NO_OPTION) {
             System.out.println("Loading province history...");
-            EU3Scenario scen = new EU3Scenario(Main.filenameResolver);
+
+            ClausewitzScenario scen = null;
+            switch (Main.gameVersion) {
+                case VICTORIA:
+                case HOI3:
+                    scen = new Vic2Scenario(Main.filenameResolver);
+                    break;
+                case VANILLA:
+                case IN_NOMINE:
+                case HEIR_TO_THE_THRONE:
+                case DIVINE_WIND:
+                case ROME:
+                    scen = new EU3Scenario(Main.filenameResolver);
+                    break;
+                default:
+                    System.err.println("Forgot to implement this");
+                    System.exit(1);
+            }
+
             mapPanel.setDataSource(scen);
             System.out.println("Done.");
             FileEditorDialog.setDataSource(scen);
             
             GenericObject defines =
                     EUGFileIO.load(Main.filenameResolver.resolveFilename("common/defines.txt"), defaultSettings);
-            
-            if (defines.containsChild("start_date")) {
-                GenericObject startDate = defines.getChild("start_date");
-                yearSpinner.setValue(startDate.getInt("year"));
-                monthSpinner.setValue(startDate.getInt("month"));
-                daySpinner.setValue(startDate.getInt("day"));
-            } else {
-                // must not be In Nomine
-                yearSpinner.setValue(1453);
-                monthSpinner.setValue(5);
-                daySpinner.setValue(29);
+
+            switch (Main.gameVersion) {
+                case VANILLA:
+                    yearSpinner.setValue(1453);
+                    monthSpinner.setValue(5);
+                    daySpinner.setValue(29);
+                    break;
+                case IN_NOMINE:
+                    GenericObject startDate = defines.getChild("start_date");
+                    yearSpinner.setValue(startDate.getInt("year"));
+                    monthSpinner.setValue(startDate.getInt("month"));
+                    daySpinner.setValue(startDate.getInt("day"));
+                    break;
+                case HEIR_TO_THE_THRONE:
+                case DIVINE_WIND:
+                    final String[] date = defines.getString("start_date").split("\\.");
+                    yearSpinner.setValue(Integer.parseInt(date[0]));
+                    monthSpinner.setValue(Integer.parseInt(date[1]));
+                    daySpinner.setValue(Integer.parseInt(date[2]));
+                    break;
+                case ROME:
+                    yearSpinner.setValue(473); // just a guess here since I only have the demo
+                    monthSpinner.setValue(1);
+                    daySpinner.setValue(1);
+                    break;
+                case VICTORIA:
+                    yearSpinner.setValue(1836);
+                    monthSpinner.setValue(1);
+                    daySpinner.setValue(1);
+                    break;
+                case HOI3:
+                    yearSpinner.setValue(1936); // just a guess here since I only have the demo
+                    monthSpinner.setValue(1);
+                    daySpinner.setValue(1);
             }
-            
-            readBookmarks();
+
+            if (Main.gameVersion != GameVersion.HOI3)
+                readBookmarks();
         } else if (choice == JOptionPane.CANCEL_OPTION) {
             dispose();
             System.exit(0);
@@ -117,9 +151,29 @@ public final class EditorUI extends javax.swing.JFrame {
             int secondChoice = chooser.showOpenDialog(this);
             if (secondChoice == JFileChooser.APPROVE_OPTION) {
                 System.out.println("Loading saved game...");
-                EU3SaveGame save = EU3SaveGame.loadSaveGame(
-                        chooser.getSelectedFile().getAbsolutePath(),
-                        Main.filenameResolver);
+
+                ClausewitzSaveGame save = null;
+                switch (Main.gameVersion) {
+                    case VICTORIA:
+                    case HOI3:
+                        save = Vic2SaveGame.loadSaveGame(
+                                chooser.getSelectedFile().getAbsolutePath(),
+                                Main.filenameResolver);
+                        break;
+                    case VANILLA:
+                    case IN_NOMINE:
+                    case HEIR_TO_THE_THRONE:
+                    case DIVINE_WIND:
+                    case ROME:
+                        save = EU3SaveGame.loadSaveGame(
+                            chooser.getSelectedFile().getAbsolutePath(),
+                            Main.filenameResolver);
+                        break;
+                    default:
+                        System.err.println("Forgot to implement this");
+                        System.exit(1);
+                }
+
                 System.out.println("Done.");
                 
                 System.out.println("Loading province history...");
@@ -139,6 +193,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 bookmarkMenu.add(new BookmarkAction("Game start", "The world before any history", "1.1.1"));
                 bookmarkMenu.add(new BookmarkAction("Current year", "The current game year", save.getDate()));
                 bookmarkMenu.pack();
+
+                isSavedGame = true;
             } else {
                 // do it again
                 setDataSource();
@@ -173,7 +229,6 @@ public final class EditorUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        viewModeButtonGroup = new javax.swing.ButtonGroup();
         javax.swing.JToolBar toolBar = new javax.swing.JToolBar();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         viewModeLabel = new javax.swing.JLabel();
@@ -209,47 +264,13 @@ public final class EditorUI extends javax.swing.JFrame {
         javax.swing.JSeparator jSeparator7 = new javax.swing.JSeparator();
         reloadMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
-        viewProvincesMenuItem = new javax.swing.JMenuItem();
-        viewCountriesMenuItem = new javax.swing.JMenuItem();
-        viewSingleCountryMenu = new javax.swing.JMenu();
-        viewContinentMenu = new javax.swing.JMenu();
-        viewRegionMenu = new javax.swing.JMenu();
-        viewClimateMenu = new javax.swing.JMenu();
-        viewProvReligionsMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewCtryReligionsMenuItem = new javax.swing.JMenuItem();
-        viewSingleReligionMenu = new javax.swing.JMenu();
-        viewBuildingMenu = new javax.swing.JMenu();
-        viewCultureMenu = new javax.swing.JMenu();
-        viewGoodsMenuItem = new javax.swing.JMenuItem();
-        viewSingleGoodMenu = new javax.swing.JMenu();
-        viewSingleGovernmentMenu = new javax.swing.JMenu();
-        viewTechGroupMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem viewCOTMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewHREMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewBaseTaxMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewPopulationMenuItem = new javax.swing.JMenuItem();
-        viewManpowerMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewRevoltRiskMenuItem = new javax.swing.JMenuItem();
-        final DiscreteStepFilterAction act = new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1);
-        //act.setMinColor(java.awt.Color.GREEN);
-        //act.setMaxColor(java.awt.Color.RED);
-        viewRevoltRiskMenuItem.setAction(act);
-        javax.swing.JMenuItem viewCapitalsMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenu viewNativesMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem viewNativeSizeMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewNativeFerocityMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem viewNativeHostilenessMenuItem = new javax.swing.JMenuItem();
-        viewNativeTypesMenu = new javax.swing.JMenu();
-        warsMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JSeparator jSeparator6 = new javax.swing.JSeparator();
-        customMapModeMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
         FormListener formListener = new FormListener();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle("EU3 Scenario Editor");
+        setTitle("Clausewitz Scenario Editor");
         addWindowListener(formListener);
 
         toolBar.setRollover(true);
@@ -366,97 +387,6 @@ public final class EditorUI extends javax.swing.JFrame {
 
         viewMenu.setMnemonic('V');
         viewMenu.setText("View");
-
-        viewProvincesMenuItem.setAction(provinceFilterAction);
-        viewMenu.add(viewProvincesMenuItem);
-
-        viewCountriesMenuItem.setAction(countryFilterAction);
-        viewMenu.add(viewCountriesMenuItem);
-
-        viewSingleCountryMenu.setText("Single country");
-        viewMenu.add(viewSingleCountryMenu);
-
-        viewContinentMenu.setText("Continents...");
-        viewMenu.add(viewContinentMenu);
-
-        viewRegionMenu.setText("Regions...");
-        viewRegionMenu.setEnabled(false);
-        viewMenu.add(viewRegionMenu);
-
-        viewClimateMenu.setText("Climates...");
-        viewMenu.add(viewClimateMenu);
-
-        viewProvReligionsMenuItem.setAction(provReligionFilterAction);
-        viewMenu.add(viewProvReligionsMenuItem);
-
-        viewCtryReligionsMenuItem.setAction(ctryReligionFilterAction);
-        viewMenu.add(viewCtryReligionsMenuItem);
-
-        viewSingleReligionMenu.setText("Single religion");
-        viewMenu.add(viewSingleReligionMenu);
-
-        viewBuildingMenu.setText("Building");
-        viewMenu.add(viewBuildingMenu);
-
-        viewCultureMenu.setText("Culture");
-        viewMenu.add(viewCultureMenu);
-
-        viewGoodsMenuItem.setAction(goodsFilterAction);
-        viewMenu.add(viewGoodsMenuItem);
-
-        viewSingleGoodMenu.setText("Single trade good");
-        viewMenu.add(viewSingleGoodMenu);
-
-        viewSingleGovernmentMenu.setText("Governments...");
-        viewMenu.add(viewSingleGovernmentMenu);
-
-        viewTechGroupMenu.setText("Tech groups...");
-        viewMenu.add(viewTechGroupMenu);
-
-        viewCOTMenuItem.setAction(new CustomFilterAction("Centers of trade", "cot", "yes"));
-        viewMenu.add(viewCOTMenuItem);
-
-        viewHREMenuItem.setAction(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
-        viewMenu.add(viewHREMenuItem);
-
-        viewBaseTaxMenuItem.setAction(new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1));
-        viewMenu.add(viewBaseTaxMenuItem);
-
-        viewPopulationMenuItem.setAction(new DiscreteStepFilterAction("Population", "citysize", 0, 500000, 10000));
-        viewMenu.add(viewPopulationMenuItem);
-
-        viewManpowerMenuItem.setAction(new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1));
-        viewMenu.add(viewManpowerMenuItem);
-        viewMenu.add(viewRevoltRiskMenuItem);
-
-        viewCapitalsMenuItem.setAction(new CapitalFilterAction());
-        viewMenu.add(viewCapitalsMenuItem);
-
-        viewNativesMenu.setText("Natives...");
-
-        viewNativeSizeMenuItem.setAction(new DiscreteStepFilterAction("Native size", "native_size", 0, 100, 5));
-        viewNativesMenu.add(viewNativeSizeMenuItem);
-
-        viewNativeFerocityMenuItem.setAction(new DiscreteStepFilterAction("Native ferocity", "native_ferocity", 0, 10, 1));
-        viewNativesMenu.add(viewNativeFerocityMenuItem);
-
-        viewNativeHostilenessMenuItem.setAction(new DiscreteStepFilterAction("Native hostileness", "native_hostileness", 0, 10, 1));
-        viewNativesMenu.add(viewNativeHostilenessMenuItem);
-
-        viewNativeTypesMenu.setText("Native types...");
-        viewNativesMenu.add(viewNativeTypesMenu);
-
-        viewMenu.add(viewNativesMenu);
-
-        warsMenuItem.setText("Wars...");
-        warsMenuItem.addActionListener(formListener);
-        viewMenu.add(warsMenuItem);
-        viewMenu.add(jSeparator6);
-
-        customMapModeMenuItem.setText("Custom map mode...");
-        customMapModeMenuItem.addActionListener(formListener);
-        viewMenu.add(customMapModeMenuItem);
-
         menuBar.add(viewMenu);
 
         helpMenu.setMnemonic('H');
@@ -492,12 +422,6 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == reloadMenuItem) {
                 EditorUI.this.reloadMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == warsMenuItem) {
-                EditorUI.this.warsMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == customMapModeMenuItem) {
-                EditorUI.this.customMapModeMenuItemActionPerformed(evt);
             }
             else if (evt.getSource() == aboutMenuItem) {
                 EditorUI.this.aboutMenuItemActionPerformed(evt);
@@ -568,16 +492,6 @@ public final class EditorUI extends javax.swing.JFrame {
     private void bookmarksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookmarksButtonActionPerformed
         bookmarkMenu.show(bookmarksButton, bookmarksButton.getWidth(), 0);
     }//GEN-LAST:event_bookmarksButtonActionPerformed
-
-    private void customMapModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customMapModeMenuItemActionPerformed
-        final MapMode mode = CustomModeDialog.showDialog(this);
-        if (mode != null) {
-            mode.setMapPanel(mapPanel);
-            mapPanel.setMode(mode);
-            viewModeLabel.setText(mode.toString());
-            mapPanel.repaint();
-        }
-    }//GEN-LAST:event_customMapModeMenuItemActionPerformed
     
     private void mapPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseReleased
         if (evt.isPopupTrigger()) {
@@ -657,7 +571,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
     
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        javax.swing.JOptionPane.showMessageDialog(this, "EU3 Scenario Editor\nVersion " + VERSION + "\nBy MichaelM");
+        javax.swing.JOptionPane.showMessageDialog(this, "Clausewitz Scenario Editor\nVersion " + VERSION + "\nBy MichaelM");
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
@@ -730,46 +644,6 @@ public final class EditorUI extends javax.swing.JFrame {
         
 //        lastClick = evt.getPoint();
     }//GEN-LAST:event_mapPanelMouseClicked
-
-    private void warsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_warsMenuItemActionPerformed
-        final List<GenericObject> wars = mapPanel.getDataSource().getWars();
-        JDialog dialog = new JDialog(this, "Wars", false);
-        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        JPanel panel = new JPanel(new GridLayout(0, 4));
-        JScrollPane scrollPane = new JScrollPane(panel);
-        for (final GenericObject war : wars) {
-            boolean active = war.name.equals("active_war");
-            JButton button = new JButton(war.getString("name") + (active ? " (active)" : ""));
-            
-            if (active) {
-                StringBuilder tooltip = new StringBuilder("<html>");
-                tooltip.append("Attackers: <ul>");
-                for (String attacker : war.getStrings("attacker"))
-                    tooltip.append("<li>").append(Text.getText(attacker)).append("</li>");
-                
-                tooltip.append("</ul>Defenders: <ul>");
-                for (String defender : war.getStrings("defender"))
-                    tooltip.append("<li>").append(Text.getText(defender)).append("</li>");
-                tooltip.append("</ul>");
-                tooltip.append("</html>");
-                button.setToolTipText(tooltip.toString());
-//                System.out.println(tooltip);
-            }
-            
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    EditorDialog ed = new EditorDialog(EditorUI.this, war.getString("name"), war.toString(Style.EU3_SAVE_GAME));
-                    ed.setVisible(true);
-                }
-            });
-            panel.add(button);
-        }
-        dialog.add(scrollPane);
-        dialog.pack();
-        dialog.setSize(Math.min(dialog.getWidth(), 800), Math.min(dialog.getHeight(), 600));
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }//GEN-LAST:event_warsMenuItemActionPerformed
 
     private void reloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadMenuItemActionPerformed
         int numProvs = Integer.parseInt(Main.map.getString("max_provinces"));
@@ -855,12 +729,14 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             
             // Do some neat stuff if we're viewing a land province
-            if (Main.map.isLand(lastProv.getId())) {
+            //if (Main.map.isLand(lastProv.getId())) {
                 if (mode instanceof ContinentMode) {
                     String cont = Main.map.getContinentOfProv(lastProv.getId());
-                    mapPanel.setMode(new ContinentMode(mapPanel, cont));
-                    viewModeLabel.setText("Provinces in " + cont);
-                    mapPanel.repaint();
+                    if (!cont.equals("(none)")) {
+                        mapPanel.setMode(new ContinentMode(mapPanel, cont));
+                        viewModeLabel.setText("Provinces in " + cont);
+                        mapPanel.repaint();
+                    }
                 } else if (mode instanceof RegionsMode) {
                     String reg = Main.map.getRegionsOfProv(lastProv.getId()).get(0);
                     if (!reg.equals("(none)")) {
@@ -870,14 +746,18 @@ public final class EditorUI extends javax.swing.JFrame {
                     }
                 } else if (mode instanceof ClimateMode) {
                     String climate = Main.map.getClimateOfProv(lastProv.getId());
-                    mapPanel.setMode(new ClimateMode(mapPanel, climate));
-                    viewModeLabel.setText("Provinces with climate " + climate);
-                    mapPanel.repaint();
+                    if (!climate.equals("(none)")) {
+                        mapPanel.setMode(new ClimateMode(mapPanel, climate));
+                        viewModeLabel.setText("Provinces with climate " + climate);
+                        mapPanel.repaint();
+                    }
                 } else if (mode instanceof NativeGroupMode) {
                     String nativeType = Main.map.getNativeTypeOfProv(lastProv.getId());
-                    mapPanel.setMode(new NativeGroupMode(mapPanel, nativeType));
-                    viewModeLabel.setText("Provinces with " + nativeType + " natives");
-                    mapPanel.repaint();
+                    if (!nativeType.equals("(none)")) {
+                        mapPanel.setMode(new NativeGroupMode(mapPanel, nativeType));
+                        viewModeLabel.setText("Provinces with " + nativeType + " natives");
+                        mapPanel.repaint();
+                    }
                 } else if (mode instanceof CustomMode && !(mode instanceof AdvancedCustomMode)) {
                     String name = ((CustomMode)mode).getName();
                     if (name.equals("trade_goods")) {
@@ -898,7 +778,7 @@ public final class EditorUI extends javax.swing.JFrame {
                     } else {
                         // maybe some other types, too
                     }
-                }
+                //}
             }
         } else {
             ctryNameLabel.setText("");
@@ -943,11 +823,6 @@ public final class EditorUI extends javax.swing.JFrame {
         System.out.println("Exiting...");
     }
     
-//    private void updateProvincePanel(int provId) {
-//        ((ProvinceEditorPanel)innerProvincePanel).setProvId(provId);
-//    }
-    
-    
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -962,27 +837,155 @@ public final class EditorUI extends javax.swing.JFrame {
             ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
     
     private void addFilters() {
-        addReligionFilters();
-        addBuildingFilters();
-        addCountryFilters();
-        addCultureFilters();
-        addGoodsFilters();
-        addGovernmentFilters();
-        addTechGroupFilters();
-        addContinentFilters();
-        if (Main.map.isInNomine())
-            addRegionFilters();
-        addClimateFilters();
-        addNativesFilters();
-        
-        // Anything else?
+        GenericObject allViews = EUGFileIO.load("views.txt", defaultSettings);
+
+        GenericList views;
+        switch (Main.gameVersion) {
+            case VANILLA:
+                views = allViews.getList("eu3");
+                break;
+            case IN_NOMINE:
+            case HEIR_TO_THE_THRONE:
+            case DIVINE_WIND:
+                views = allViews.getList("in_nomine");
+                break;
+            case VICTORIA:
+                views = allViews.getList("victoria2");
+                break;
+            case HOI3:
+                views = allViews.getList("hoi3");
+                break;
+            case ROME:
+                views = allViews.getList("rome");
+                break;
+            default:
+                System.err.println("Cannot find view set for " + Main.gameVersion);
+                views = allViews.getList("eu3");
+                break;
+        }
+
+        for (String viewName : views) {
+            String view = viewName.toLowerCase();
+            if (view.equals("provinces")) {
+                viewMenu.add(new ProvinceFilterAction());
+            } else if (view.equals("countries")) {
+                viewMenu.add(new PoliticalFilterAction());
+            } else if (view.equals("country-menu")) {
+                JMenu menu = new JMenu("Single country");
+                addCountryFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("continents-menu")) {
+                JMenu menu = new JMenu("Continents");
+                addContinentFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("regions-menu") && Main.gameVersion.hasRegions()) {
+                JMenu menu = new JMenu("Regions");
+                addRegionFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("climates-menu") && Main.gameVersion.hasClimateTxt()) {
+                JMenu menu = new JMenu("Climates");
+                addClimateFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("province-religions")) {
+                viewMenu.add(new ProvReligionFilterAction());
+            } else if (view.equals("country-religions")) {
+                viewMenu.add(new CtryReligionFilterAction());
+            } else if (view.equals("religions")) {
+                viewMenu.add(new ReligionFilterAction());
+            } else if (view.equals("religions-menu")) {
+                JMenu menu = new JMenu("Single religion");
+                addReligionFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("buildings-menu")) {
+                JMenu menu = new JMenu("Buildings");
+                addBuildingFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("hoi3-buildings-menu")) {
+                JMenu menu = new JMenu("Buildings");
+                addHOI3BuildingFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("old-cultures-menu")) {
+                JMenu menu = new JMenu("Cultures");
+                addOldCultureFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("new-cultures-menu")) {
+                JMenu menu = new JMenu("Cultures");
+                addNewCultureFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("rome-cultures-menu")) {
+                JMenu menu = new JMenu("Cultures");
+                addRomeCultureFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("trade-goods")) {
+                viewMenu.add(new GoodsFilterAction());
+            } else if (view.equals("trade-goods-menu")) {
+                JMenu menu = new JMenu("Single trade good");
+                addGoodsFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("hoi3-goods-menu")) {
+                JMenu menu = new JMenu("Province production levels");
+                addHOI3GoodsFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("victoria-goods-menu") && isSavedGame) {
+                JMenu menu = new JMenu("Single trade good");
+                addVictoriaGoodsFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("governments-menu")) {
+                JMenu menu = new JMenu("Governments");
+                addGovernmentFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("tech-groups-menu")) {
+                JMenu menu = new JMenu("Tech groups");
+                addTechGroupFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("cots")) {
+                viewMenu.add(new CustomFilterAction("Centers of trade", "cot", "yes"));
+            } else if (view.equals("hre")) {
+                viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
+            } else if (view.equals("base-tax")) {
+                viewMenu.add(new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1));
+            } else if (view.equals("population")) {
+                viewMenu.add(new DiscreteStepFilterAction("Population", "citysize", 0, 500000, 10000));
+            } else if (view.equals("rome-population")) {
+                viewMenu.add(new DiscreteStepFilterAction("Population", "population", 0, 100, 5));
+            } else if (view.equals("population-split")) {
+                viewMenu.add(new PopSplitFilterAction());
+            } else if (view.equals("manpower")) {
+                viewMenu.add(new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1));
+            } else if (view.equals("revolt-risk")) {
+                viewMenu.add(new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1));
+            } else if (view.equals("life-rating")) {
+                DiscreteStepFilterAction act = new DiscreteStepFilterAction("Life rating", "life_rating", 0, 50, 5);
+                act.setMinColor(Color.RED);
+                act.setMaxColor(Color.GREEN.darker());
+                viewMenu.add(act);
+            } else if (view.equals("civilization-value")) {
+                viewMenu.add(new DiscreteStepFilterAction("Civilization value", "civilization_value", 0, 100, 5));
+            } else if (view.equals("barbarian-power")) {
+                viewMenu.add(new DiscreteStepFilterAction("Barbarian power", "barbarian_power", 0, 10, 1));
+            } else if (view.equals("leadership")) {
+                viewMenu.add(new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1));
+            } else if (view.equals("natives-menu")) {
+                JMenu menu = new JMenu("Natives");
+                addNativesFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("wars")) {
+                viewMenu.add(new WarsAction());
+            } else {
+                System.err.println("Unknown menu item: " + view);
+            }
+        }
+
+        viewMenu.add(new JSeparator());
+        viewMenu.add(new CustomMapModeAction());
+        viewMenu.add(new PaintBordersAction());
     }
     
-    private void addReligionFilters() {
+    private void addReligionFilters(JMenu rootMenu) {
         final GenericObject religions =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/religion.txt"),
                 defaultSettings);
-        
+
         Collections.sort(religions.children, new ObjectComparator());
         
         final StringBuilder allReligions = new StringBuilder("(");
@@ -1005,17 +1008,17 @@ public final class EditorUI extends javax.swing.JFrame {
             
             groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "religion", pattern.toString()));
             
-            viewSingleReligionMenu.add(groupMenu);
+            rootMenu.add(groupMenu);
         }
         
         allReligions.deleteCharAt(allReligions.length()-1); // get rid of the last '|'
         allReligions.append(')');
         
-        viewSingleReligionMenu.add(new MultiFilterAction("All religions (province)", "religion", allReligions.toString()));
-        viewSingleReligionMenu.add(new MultiCountryFilterAction("All religions (country)", "religion", allReligions.toString()));
+        rootMenu.add(new MultiFilterAction("All religions (province)", "religion", allReligions.toString()));
+        rootMenu.add(new MultiCountryFilterAction("All religions (country)", "religion", allReligions.toString()));
     }
     
-    private void addBuildingFilters() {
+    private void addBuildingFilters(JMenu rootMenu) {
         final GenericObject buildings =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
                 defaultSettings);
@@ -1023,9 +1026,11 @@ public final class EditorUI extends javax.swing.JFrame {
         Collections.sort(buildings.children, new ObjectComparator());
         
         JMenu capitalBuildingsMenu = new JMenu("Capital buildings");
-        viewBuildingMenu.add(capitalBuildingsMenu);
+        rootMenu.add(capitalBuildingsMenu);
+        boolean hasCapitalBuildings = false;
         JMenu manufactoriesMenu = new JMenu("Manufactories");
-        viewBuildingMenu.add(manufactoriesMenu);
+        rootMenu.add(manufactoriesMenu);
+        boolean hasManufactories = false;
         java.util.List<GenericObject> forts = new java.util.ArrayList<GenericObject>();
         
         for (GenericObject building : buildings.children) {
@@ -1035,19 +1040,53 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             
             CustomFilterAction act = new CustomFilterAction(Text.getText(building.name), building.name, "yes");
-            if (building.containsList("manufactory"))
+            if (building.containsList("manufactory")) {
                 manufactoriesMenu.add(act);
-            else if (building.getString("capital").equals("yes"))
+                hasManufactories = true;
+            } else if (building.getString("capital").equals("yes")) {
                 capitalBuildingsMenu.add(act);
-            else
-                viewBuildingMenu.add(act);
+                hasCapitalBuildings = true;
+            }  else {
+                rootMenu.add(act);
+            }
         }
-        
-        viewBuildingMenu.add(new FortLevelFilterAction(forts));
+
+        if (!forts.isEmpty())
+            rootMenu.add(new FortLevelFilterAction(forts));
+        if (!hasManufactories)
+            rootMenu.remove(manufactoriesMenu);
+        if (!hasCapitalBuildings)
+            rootMenu.remove(capitalBuildingsMenu);
+    }
+
+    private void addHOI3BuildingFilters(JMenu rootMenu) {
+        // HOI3 buildings are on a scale of 0-10 in each province
+        final GenericObject buildings =
+                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
+                defaultSettings);
+
+        Collections.sort(buildings.children, new ObjectComparator());
+
+        //JMenu capitalBuildingsMenu = new JMenu("Capital buildings");
+        //rootMenu.add(capitalBuildingsMenu);
+        java.util.List<GenericObject> forts = new java.util.ArrayList<GenericObject>();
+
+        for (GenericObject building : buildings.children) {
+            if (building.hasString("fort_level")) {
+                forts.add(building);
+                continue;
+            }
+
+            DiscreteStepFilterAction act = new DiscreteStepFilterAction(Text.getText(building.name), building.name, 0, 10, 1);
+//            if (building.getString("capital").equals("yes"))
+//                capitalBuildingsMenu.add(act);
+//            else
+                rootMenu.add(act);
+        }
     }
     
     @SuppressWarnings("unchecked") // array of lists, can't use generics
-    private void addCountryFilters() {
+    private void addCountryFilters(JMenu rootMenu) {
         final GenericObject countries =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/countries.txt"),
                 defaultSettings);
@@ -1078,7 +1117,7 @@ public final class EditorUI extends javax.swing.JFrame {
         }
         
         for (int i = 0; i < menus.length; i++) {
-            JMenu menu = new JMenu(" " + (char)('A' + i) + " ");
+            JMenu menu = new JMenu("  " + (char)('A' + i) + "  ");
             if (menus[i].size() == 0) {
                 JMenuItem dummy = new JMenuItem("(none)");
                 dummy.setEnabled(false);
@@ -1088,7 +1127,7 @@ public final class EditorUI extends javax.swing.JFrame {
                     menu.add((JMenu)m);
                 }
             }
-            viewSingleCountryMenu.add(menu);
+            rootMenu.add(menu);
         }
         
         if (!otherMenu.isEmpty()) {
@@ -1096,67 +1135,100 @@ public final class EditorUI extends javax.swing.JFrame {
             for (JMenu m : otherMenu) {
                 menu.add(m);
             }
-            viewSingleCountryMenu.add(menu);
+            rootMenu.add(menu);
         }
     }
     
-    private void addCultureFilters() {
+    private void addOldCultureFilters(JMenu rootMenu) { // EU3 vanilla and NA
         final GenericObject cultures =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
         
-        if (!cultures.lists.isEmpty()) {
-            Collections.sort(cultures.lists, new ListComparator());
+        Collections.sort(cultures.lists, new ListComparator());
 
-            final Comparator<String> listSorter = new StringComparator();
+        final Comparator<String> listSorter = new StringComparator();
 
-            for (GenericList group : cultures.lists) {
-                group.sort(listSorter);
+        for (GenericList group : cultures.lists) {
+            group.sort(listSorter);
 
-                JMenu groupMenu = new JMenu(Text.getText(group.getName()));
+            JMenu groupMenu = new JMenu(Text.getText(group.getName()));
 
-                StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+            StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
 
-                for (String culture : group) {
-                    groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
-                    pattern.append(culture).append('|');
-                }
-
-                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-                pattern.append(')');
-
-                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.getName()), "culture", pattern.toString()));
-
-                viewCultureMenu.add(groupMenu);
+            for (String culture : group) {
+                groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
+                pattern.append(culture).append('|');
             }
-        } else {
-            // In Nomine
-            final ObjectComparator comp = new ObjectComparator();
-            Collections.sort(cultures.children, comp);
 
-            for (GenericObject group : cultures.children) {
-                Collections.sort(group.children, comp);
+            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+            pattern.append(')');
 
-                JMenu groupMenu = new JMenu(Text.getText(group.name));
+            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.getName()), "culture", pattern.toString()));
 
-                StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+            rootMenu.add(groupMenu);
+        }
+    }
 
-                for (GenericObject culture : group.children) {
-                    groupMenu.add(new CustomFilterAction(Text.getText(culture.name), "culture", culture.name));
-                    pattern.append(culture.name).append('|');
-                }
+    private void addNewCultureFilters(JMenu rootMenu) { // In Nomine and newer, and also Victoria 2
+        final GenericObject cultures =
+                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                defaultSettings);
 
-                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-                pattern.append(')');
+        final ObjectComparator comp = new ObjectComparator();
+        Collections.sort(cultures.children, comp);
 
-                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
+        for (GenericObject group : cultures.children) {
+            Collections.sort(group.children, comp);
 
-                viewCultureMenu.add(groupMenu);
+            JMenu groupMenu = new JMenu(Text.getText(group.name));
+
+            StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+
+            for (GenericObject culture : group.children) {
+                groupMenu.add(new CustomFilterAction(Text.getText(culture.name), "culture", culture.name));
+                pattern.append(culture.name).append('|');
             }
+
+            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+            pattern.append(')');
+
+            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
+
+            rootMenu.add(groupMenu);
+        }
+    }
+
+    private void addRomeCultureFilters(JMenu rootMenu) {
+        final GenericObject cultures =
+                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                defaultSettings);
+
+        final ObjectComparator comp = new ObjectComparator();
+        Collections.sort(cultures.children, comp);
+
+        for (GenericObject group : cultures.children) {
+            GenericList groupCultures = group.getList("culture");
+            groupCultures.sort();
+
+            JMenu groupMenu = new JMenu(Text.getText(group.name));
+
+            StringBuilder pattern = new StringBuilder().append('(');
+
+            for (String culture : groupCultures) {
+                groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
+                pattern.append(culture).append('|');
+            }
+
+            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+            pattern.append(')');
+
+            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
+
+            rootMenu.add(groupMenu);
         }
     }
     
-    private void addGoodsFilters() {
+    private void addGoodsFilters(JMenu rootMenu) {
         final GenericObject goods =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/tradegoods.txt"),
                 defaultSettings);
@@ -1165,15 +1237,45 @@ public final class EditorUI extends javax.swing.JFrame {
         
         int counter = 0;
         for (GenericObject good : goods.children) {
-            viewSingleGoodMenu.add(new CustomFilterAction(Text.getText(good.name), "trade_goods", good.name));
+            rootMenu.add(new CustomFilterAction(Text.getText(good.name), "trade_goods", good.name));
             if (counter++ > 25) {
-                viewSingleGoodMenu = (JMenu) viewSingleGoodMenu.add(new JMenu("More..."));
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
         }
     }
+
+
+    private void addVictoriaGoodsFilters(JMenu rootMenu) {
+        final GenericObject goods =
+                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/goods.txt"),
+                defaultSettings);
+
+        Collections.sort(goods.children, new ObjectComparator());
+
+        for (GenericObject group : goods.children) {
+            JMenu groupMenu = new JMenu(Text.getText(group.name));
+            rootMenu.add(groupMenu);
+            Collections.sort(group.children, new ObjectComparator());
+
+            int counter = 0;
+            for (GenericObject good : group.children) {
+                groupMenu.add(new CustomFilterAction(Text.getText(good.name), "trade_goods", good.name));
+                if (counter++ > 25) {
+                    groupMenu = (JMenu) groupMenu.add(new JMenu("More..."));
+                    counter = 0;
+                }
+            }
+        }
+    }
+
+    private void addHOI3GoodsFilters(JMenu rootMenu) {
+        for (String good : new String[] { "metal", "energy", "rare_materials" }) {
+            rootMenu.add(new DiscreteStepFilterAction(Text.getText(good), good, 0, 30, 3));
+        }
+    }
     
-    private void addGovernmentFilters() {
+    private void addGovernmentFilters(JMenu rootMenu) {
         final GenericObject governments =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/governments.txt"),
                 defaultSettings);
@@ -1209,25 +1311,25 @@ public final class EditorUI extends javax.swing.JFrame {
                 }
             }
             
-            viewSingleGovernmentMenu.add(republicMenu);
-            viewSingleGovernmentMenu.add(religiousMenu);
-            viewSingleGovernmentMenu.add(normalMenu);
+            rootMenu.add(republicMenu);
+            rootMenu.add(religiousMenu);
+            rootMenu.add(normalMenu);
             
         } else {
         
             for (GenericObject government : governments.children) {
                 allGovernments.append(government.name).append('|');
-                viewSingleGovernmentMenu.add(new CustomCountryFilterAction(Text.getText(government.name), "government", government.name));
+                rootMenu.add(new CustomCountryFilterAction(Text.getText(government.name), "government", government.name));
             }
         }
         
         allGovernments.deleteCharAt(allGovernments.length()-1); // get rid of the last '|'
         allGovernments.append(')');
         
-        viewSingleGovernmentMenu.add(new MultiCountryFilterAction("All governments", "government", allGovernments.toString()));
+        rootMenu.add(new MultiCountryFilterAction("All governments", "government", allGovernments.toString()));
     }
     
-    private void addTechGroupFilters() {
+    private void addTechGroupFilters(JMenu rootMenu) {
         GenericObject groups =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/technology.txt"),
                 defaultSettings);
@@ -1236,47 +1338,52 @@ public final class EditorUI extends javax.swing.JFrame {
         
         if (!groups.values.isEmpty()) {
             for (ObjectVariable group : groups.values) {
-                viewTechGroupMenu.add(new CustomCountryFilterAction(Text.getText(group.varname), "technology_group", group.varname));
+                rootMenu.add(new CustomCountryFilterAction(Text.getText(group.varname), "technology_group", group.varname));
             }
         } else {
             // must be In Nomine
             for (GenericObject group : groups.children) {
-                viewTechGroupMenu.add(new CustomCountryFilterAction(Text.getText(group.name), "technology_group", group.name));
+                rootMenu.add(new CustomCountryFilterAction(Text.getText(group.name), "technology_group", group.name));
             }
         }
     }
     
-    private void addContinentFilters() {
+    private void addContinentFilters(JMenu rootMenu) {
         for (String cont : Main.map.getContinents().keySet()) {
-            viewContinentMenu.add(new ContinentFilterAction(Text.getText(cont), cont));
+            rootMenu.add(new ContinentFilterAction(Text.getText(cont), cont));
         }
     }
     
-    private void addClimateFilters() {
+    private void addClimateFilters(JMenu rootMenu) {
         for (String climate : Main.map.getClimates().keySet()) {
-            viewClimateMenu.add(new ClimateFilterAction(Text.getText(climate), climate));
+            rootMenu.add(new ClimateFilterAction(Text.getText(climate), climate));
         }
     }
     
-    private void addRegionFilters() {
+    private void addRegionFilters(JMenu rootMenu) {
         java.util.Map<String, List<String>> regions = Main.map.getRegions();
         List<String> regionNames = new ArrayList<String>(regions.keySet());
-        Collections.sort(regionNames);
+        Collections.sort(regionNames, new StringComparator());
         
         int counter = 0;
         for (String region : regionNames) {
-            viewRegionMenu.add(new RegionFilterAction(Text.getText(region), region));
+            rootMenu.add(new RegionFilterAction(Text.getText(region), region));
             if (counter++ > 25) {
-                viewRegionMenu = (JMenu) viewRegionMenu.add(new JMenu("More..."));
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
         }
     }
     
-    private void addNativesFilters() {
+    private void addNativesFilters(JMenu rootMenu) {
+        JMenu nativeTypesMenu = new JMenu("Native types");
         for (String nativeType : Main.map.getNatives().keySet()) {
-            viewNativeTypesMenu.add(new NativesFilterAction((Text.getText(nativeType)), nativeType));
+            nativeTypesMenu.add(new NativesFilterAction(Text.getText(nativeType), nativeType));
         }
+        rootMenu.add(nativeTypesMenu);
+        rootMenu.add(new DiscreteStepFilterAction("Native size", "native_size", 0, 100, 5));
+        rootMenu.add(new DiscreteStepFilterAction("Native ferocity", "native_ferocity", 0, 10, 1));
+        rootMenu.add(new DiscreteStepFilterAction("Native hostility", "native_hostileness", 0, 10, 1));
     }
     
 // <editor-fold defaultstate="collapsed" desc=" Generated Variables ">
@@ -1284,7 +1391,6 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton bookmarksButton;
     private javax.swing.JLabel ctryNameLabel;
-    private javax.swing.JMenuItem customMapModeMenuItem;
     private javax.swing.JSpinner daySpinner;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JButton goToProvButton;
@@ -1299,26 +1405,8 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JButton showCountryHistButton;
     private javax.swing.JButton showProvHistButton;
     private javax.swing.JMenu toolsMenu;
-    private javax.swing.JMenu viewBuildingMenu;
-    private javax.swing.JMenu viewClimateMenu;
-    private javax.swing.JMenu viewContinentMenu;
-    private javax.swing.JMenuItem viewCountriesMenuItem;
-    private javax.swing.JMenu viewCultureMenu;
-    private javax.swing.JMenuItem viewGoodsMenuItem;
-    private javax.swing.JMenuItem viewManpowerMenuItem;
     private javax.swing.JMenu viewMenu;
-    private javax.swing.ButtonGroup viewModeButtonGroup;
     private javax.swing.JLabel viewModeLabel;
-    private javax.swing.JMenu viewNativeTypesMenu;
-    private javax.swing.JMenuItem viewProvReligionsMenuItem;
-    private javax.swing.JMenuItem viewProvincesMenuItem;
-    javax.swing.JMenu viewRegionMenu;
-    private javax.swing.JMenu viewSingleCountryMenu;
-    private javax.swing.JMenu viewSingleGoodMenu;
-    private javax.swing.JMenu viewSingleGovernmentMenu;
-    private javax.swing.JMenu viewSingleReligionMenu;
-    javax.swing.JMenu viewTechGroupMenu;
-    javax.swing.JMenuItem warsMenuItem;
     private javax.swing.JSpinner yearSpinner;
     private javax.swing.JButton zoomInButton;
     private javax.swing.JMenuItem zoomInMenuItem;
@@ -1333,31 +1421,18 @@ public final class EditorUI extends javax.swing.JFrame {
     private final Action goToProvAction = new GoToProvAction();
     private final Action setDateAction = new SetDateAction();
     
-    private final Action provinceFilterAction = new ProvinceFilterAction();
-    private final Action countryFilterAction = new PoliticalFilterAction(); //new CountryFilterAction();
-    private final Action provReligionFilterAction = new ProvReligionFilterAction();
-    private final Action ctryReligionFilterAction = new ReligionFilterAction(); //CtryReligionFilterAction();
-    private final Action goodsFilterAction = new GoodsFilterAction();
-    
     // Inner classes
-    
-    // Utilities
-    
-//    private static class ProvinceChanger {
-//        public ProvinceChanger() {
-//        }
-//        public void changeValue(String name, String date, String value) {
-//
-//        }
-//    }
     
     private static class SaveGameFileFilter extends javax.swing.filechooser.FileFilter {
         public boolean accept(File f) {
-            return f.isDirectory() || f.getName().toLowerCase().endsWith(".eu3");
+            return f.isDirectory() || f.getName().toLowerCase().endsWith(".eu3")
+                || f.getName().toLowerCase().endsWith(".v2")
+                || f.getName().toLowerCase().endsWith(".rome")
+                || f.getName().toLowerCase().endsWith(".hoi3");
         }
         
         public String getDescription() {
-            return "Europa Universalis 3 saved game files";
+            return "Saved game files";
         }
     }
     
@@ -1517,7 +1592,7 @@ public final class EditorUI extends javax.swing.JFrame {
             mapPanel.setMode(mode);
             viewModeLabel.setText((String) getValue(SHORT_DESCRIPTION));
             mapPanel.repaint();
-            doMouseClick(currentProvince);
+//            doMouseClick(currentProvince);
 //                }
 //            });
         }
@@ -1621,13 +1696,13 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(SHORT_DESCRIPTION, name);
         }
         
-//        private void setMinColor(Color c) {
-//            ((DiscreteScalingMapMode)mode).setMinColor(c);
-//        }
-//
-//        private void setMaxColor(Color c) {
-//            ((DiscreteScalingMapMode)mode).setMaxColor(c);
-//        }
+        private void setMinColor(Color c) {
+            ((DiscreteScalingMapMode)mode).setMinColor(c);
+        }
+
+        private void setMaxColor(Color c) {
+            ((DiscreteScalingMapMode)mode).setMaxColor(c);
+        }
     }
     
     private class FortLevelFilterAction extends FilterAction {
@@ -1678,6 +1753,52 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(SHORT_DESCRIPTION, "Provinces with " + nativeType + " natives");
         }
     }
+
+    private class PopSplitFilterAction extends FilterAction {
+        public PopSplitFilterAction() {
+            super("Population split", new PopSplitMapMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Population split");
+        }
+    }
+
+    private class WarsAction extends AbstractAction {
+        public WarsAction() {
+            super("Wars...");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            WarsDialog dlg = new WarsDialog(EditorUI.this, mapPanel.getDataSource());
+            dlg.setVisible(true);
+        }
+    }
+
+    private class CustomMapModeAction extends AbstractAction {
+        public CustomMapModeAction() {
+            super("Custom map mode");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final MapMode mode = CustomModeDialog.showDialog(EditorUI.this);
+            if (mode != null) {
+                mode.setMapPanel(mapPanel);
+                mapPanel.setMode(mode);
+                viewModeLabel.setText(mode.toString());
+                mapPanel.repaint();
+            }
+        }
+    }
+
+    private class PaintBordersAction extends AbstractAction {
+        PaintBordersAction() {
+            super("Toggle borders");
+            putValue(AbstractAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke('B', InputEvent.CTRL_DOWN_MASK));
+        }
+        public void actionPerformed(ActionEvent e) {
+            mapPanel.setPaintBorders(!mapPanel.isPaintBorders());
+            mapPanel.repaint();
+        }
+    }
+
     
     private final class BookmarkAction extends AbstractAction {
         private final String date;
