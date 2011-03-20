@@ -940,6 +940,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(menu);
             } else if (view.equals("cots")) {
                 viewMenu.add(new CustomFilterAction("Centers of trade", "cot", "yes"));
+            } else if (view.equals("capitals")) {
+                viewMenu.add(new CapitalFilterAction());
             } else if (view.equals("hre")) {
                 viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
             } else if (view.equals("base-tax")) {

@@ -14,6 +14,7 @@ eu3 = {
 	governments-menu
 	tech-groups-menu
 	cots
+        capitals
 	hre
 	base-tax
 	population
@@ -40,6 +41,7 @@ in_nomine = {
 	governments-menu
 	tech-groups-menu
 	cots
+        capitals
 	hre
 	base-tax
 	population
@@ -61,6 +63,7 @@ victoria2 = {
 	#trade-goods           #
 	#victoria-goods-menu   # Not for saves, only scenarios (both disabled for now)
 	governments-menu
+        capitals
 	life-rating
 	wars
 }
@@ -78,6 +81,7 @@ rome = {
 	trade-goods-menu
 	governments-menu
 	tech-groups-menu
+        capitals
 	population-split
 	rome-population
 	civilization-value
@@ -95,6 +99,7 @@ hoi3 = {
 	hoi3-buildings-menu
 	hoi3-goods-menu
 	governments-menu
+        capitals
 	manpower
 	leadership
 	wars
