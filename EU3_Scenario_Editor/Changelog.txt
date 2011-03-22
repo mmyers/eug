@@ -2,6 +2,11 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.7.1 ===
+
+Changed:
+- Moved game version into config.txt instead of trying to auto-detect it.
+
 === 0.7 ===
 
 Now compatible with Heir to the Throne.
