@@ -11,6 +11,11 @@ maindir = "C:/Games/Europa Universalis III/"
 #maindir = "C:/Games/Hearts of Iron 3 - Demo/"
 #maindir = "C:/Games/Rome - Demo/"
 
+#Game version
+#Valid entries are "EU3 Vanilla" (valid also for NA), "In Nomine", "HTTT",
+#"Divine Wind", "Victoria 2", "HOI3", or "Rome"
+gameversion = "HTTT"
+
 #Mod directory definition
 #If you are using this with a mod, uncomment the line below and replace it
 #with the name of the mod (without any slashes).
