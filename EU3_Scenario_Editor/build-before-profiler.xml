@@ -10,7 +10,6 @@
 <project name="EU3_Scenario_Editor" default="default" basedir=".">
     <description>Builds, tests, and runs the project EU3_Scenario_Editor.</description>
     <import file="nbproject/build-impl.xml"/>
-    <import file="nbproject/profiler-build-impl.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be 
@@ -72,44 +71,4 @@
     nbproject/build-impl.xml file. 
 
     -->
-
-    <target name="-post-jar">
-        <property name="dirname" value="Clausewitz Scenario Editor" />
-        <property name="releasename" value="Scenario_Editor.zip" />
-        <property name="sourcename" value="Scenario_Editor_Code.zip" />
-
-        <!-- First the release build -->
-        <mkdir dir="${dirname}" />
-        <!-- copy dist files into temp directory -->
-        <copy todir="${dirname}">
-            <fileset dir="dist">
-                <!-- no auto-generated README.TXT -->
-                <exclude name="**/*.TXT"/>
-            </fileset>
-        </copy>
-        <!-- copy extra files (readme, etc.) -->
-        <copy todir="${dirname}" >
-            <fileset dir="">
-                <include name="**/*.txt"/>
-                <include name="**/*.bat"/>
-            </fileset>
-        </copy>
-
-        <delete file="${releasename}" />
-        <zip destfile="${releasename}">
-            <zipfileset dir="${dirname}" prefix="${dirname}" />
-        </zip>
-        <!-- clean up temp files -->
-        <delete dir="${dirname}" />
-
-        <!-- And now the sources -->
-        <delete file="${sourcename}" />
-        <zip destfile="${sourcename}">
-            <zipfileset dir="" prefix="${dirname}">
-                <exclude name="/build/" />
-                <exclude name="/dist/" />
-                <exclude name="**/*.zip" />
-            </zipfileset>
-        </zip>
-    </target>
 </project>

@@ -1,0 +1,242 @@
+/=================\
+|=== Changelog ===|
+\=================/
+
+=== 0.7 ===
+
+Now compatible with Heir to the Throne.
+And Divine Wind.
+And Victoria 2.
+And HOI3.
+And Rome.
+Good enough?
+
+Added:
+- A few new view sets, mostly for the new games.
+- There is now a button to display a table of wars. Double-clicking a row of the
+  table pops up a file dialog. Saving changes is not supported yet.
+
+Changed:
+- Almost all mapmodes that show a single something (single country, single tech
+  group, single trade good) now allow clicking to change the filter to whatever
+  was clicked on. E.g. when viewing a trade good, clicking a province with gold
+  switches the view to gold provinces.
+- Parsing errors now display the file that the error occurred in.
+- Reduced memory consumption of large saves. It's still a lot, though.
+- Made some optimizations to the startup process.
+
+Bugfixes:
+- "extend" and "replace" entries in mod files are now properly case-insensitive.
+- Fixed a couple of NullPointerExceptions on tooltips.
+
+
+=== 0.6.1 ===
+
+Added:
+
+Changed:
+- The date selectors no longer automatically start in 1453. If defines.txt has
+  a start date in it (which it should in In Nomine), that will be the default.
+- The goods menu will now break into multiple menus if there are more than 25
+  trade goods.
+- The wars screen should not be quite so large and unwieldy now.
+
+Bugfixes:
+- The tech group menu should now work properly in In Nomine.
+
+
+=== 0.6 ===
+
+Now In Nomine-compatible!
+
+Added:
+- New view set: Native types.
+- New view set: Regions (for IN only).
+- New view set: Tech groups.
+- New view: Capitals of existing countries. Requested by dharper.
+- Most views of single filters (e.g. "religion = orthodox") will now change
+  when another country (or province, as the case may be) is clicked. For
+  example, while the view is set to "trade_goods = grain", clicking any land
+  province will change the filter to whatever the trade goods are in that
+  province.
+- Button to force reloading data (after things have been changed outside the
+  program, for example). Requested by 17blue17.
+- New menu item in the View Single Country menu to show the country's history.
+  Now you don't have to find a time when the country is actually on the map.
+- Added a way to edit war history files. Yes, the interface is a little awkward,
+  but at least it's possible.
+
+Changed:
+- In view modes that had stripes (countries and religions), stripes are now
+  diagonal. This matches the game more closely.
+- If there are more than 20 governments defined, the Government view menu will
+  now sort them into three categories: Republics, Religious, and Normal (i.e.
+  none-of-the-above). If any of these categories has more than 25 entries, they
+  will be split into sub-menus. Thanks to dharper for the idea and jdrou for
+  suggesting how to do the government type division.
+- Switching to a country-based map mode while a province is selected now
+  re-selects it so that the country history button is activated as necessary.
+- The .bat file now includes a "pause" line, so the command window should never
+  just pop up and immediately disappear when there is a problem.
+
+Bugfixes:
+- Double-clicking a province while in country mode should now open the country
+  history, as Readme.txt has said for a while.
+- The initial window should never be larger than the screen.
+
+
+=== 0.5.1 ===
+
+Bugfixes:
+- Editing country entries in saved games no longer corrupts the save. Found by
+  an embarrassingly large number of people.
+- Config editor now outputs mod names in quotes.
+- Config editor now automatically puts "/mod/" before the mod name when
+  checking if it exists. Found with help from Fornadan.
+
+
+=== 0.5 ===
+
+Added:
+- Savegames are now supported! Requested by seboden, kolmy, and others.
+- Bookmarks support. If a save game is loaded, there will be two bookmarks:
+  game start and current year. If the history is loaded, all bookmarks will be
+  loaded from bookmarks.txt.
+- Config editor (config.bat). Requested by Charlone.
+- New view set: Governments.
+- New view: Country religions.
+- New view set: Continents.
+- New view set: Climates.
+- Province borders are now shown in all views except the basic province view.
+
+Changed:
+- Totally reworked the text editor:
+	- Multiple editors are now supported
+	- Font is now customizable. It is saved in a new configuration file,
+	  editor_cfg.txt .
+	- Backups are now handled automatically (no user interaction).
+	- Added menu items to show a list of countries, cultures, or provinces, so you
+	  won't have to go digging around to figure out what province ID you want.
+	  Note: Under Java 1.5 or earlier, the lists cannot be sorted.
+	- Added find support (but only forward, and without replacing).
+- Reworked the custom view creator. Country-based views are now possible.
+- Optimized the history parser, greatly reducing lag on most map modes.
+
+Bugfixes:
+- Bracket matching in the editor no longer uses brackets that are commented out.
+- Several other assorted fixes.
+
+
+=== 0.4 ===
+
+Added:
+- About a gazillion new mapmodes. They are in the "View" menu.
+
+Changed:
+- Startup time is now about 1/3 of previous. There is no longer a progress bar
+  shown.
+- The "Go to province" button now can search by province name, also. If the
+  province is found, it will flash (so you can see where it is).
+* Editor:
+	- The editor now never saves without asking.
+	- The editor's OK button was renamed to Close, to be clear.
+	- If syntax is invalid, hovering the mouse over the red message shows a tooltip
+	  with the locations of any unmatched brackets.
+	- Added "Go to line" menu item.
+- Improved error messages when loading files.
+
+Bugfixes:
+- Fixed the second change from 0.3.1. The files were being reloaded, but were
+  not showing up on the map.
+- Assorted smaller fixes.
+
+
+=== 0.3.1 ===
+
+Changed:
+- Files in the localisation directory will now only be parsed if their extension
+  is ".csv".
+- History files will now be reloaded after they are edited.
+
+Bugfixes:
+- Backup files now have the '~' at the beginning of the filename, not the end.
+  This is because the game doesn't care about the extension of the history files,
+  so it was sometimes loading the backups instead. Backup files created by
+  previous versions should be removed.
+  Thanks to English Patriot and seboden for discovering this.
+
+=== 0.3 ===
+
+Added:
+- Support for walking through history like in the EU3 scenario setup screen.
+  Note that after changing the date, you must click "Set date" for it to take
+  effect. Reloading after every click on the date spinners would cause a bit
+  of lag, so I left it this way.
+  To support this feature, every province history file is loaded at startup,
+  which takes a few seconds. A progress bar will appear, though, so it won't
+  look as if it froze up. DO NOT switch to country mode before loading
+  finishes; it will cause an exception.
+- Can now edit country history files when in country mode.
+- New button: "Go to province". It allows entering a province ID number to
+  center the map on that province and select it.
+- All buttons now appear on the toolbar and in the "Tools" menu.
+- When in country mode, tooltips now include the owning country.
+- When in country mode, double-clicking will open up the country's history file,
+  not the province's.
+
+Changed:
+- If a province is selected, zooming in or out will keep that province in the
+  center of the screen, if possible.
+- When using a moddir and history is extended, if a history file doesn't exist
+  in the mod's history file, the vanilla file will still be opened for editing,
+  but if any changes are made, the file will be saved in the mod's history
+  folder.
+
+Bugfixes:
+- When using a moddir and history is extended, if a history file doesn't exist
+  in either the mod's history folder or the vanilla history folder, the new
+  file will now be created in the mod's history folder.
+
+
+=== 0.2.2 ===
+(Not actually released as 0.2.2, but should have been)
+
+Bugfixes:
+- Now REALLY works with the full version of EU3. Thanks to seboden for
+  pointing out the error and suggesting the fix.
+
+
+=== 0.2.1 ===
+
+Changed:
+- config.txt now uses "maindir" instead of "eu3dir". If you have edited your
+  config, you will need to change it.
+
+Bugfixes:
+- Should now work on full version of EU3.
+- Double-clicking on Terra Incognita will no longer bring up an editor.
+
+
+=== 0.2 ===
+
+Added:
+- Syntax highlighting for editing history files (done with an old package of
+  jEdit (http://www.jedit.org) that is in the public domain, meaning no
+  restrictions in copyright).
+- Editor now supports cut, copy, paste, undo, and redo.
+- Double-clicking a province now opens an editor.
+- Hovering over a province now shows a tooltip with the province's name and ID.
+
+Changed:
+- Figuring out which province was clicked on is now much faster.
+- If a province history file does not exist, a new one is created.
+- Only one editor can be open at a time (workaround for an issue created by
+  the new syntax highlighting text area).
+
+Bugfixes:
+- A few; can't remember specifics.
+
+
+=== 0.1 ===
+
+- Initial release
