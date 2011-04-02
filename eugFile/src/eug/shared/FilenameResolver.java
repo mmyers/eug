@@ -208,15 +208,11 @@ public final class FilenameResolver {
                 final java.util.List<File> ret = new java.util.ArrayList<File>();
 
                 final File[] files = new File(mainDirName + dirName).listFiles();
-                for (File f : files) {
-                    ret.add(f);
-                }
+                ret.addAll(Arrays.asList(files));
                 
                 final File moddedDir = new File(modDirName + dirName);
                 if (moddedDir.exists()) {
-                    for (File f : moddedDir.listFiles()) {
-                        ret.add(f);
-                    }
+                    ret.addAll(Arrays.asList(moddedDir.listFiles()));
                 }
                 
                 return ret.toArray(new File[ret.size()]);
@@ -284,7 +280,7 @@ public final class FilenameResolver {
     }
     
     // Yes, there's probably no reason to have this method, but it works, so I'll leave it. -MM Sept 08
-    private static final String[] splitParent(String path) {
+    private static String[] splitParent(String path) {
         int separatorIdx = path.indexOf('/');
         if (separatorIdx < 0) {
             separatorIdx = path.indexOf('\\');
@@ -391,9 +387,14 @@ public final class FilenameResolver {
     }
 
     private String getVic2ProvHistoryFile(String dirName, String prefix, boolean exactMatch) {
+        // first try the directory itself in case some files aren't in subfolders
+        String ret = getFile(dirName, prefix, exactMatch);
+        if (ret != null)
+            return ret;
+
         String[] array = enumerateFiles(dirName);
         for (String subdir : array) {
-            String ret = getFile(dirName + FILE_SEPARATOR + subdir, prefix, exactMatch);
+            ret = getFile(dirName + FILE_SEPARATOR + subdir, prefix, exactMatch);
             if (ret != null)
                 return ret;
         }
@@ -453,7 +454,11 @@ public final class FilenameResolver {
     private String[] enumerateFiles(final String dirname) throws RuntimeException {
         String[] array = directories.get(dirname.toLowerCase());
         if (array == null) {
-            array = new File(dirname).list();
+            File dir = new File(dirname);
+            if (!dir.isDirectory())
+                return new String[]{};
+            
+            array = dir.list();
             if (array == null) {
                 throw new RuntimeException("Failed to open directory " + dirname);
             }
