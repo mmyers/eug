@@ -191,7 +191,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         saveFile(filename, data);
     }
     
-    private static final String getBackupFilename(String filename) {
+    protected static final String getBackupFilename(String filename) {
         final File f = new File(filename);
         return f.getParent() + File.separatorChar + "~" + f.getName();
     }
@@ -340,7 +340,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return hist;
     }
     
-    private final String loadFile(final String filename) {
+    protected final String loadFile(final String filename) {
         if (filename == null)
             return null;
         
@@ -366,7 +366,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return null;
     }
     
-    private final void saveFile(final String filename, final String data) {
+    protected final void saveFile(final String filename, final String data) {
         FileWriter writer = null;
         try {
             writer = new FileWriter(filename);
