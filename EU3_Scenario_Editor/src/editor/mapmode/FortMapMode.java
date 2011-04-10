@@ -44,8 +44,13 @@ public final class FortMapMode extends DiscreteScalingMapMode {
         }
     }
 
+    @Override
     protected void paintProvince(final Graphics2D g, int provId) {
-        mapPanel.paintProvince(g, provId, colors[getFortLevel(provId)]);
+        String owner = mapPanel.getModel().getHistString(provId, "owner");
+        if (owner == null || owner.length() == 0)
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
+        else
+            mapPanel.paintProvince(g, provId, colors[getFortLevel(provId)]);
     }
 
     private int getFortLevel(final int provId) {
@@ -67,6 +72,7 @@ public final class FortMapMode extends DiscreteScalingMapMode {
         return level;
     }
 
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
         if (!editor.Main.map.isLand(id))
