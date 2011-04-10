@@ -13,7 +13,6 @@ import eug.parser.ParserSettings;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
-import eug.shared.Style;
 import eug.specific.clausewitz.ClausewitzSaveGame;
 import eug.specific.clausewitz.ClausewitzScenario;
 import eug.specific.eu3.EU3SaveGame;
@@ -21,7 +20,6 @@ import eug.specific.eu3.EU3Scenario;
 import eug.specific.victoria2.Vic2SaveGame;
 import eug.specific.victoria2.Vic2Scenario;
 import java.awt.Color;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -32,15 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  *
  * @author  Michael Myers
- * @version 1.0
  */
 public final class EditorUI extends javax.swing.JFrame {
     
@@ -139,6 +133,11 @@ public final class EditorUI extends javax.swing.JFrame {
                     monthSpinner.setValue(1);
                     daySpinner.setValue(1);
             }
+            
+            String date = yearSpinner.getValue().toString() + "." +
+                    monthSpinner.getValue().toString() + "." +
+                    daySpinner.getValue().toString();
+            mapPanel.getModel().setDate(date);
 
             if (Main.gameVersion != GameVersion.HOI3)
                 readBookmarks();
@@ -232,6 +231,8 @@ public final class EditorUI extends javax.swing.JFrame {
         javax.swing.JToolBar toolBar = new javax.swing.JToolBar();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         viewModeLabel = new javax.swing.JLabel();
+        javax.swing.JToolBar.Separator jSeparator6 = new javax.swing.JToolBar.Separator();
+        scaleColorsButton = new javax.swing.JButton();
         javax.swing.JSeparator jSeparator4 = new javax.swing.JSeparator();
         javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
         yearSpinner = new javax.swing.JSpinner();
@@ -278,6 +279,14 @@ public final class EditorUI extends javax.swing.JFrame {
         jLabel1.setText("Current view: ");
         toolBar.add(jLabel1);
         toolBar.add(viewModeLabel);
+        toolBar.add(jSeparator6);
+
+        scaleColorsButton.setText("Colors...");
+        scaleColorsButton.setFocusable(false);
+        scaleColorsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        scaleColorsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        scaleColorsButton.addActionListener(formListener);
+        toolBar.add(scaleColorsButton);
 
         jSeparator4.setOrientation(javax.swing.SwingConstants.VERTICAL);
         toolBar.add(jSeparator4);
@@ -425,6 +434,9 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 EditorUI.this.aboutMenuItemActionPerformed(evt);
+            }
+            else if (evt.getSource() == scaleColorsButton) {
+                EditorUI.this.scaleColorsButtonActionPerformed(evt);
             }
         }
 
@@ -660,6 +672,13 @@ public final class EditorUI extends javax.swing.JFrame {
             mapPanel.getDataSource().reloadCountryHistory(def.varname);
         }
     }//GEN-LAST:event_reloadMenuItemActionPerformed
+
+    private void scaleColorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleColorsButtonActionPerformed
+        if (mapPanel.getMode() instanceof DiscreteScalingMapMode) {
+            ColorChooserDialog dialog = new ColorChooserDialog(this, (DiscreteScalingMapMode) mapPanel.getMode());
+            dialog.setVisible(true);
+        }
+    }//GEN-LAST:event_scaleColorsButtonActionPerformed
     
     private void doMouseClick(final ProvinceData.Province p) {
         currentProvince = p;
@@ -838,6 +857,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addFilters() {
         GenericObject allViews = EUGFileIO.load("views.txt", defaultSettings);
+        GenericObject allColors = EUGFileIO.load("colors.txt", defaultSettings);
 
         GenericList views;
         switch (Main.gameVersion) {
@@ -898,11 +918,11 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(menu);
             } else if (view.equals("buildings-menu")) {
                 JMenu menu = new JMenu("Buildings");
-                addBuildingFilters(menu);
+                addBuildingFilters(menu, allColors);
                 viewMenu.add(menu);
             } else if (view.equals("hoi3-buildings-menu")) {
                 JMenu menu = new JMenu("Buildings");
-                addHOI3BuildingFilters(menu);
+                addHOI3BuildingFilters(menu, allColors);
                 viewMenu.add(menu);
             } else if (view.equals("old-cultures-menu")) {
                 JMenu menu = new JMenu("Cultures");
@@ -924,7 +944,7 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(menu);
             } else if (view.equals("hoi3-goods-menu")) {
                 JMenu menu = new JMenu("Province production levels");
-                addHOI3GoodsFilters(menu);
+                addHOI3GoodsFilters(menu, allColors);
                 viewMenu.add(menu);
             } else if (view.equals("victoria-goods-menu") && isSavedGame) {
                 JMenu menu = new JMenu("Single trade good");
@@ -945,31 +965,46 @@ public final class EditorUI extends javax.swing.JFrame {
             } else if (view.equals("hre")) {
                 viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
             } else if (view.equals("base-tax")) {
-                viewMenu.add(new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1);
+                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                viewMenu.add(actn);
             } else if (view.equals("population")) {
-                viewMenu.add(new DiscreteStepFilterAction("Population", "citysize", 0, 500000, 10000));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "citysize", 0, 250000, 10000);
+                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
+                viewMenu.add(actn);
             } else if (view.equals("rome-population")) {
-                viewMenu.add(new DiscreteStepFilterAction("Population", "population", 0, 100, 5));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "population", 0, 100, 5);
+                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
+                viewMenu.add(actn);
             } else if (view.equals("population-split")) {
                 viewMenu.add(new PopSplitFilterAction());
             } else if (view.equals("manpower")) {
-                viewMenu.add(new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1);
+                actn.setStepColors(allColors, view);
+                viewMenu.add(actn);
             } else if (view.equals("revolt-risk")) {
-                viewMenu.add(new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1);
+                actn.setStepColors(allColors, view, Color.YELLOW, Color.ORANGE.darker(), Color.RED.darker());
+                viewMenu.add(actn);
             } else if (view.equals("life-rating")) {
-                DiscreteStepFilterAction act = new DiscreteStepFilterAction("Life rating", "life_rating", 0, 50, 5);
-                act.setMinColor(Color.RED);
-                act.setMaxColor(Color.GREEN.darker());
-                viewMenu.add(act);
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Life rating", "life_rating", 0, 50, 5);
+                actn.setStepColors(allColors, view, Color.RED, null, Color.GREEN.darker());
+                viewMenu.add(actn);
             } else if (view.equals("civilization-value")) {
-                viewMenu.add(new DiscreteStepFilterAction("Civilization value", "civilization_value", 0, 100, 5));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Civilization value", "civilization_value", 0, 100, 5);
+                actn.setStepColors(allColors, view);
+                viewMenu.add(actn);
             } else if (view.equals("barbarian-power")) {
-                viewMenu.add(new DiscreteStepFilterAction("Barbarian power", "barbarian_power", 0, 10, 1));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Barbarian power", "barbarian_power", 0, 10, 1);
+                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.RED.darker());
+                viewMenu.add(actn);
             } else if (view.equals("leadership")) {
-                viewMenu.add(new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1));
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1);
+                actn.setStepColors(allColors, view);
+                viewMenu.add(actn);
             } else if (view.equals("natives-menu")) {
                 JMenu menu = new JMenu("Natives");
-                addNativesFilters(menu);
+                addNativesFilters(menu, allColors);
                 viewMenu.add(menu);
             } else if (view.equals("wars")) {
                 viewMenu.add(new WarsAction());
@@ -1020,7 +1055,7 @@ public final class EditorUI extends javax.swing.JFrame {
         rootMenu.add(new MultiCountryFilterAction("All religions (country)", "religion", allReligions.toString()));
     }
     
-    private void addBuildingFilters(JMenu rootMenu) {
+    private void addBuildingFilters(JMenu rootMenu, GenericObject colors) {
         final GenericObject buildings =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
                 defaultSettings);
@@ -1034,7 +1069,8 @@ public final class EditorUI extends javax.swing.JFrame {
         rootMenu.add(manufactoriesMenu);
         boolean hasManufactories = false;
         java.util.List<GenericObject> forts = new java.util.ArrayList<GenericObject>();
-        
+
+        int counter = 0;
         for (GenericObject building : buildings.children) {
             if (building.hasString("fort_level")) {
                 forts.add(building);
@@ -1050,18 +1086,25 @@ public final class EditorUI extends javax.swing.JFrame {
                 hasCapitalBuildings = true;
             }  else {
                 rootMenu.add(act);
+                if (counter++ > 25) {
+                    rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                    counter = 0;
+                }
             }
         }
 
-        if (!forts.isEmpty())
-            rootMenu.add(new FortLevelFilterAction(forts));
+        if (!forts.isEmpty()) {
+            FortLevelFilterAction actn = new FortLevelFilterAction(forts);
+            actn.setStepColors(colors, "fort-level", Color.YELLOW, Color.GREEN.darker(), Color.BLUE.darker());
+            rootMenu.add(actn);
+        }
         if (!hasManufactories)
             rootMenu.remove(manufactoriesMenu);
         if (!hasCapitalBuildings)
             rootMenu.remove(capitalBuildingsMenu);
     }
 
-    private void addHOI3BuildingFilters(JMenu rootMenu) {
+    private void addHOI3BuildingFilters(JMenu rootMenu, GenericObject colors) {
         // HOI3 buildings are on a scale of 0-10 in each province
         final GenericObject buildings =
                 EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
@@ -1069,21 +1112,10 @@ public final class EditorUI extends javax.swing.JFrame {
 
         Collections.sort(buildings.children, new ObjectComparator());
 
-        //JMenu capitalBuildingsMenu = new JMenu("Capital buildings");
-        //rootMenu.add(capitalBuildingsMenu);
-        java.util.List<GenericObject> forts = new java.util.ArrayList<GenericObject>();
-
         for (GenericObject building : buildings.children) {
-            if (building.hasString("fort_level")) {
-                forts.add(building);
-                continue;
-            }
-
             DiscreteStepFilterAction act = new DiscreteStepFilterAction(Text.getText(building.name), building.name, 0, 10, 1);
-//            if (building.getString("capital").equals("yes"))
-//                capitalBuildingsMenu.add(act);
-//            else
-                rootMenu.add(act);
+            act.setStepColors(colors, "buildings");
+            rootMenu.add(act);
         }
     }
     
@@ -1120,7 +1152,7 @@ public final class EditorUI extends javax.swing.JFrame {
         
         for (int i = 0; i < menus.length; i++) {
             JMenu menu = new JMenu("  " + (char)('A' + i) + "  ");
-            if (menus[i].size() == 0) {
+            if (menus[i].isEmpty()) {
                 JMenuItem dummy = new JMenuItem("(none)");
                 dummy.setEnabled(false);
                 menu.add(dummy);
@@ -1150,6 +1182,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
         final Comparator<String> listSorter = new StringComparator();
 
+        int counter = 0;
         for (GenericList group : cultures.lists) {
             group.sort(listSorter);
 
@@ -1168,6 +1201,10 @@ public final class EditorUI extends javax.swing.JFrame {
             groupMenu.add(new MultiFilterAction("All " + Text.getText(group.getName()), "culture", pattern.toString()));
 
             rootMenu.add(groupMenu);
+            if (counter++ > 25) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
         }
     }
 
@@ -1179,6 +1216,7 @@ public final class EditorUI extends javax.swing.JFrame {
         final ObjectComparator comp = new ObjectComparator();
         Collections.sort(cultures.children, comp);
 
+        int counter = 0;
         for (GenericObject group : cultures.children) {
             Collections.sort(group.children, comp);
 
@@ -1197,6 +1235,10 @@ public final class EditorUI extends javax.swing.JFrame {
             groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
 
             rootMenu.add(groupMenu);
+            if (counter++ > 25) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
         }
     }
 
@@ -1271,9 +1313,11 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
 
-    private void addHOI3GoodsFilters(JMenu rootMenu) {
+    private void addHOI3GoodsFilters(JMenu rootMenu, GenericObject colors) {
         for (String good : new String[] { "metal", "energy", "rare_materials" }) {
-            rootMenu.add(new DiscreteStepFilterAction(Text.getText(good), good, 0, 30, 3));
+            DiscreteStepFilterAction actn = new DiscreteStepFilterAction(Text.getText(good), good, 0, 30, 3);
+            actn.setStepColors(colors, "resources");
+            rootMenu.add(actn);
         }
     }
     
@@ -1377,15 +1421,21 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
-    private void addNativesFilters(JMenu rootMenu) {
+    private void addNativesFilters(JMenu rootMenu, GenericObject colors) {
         JMenu nativeTypesMenu = new JMenu("Native types");
         for (String nativeType : Main.map.getNatives().keySet()) {
             nativeTypesMenu.add(new NativesFilterAction(Text.getText(nativeType), nativeType));
         }
         rootMenu.add(nativeTypesMenu);
-        rootMenu.add(new DiscreteStepFilterAction("Native size", "native_size", 0, 100, 5));
-        rootMenu.add(new DiscreteStepFilterAction("Native ferocity", "native_ferocity", 0, 10, 1));
-        rootMenu.add(new DiscreteStepFilterAction("Native hostility", "native_hostileness", 0, 10, 1));
+        DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Native size", "native_size", 0, 100, 5);
+        actn.setStepColors(colors, "natives", Color.YELLOW, Color.ORANGE.darker(), Color.RED);
+        rootMenu.add(actn);
+        actn = new DiscreteStepFilterAction("Native ferocity", "native_ferocity", 0, 10, 1);
+        actn.setStepColors(colors, "natives", Color.YELLOW, Color.ORANGE.darker(), Color.RED);
+        rootMenu.add(actn);
+        actn = new DiscreteStepFilterAction("Native hostility", "native_hostileness", 0, 10, 1);
+        actn.setStepColors(colors, "natives", Color.YELLOW, Color.ORANGE.darker(), Color.RED);
+        rootMenu.add(actn);
     }
     
 // <editor-fold defaultstate="collapsed" desc=" Generated Variables ">
@@ -1402,6 +1452,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JSpinner monthSpinner;
     private javax.swing.JLabel provNameLabel;
     javax.swing.JMenuItem reloadMenuItem;
+    private javax.swing.JButton scaleColorsButton;
     private javax.swing.JButton setDateButton;
     private javax.swing.JMenuItem setDateMenuItem;
     private javax.swing.JButton showCountryHistButton;
@@ -1582,21 +1633,16 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private abstract class FilterAction extends AbstractAction {
-        protected final MapMode mode;
+        protected MapMode mode;
         protected FilterAction(String name, MapMode mode) {
             super(name);
             this.mode = mode;
         }
         
         public void actionPerformed(ActionEvent e) {
-//            java.awt.EventQueue.invokeLater(new Runnable() {
-//                public void run() {
             mapPanel.setMode(mode);
             viewModeLabel.setText((String) getValue(SHORT_DESCRIPTION));
             mapPanel.repaint();
-//            doMouseClick(currentProvince);
-//                }
-//            });
         }
     }
     
@@ -1697,20 +1743,75 @@ public final class EditorUI extends javax.swing.JFrame {
             super(name, new DiscreteScalingMapMode(mapPanel, prop, min, max, step));
             putValue(SHORT_DESCRIPTION, name);
         }
-        
+
+        protected DiscreteStepFilterAction(String name) {
+            super(name, null);
+            putValue(SHORT_DESCRIPTION, name);
+        }
+
         private void setMinColor(Color c) {
             ((DiscreteScalingMapMode)mode).setMinColor(c);
+        }
+
+        private void setMidColor(Color c) {
+            ((DiscreteScalingMapMode)mode).setMidColor(c);
         }
 
         private void setMaxColor(Color c) {
             ((DiscreteScalingMapMode)mode).setMaxColor(c);
         }
+
+        public void setStepColors(GenericObject allColors, String name) {
+            setStepColors(allColors, name, null, null, null);
+        }
+
+        public void setStepColors(GenericObject allColors, String name,
+                Color defaultMin, Color defaultMid, Color defaultMax) {
+            if (defaultMin != null)
+                setMinColor(defaultMin);
+            if (defaultMid != null)
+                setMidColor(defaultMid);
+            if (defaultMax != null)
+                setMaxColor(defaultMax);
+
+            GenericObject colors = allColors.getChild(name);
+            if (colors != null) {
+                GenericList min = colors.getList("low");
+                if (min != null && min.size() >= 3) {
+                    Color c = new Color(Integer.parseInt(min.get(0)), Integer.parseInt(min.get(1)), Integer.parseInt(min.get(2)));
+                    setMinColor(c);
+                }
+                GenericList mid = colors.getList("middle");
+                if (mid != null && mid.size() >= 3) {
+                    Color c = new Color(Integer.parseInt(mid.get(0)), Integer.parseInt(mid.get(1)), Integer.parseInt(mid.get(2)));
+                    setMidColor(c);
+                }
+                GenericList high = colors.getList("high");
+                if (high != null && high.size() >= 3) {
+                    Color c = new Color(Integer.parseInt(high.get(0)), Integer.parseInt(high.get(1)), Integer.parseInt(high.get(2)));
+                    setMaxColor(c);
+                }
+            }
+            ((DiscreteScalingMapMode)mode).setName(name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // reload colors since they might have been changed by another
+            // mapmode that uses the same settings
+            GenericObject allColors = EUGFileIO.load("colors.txt", defaultSettings);
+            GenericObject colors = allColors.getChild(((DiscreteScalingMapMode)mode).getName());
+            if (colors != null)
+                setStepColors(allColors, ((DiscreteScalingMapMode)mode).getName());
+
+            super.actionPerformed(e);
+        }
     }
     
-    private class FortLevelFilterAction extends FilterAction {
+    private class FortLevelFilterAction extends DiscreteStepFilterAction {
         public FortLevelFilterAction(final java.util.List<GenericObject> forts) {
-            super("Fort level", new FortMapMode(mapPanel, forts));
-            putValue(SHORT_DESCRIPTION, "Fort level");
+            super("Fort level");
+            this.mode = new FortMapMode(mapPanel, forts);
         }
     }
     
