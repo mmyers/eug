@@ -301,7 +301,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             final String histFile = resolveProvinceHistoryFile(id);
             
             if (histFile == null) {
-                System.err.println("Cannot find province history file for ID " + id);
+                //System.err.println("Cannot find province history file for ID " + id);
                 return null;
             }
             
