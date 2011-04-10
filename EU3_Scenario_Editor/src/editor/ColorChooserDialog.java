@@ -3,6 +3,7 @@ package editor;
 
 import editor.mapmode.DiscreteScalingMapMode;
 import eug.parser.EUGFileIO;
+import eug.parser.ParserSettings;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.Style;
@@ -186,7 +187,7 @@ public class ColorChooserDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_highValueColorButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        GenericObject root = EUGFileIO.load("colors.txt");
+        GenericObject root = EUGFileIO.load("colors.txt", ParserSettings.getQuietSettings());
         GenericObject colors = root.getChild(colorsName);
         if (colors == null)
             colors = root.createChild(colorsName);
