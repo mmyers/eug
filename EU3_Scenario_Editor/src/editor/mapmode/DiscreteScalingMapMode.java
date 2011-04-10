@@ -18,7 +18,8 @@ import java.awt.Graphics2D;
  * @author Michael Myers
  */
 public class DiscreteScalingMapMode extends ProvincePaintingMode {
-    
+
+    private String name;
     private String prop;
     private int min;
     private int max;
@@ -30,9 +31,9 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     
     // TODO: Perhaps make it so an arbitrary number of colors could be used,
     // fading from one to another?
-    private Color minColor = Color.GREEN.darker();
+    private Color minColor = Color.RED.darker();
     private Color midColor = Color.YELLOW;
-    private Color maxColor = Color.WHITE;
+    private Color maxColor = Color.GREEN.darker();
     
     /**
      * Creates a new instance of DiscreteScalingMapMode.
@@ -103,6 +104,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         return;
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
         if (!editor.Main.map.isLand(id))
@@ -166,6 +168,14 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     public void setStep(int step) {
         this.step = step;
         initializeColors();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
     
 }
