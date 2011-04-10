@@ -1,0 +1,50 @@
+# Colors used for scaling map modes.
+# All RGB values are on a scale of 0-255, inclusive.
+# If a map mode does not appear here, default color values will be chosen for it
+# by the editor.
+
+leadership={ 
+    low={ 255 255 51 }
+    middle={ 0 255 0 }
+    high={ 0 178 0 }
+} 
+manpower={ 
+    low={ 240 240 102 }
+    middle={ 51 224 0 }
+    high={ 0 51 0 }
+} 
+resources={ 
+    low={ 255 255 0 }
+    middle={ 0 255 0 }
+    high={ 0 178 0 }
+} 
+buildings={ 
+    low={ 255 255 51 }
+    middle={ 51 255 0 }
+    high={ 0 161 0 }
+} 
+life-rating={ 
+    low={ 255 0 0 }
+    middle={ 255 255 0 }
+    high={ 0 149 0 }
+} 
+fort-level={ 
+    low={ 240 240 110 }
+    middle={ 0 178 32 }
+    high={ 0 32 178 }
+} 
+population={ 
+    low={ 232 204 81 }
+    middle={ 24 204 24 }
+    high={ 14 81 14 }
+} 
+natives={ 
+    low={ 255 255 0 }
+    middle={ 204 153 0 }
+    high={ 204 0 0 }
+} 
+base-tax={ 
+    low={ 255 204 51 }
+    middle={ 24 204 24 }
+    high={ 0 51 0 }
+} 

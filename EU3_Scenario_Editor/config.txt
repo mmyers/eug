@@ -1,9 +1,8 @@
 #Note: Lines beginning with a # are comments and are ignored by the program.
 
-#EU3 directory definition
+#Game directory definition
 #Uncomment the one that fits your needs, or put in your own.
 
-#maindir = "C:/Program Files/Paradox Interactive/Eu3 - DEMO/"
 #maindir = "C:/Program Files/Paradox Interactive/Europa Universalis III/"
 #maindir = "C:/Program Files/Paradox Interactive/Europa Universalis 3/"
 maindir = "C:/Games/Europa Universalis III/"

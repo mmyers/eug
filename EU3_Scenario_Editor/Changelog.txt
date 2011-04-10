@@ -2,6 +2,20 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.7.2 ===
+
+Added:
+- Colors of scaling mapmodes (e.g. population or base tax) are now editable.
+
+Changed:
+- The buildings and cultures menu will now split into submenus if necessary.
+
+Bugfixes:
+- The date is now set properly at startup.
+- Editing Victoria 2 and HOI3 province history files should now work properly
+  with the subfolder system.
+
+
 === 0.7.1 ===
 
 Changed:

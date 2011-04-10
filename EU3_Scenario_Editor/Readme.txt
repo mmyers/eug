@@ -1,8 +1,8 @@
-/================================\
-|== Clausewitz Scenario Editor ==|
-|== Version 0.7 (March 20 2011) =|
-|========== By MichaelM =========|
-\================================/
+/=====================================\
+|==   Clausewitz Scenario Editor    ==|
+|==  Version 0.7.2 (April 10 2011)  ==|
+|==           By MichaelM           ==|
+\=====================================/
 
 
 === What is it? ===
@@ -109,6 +109,10 @@ pause
   history to determine the controller, and for some reason, the game does not
   record in the history that the colonizing country also controls the province.
   There is currently no workaround.
+
+* Some items in save games are time-dependent, like revolt_risk. The editor
+  currently does not handle them specially and assumes that anything that has
+  not been reset to 0 must still exist.
 
 
 === To do ===
