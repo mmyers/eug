@@ -80,14 +80,25 @@ public final class GenericObject implements WritableObject, Cloneable {
     
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc=" Getters ">
-    
+
+    /**
+     * Gets the child object with the given index.
+     * @param id the index of the object to retrieve (0 is the first child,
+     *           1 is the second, etc.).
+     * @return the specified child object.
+     */
     public GenericObject getChild(int id) {
         if (id >= children.size())
             return null;
         else
             return children.get(id);
     }
-    
+
+    /**
+     * Gets the first child object with the given name.
+     * @param childname the name of the object to retrieve.
+     * @return the named child object.
+     */
     public GenericObject getChild(String childname) {
         for (GenericObject child : children)
             if (child.name.equalsIgnoreCase(childname))
@@ -95,7 +106,12 @@ public final class GenericObject implements WritableObject, Cloneable {
         
         return null;
     }
-    
+
+    /**
+     * Gets all child objects with the given name.
+     * @param name the name of the objects to retrieve.
+     * @return the named child objects.
+     */
     public List<GenericObject> getChildren(String name) {
         final List<GenericObject> ret = new ArrayList<GenericObject>();
         for (GenericObject child : children)
@@ -103,7 +119,12 @@ public final class GenericObject implements WritableObject, Cloneable {
                 ret.add(child);
         return ret;
     }
-    
+
+    /**
+     * Gets the child list with the given name.
+     * @param listname the name of the list to retrieve.
+     * @return the named list.
+     */
     public GenericList getList(String listname) {
         for (GenericList list : lists)
             if (list.getName().equalsIgnoreCase(listname))
@@ -131,21 +152,38 @@ public final class GenericObject implements WritableObject, Cloneable {
         
         return newList;
     }
-    
+
+    /**
+     * Gets the child list with the given index.
+     * @param id the index of the list to retrieve (0 is the first list,
+     *           1 is the second, etc.).
+     * @return the specified list.
+     */
     public GenericList getList(int id) {
         if (id >= lists.size())
             return null;
         else
             return lists.get(id);
     }
-    
+
+    /**
+     * Gets the child variable with the given index.
+     * @param id the index of the variable to retrieve (0 is the first variable,
+     *           1 is the second, etc.).
+     * @return the specified variable.
+     */
     public ObjectVariable getVariable(int id) {
         if (id >= values.size())
             return null;
         else
             return values.get(id);
     }
-    
+
+    /**
+     * Gets the first child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in string form.
+     */
     public String getString(String varname) {
         for (ObjectVariable var : values)
             if (var.varname.equalsIgnoreCase(varname))
@@ -174,7 +212,12 @@ public final class GenericObject implements WritableObject, Cloneable {
         
         return ret;
     }
-    
+
+    /**
+     * Gets the first child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in int form.
+     */
     public int getInt(String varname) {
         final String val = getString(varname);
         if (val.length() != 0)
@@ -182,7 +225,12 @@ public final class GenericObject implements WritableObject, Cloneable {
         else
             return -1;
     }
-    
+
+    /**
+     * Gets the first child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in double form.
+     */
     public double getDouble(String varname) {
         final String val = getString(varname);
         if (val.length() != 0)
@@ -190,7 +238,11 @@ public final class GenericObject implements WritableObject, Cloneable {
         else
             return -1.0;
     }
-    
+
+    /**
+     * Gets the parent of this object. If this object is the root, the parent is null.
+     * @return this object's parent.
+     */
     public GenericObject getParent() {
         return parent;
     }
