@@ -129,6 +129,11 @@ public interface ClausewitzDataSource {
     public void reloadCountryHistory(String tag);
 
     /**
+     * Forces a reload of all country data if the implementation uses a cache.
+     */
+    public void reloadCountries();
+
+    /**
      * Forces a reload of the data for the province with the given ID, if the
      * implementation uses a cache.
      * @param id the ID of the province to reload data for.
@@ -141,6 +146,11 @@ public interface ClausewitzDataSource {
      * @param id the ID of the province to reload data for.
      */
     public void reloadProvinceHistory(int id);
+
+    /**
+     * Forces a reload of all province data if the implementation uses a cache.
+     */
+    public void reloadProvinces();
 
 
     /**

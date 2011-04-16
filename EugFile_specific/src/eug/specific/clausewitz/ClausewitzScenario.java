@@ -27,7 +27,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     
     protected FilenameResolver resolver;
     
-    private final Map<Object, GenericObject> historyCache;
+    private final Map<String, GenericObject> ctryHistoryCache;
+    private final Map<Integer, GenericObject> provHistoryCache;
     
     private static final ParserSettings settings =
             ParserSettings.getDefaults().setPrintTimingInfo(false);
@@ -35,12 +36,14 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     /** Creates a new instance of EU3Scenario */
     public ClausewitzScenario(FilenameResolver resolver) {
         this.resolver = resolver;
-        historyCache = new HashMap<Object, GenericObject>();
+        ctryHistoryCache = new HashMap<String, GenericObject>();
+        provHistoryCache = new HashMap<Integer, GenericObject>();
     }
     
     public ClausewitzScenario(String mainDir, String modDir) {
         resolver = new FilenameResolver(mainDir, modDir);
-        historyCache = new HashMap<Object, GenericObject>();
+        ctryHistoryCache = new HashMap<String, GenericObject>();
+        provHistoryCache = new HashMap<Integer, GenericObject>();
     }
     
     public void setResolver(FilenameResolver resolver) {
@@ -206,23 +209,35 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     
     
     public void reloadCountry(String tag) {
-        historyCache.remove(tag);
+        ctryHistoryCache.remove(tag);
         resolver.reset();
     }
     
     public void reloadCountryHistory(String tag) {
-        historyCache.remove(tag);
+        ctryHistoryCache.remove(tag);
         resolver.reset();
+    }
+
+    public void reloadCountries() {
+        ctryHistoryCache.clear();
+        resolver.reset();
+        preloadCountries();
     }
     
     public void reloadProvince(int id) {
-        historyCache.remove(id);
+        provHistoryCache.remove(id);
         resolver.reset();
     }
     
     public void reloadProvinceHistory(int id) {
-        historyCache.remove(id);
+        provHistoryCache.remove(id);
         resolver.reset();
+    }
+
+    public void reloadProvinces() {
+        provHistoryCache.clear();
+        resolver.reset();
+        preloadProvinces(2000); // no way to know what a sensible number is here, and it won't matter much.
     }
     
     public void preloadProvinces(int last) {
@@ -236,7 +251,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     private void preloadProvHistory(int start, int end) {
         GenericObject hist;
         for (int id = start; id < end; id++) {
-            hist = historyCache.get(id);
+            hist = provHistoryCache.get(id);
             if (hist == null) {
                 final String histFile = resolveProvinceHistoryFile(id);
                 
@@ -250,7 +265,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
                 if (hist == null) {
 //                    System.err.println("Failed to load province history file for ID " + id);
                 } else {
-                    historyCache.put(id, hist);
+                    provHistoryCache.put(id, hist);
                 }
             }
         }
@@ -266,7 +281,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         for (ObjectVariable def : countries.values) {
             tag = def.varname;
             
-            hist = historyCache.get(tag);
+            hist = ctryHistoryCache.get(tag);
             if (hist == null) {
                 final String histFile = resolveCountryHistoryFile(tag);
                 
@@ -280,7 +295,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
                 if (hist == null) {
                     System.err.println("Failed to load country history file for " + tag);
                 } else {
-                    historyCache.put(tag, hist);
+                    ctryHistoryCache.put(tag, hist);
                 }
             }
         }
@@ -295,8 +310,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     }
     
     /** Gets the province history for the given id, using the cache. */
-    private final GenericObject getProvHistory(final int id) {
-        GenericObject hist = historyCache.get(id);
+    private GenericObject getProvHistory(final int id) {
+        GenericObject hist = provHistoryCache.get(id);
         if (hist == null) {
             final String histFile = resolveProvinceHistoryFile(id);
             
@@ -310,16 +325,15 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             if (hist == null) {
                 System.err.println("Failed to load province history file for ID " + id);
             } else {
-//                java.util.Collections.sort(hist.children, DATE_OBJECT_COMPARATOR);
-                historyCache.put(id, hist);
+                provHistoryCache.put(id, hist);
             }
         }
         return hist;
     }
     
     /** Gets the country history for the given tag, using the cache. */
-    private final GenericObject getCtryHistory(final String tag) {
-        GenericObject hist = historyCache.get(tag);
+    private GenericObject getCtryHistory(final String tag) {
+        GenericObject hist = ctryHistoryCache.get(tag);
         if (hist == null) {
             final String histFile = resolveCountryHistoryFile(tag);
             
@@ -333,8 +347,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             if (hist == null) {
                 System.err.println("Failed to load country history file for " + tag);
             } else {
-//                java.util.Collections.sort(hist.children, DATE_OBJECT_COMPARATOR);
-                historyCache.put(tag, hist);
+                ctryHistoryCache.put(tag, hist);
             }
         }
         return hist;

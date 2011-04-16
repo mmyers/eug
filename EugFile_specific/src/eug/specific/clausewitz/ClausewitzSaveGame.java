@@ -213,22 +213,30 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     
     public void reloadCountry(String tag) {
-        // What to do here?
-        initCountries();
+        // This method should never be needed, since any modifications would be
+        // working directly on the GenericObject.
     }
     
     public void reloadCountryHistory(String tag) {
-        // What to do here?
+        // This method should never be needed, since any modifications would be
+        // working directly on the GenericObject.
+    }
+
+    public void reloadCountries() {
         initCountries();
     }
     
     public void reloadProvince(int id) {
-        // What to do here?
-        initProvs();
+        // This method should never be needed, since any modifications would be
+        // working directly on the GenericObject.
     }
     
     public void reloadProvinceHistory(int id) {
-        // What to do here?
+        // This method should never be needed, since any modifications would be
+        // working directly on the GenericObject.
+    }
+
+    public void reloadProvinces() {
         initProvs();
     }
     
