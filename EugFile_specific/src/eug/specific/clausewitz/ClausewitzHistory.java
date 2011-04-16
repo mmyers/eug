@@ -63,11 +63,11 @@ public final class ClausewitzHistory {
     }
     
     
-    public static final GenericObject getHistObject(final GenericObject history, String name) {
+    public static GenericObject getHistObject(final GenericObject history, String name) {
         if (history == null)
             return null;
         
-        GenericObject value = history.getChild(name);
+        GenericObject value = history.getLastChild(name);
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
@@ -77,7 +77,7 @@ public final class ClausewitzHistory {
             }
             
             if (DATE_COMPARATOR.compare(date.name, lastDate) >= 0) {
-                GenericObject newVal = date.getChild(name);
+                GenericObject newVal = date.getLastChild(name);
                 if (newVal != null) {
                     value = newVal;
                     lastDate = date.name;
@@ -87,11 +87,11 @@ public final class ClausewitzHistory {
         return value;
     }
     
-    public static final GenericObject getHistObject(final GenericObject history, String name, String date) {
+    public static GenericObject getHistObject(final GenericObject history, String name, String date) {
         if (history == null)
             return null;
         
-        GenericObject value = history.getChild(name);
+        GenericObject value = history.getLastChild(name);
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
@@ -103,7 +103,7 @@ public final class ClausewitzHistory {
             if (DATE_COMPARATOR.compare(dateObj.name, lastDate) >= 0 &&
                     DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
                 // The new date is after the old date and before or equal to the target date
-                GenericObject newVal = dateObj.getChild(name);
+                GenericObject newVal = dateObj.getLastChild(name);
                 if (newVal != null) {
                     value = newVal;
                     lastDate = dateObj.name;
@@ -114,11 +114,11 @@ public final class ClausewitzHistory {
     }
     
     
-    public static final String getHistString(final GenericObject history, String name) {
+    public static String getHistString(final GenericObject history, String name) {
         if (history == null)
             return null;
         
-        String value = history.getString(name);
+        String value = history.getLastString(name);
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
@@ -128,7 +128,7 @@ public final class ClausewitzHistory {
             }
             
             if (DATE_COMPARATOR.compare(date.name, lastDate) >= 0) {
-                String newVal = date.getString(name);
+                String newVal = date.getLastString(name);
                 if (newVal.length() != 0) {
                     value = newVal;
                     lastDate = date.name;
@@ -138,11 +138,11 @@ public final class ClausewitzHistory {
         return value;
     }
     
-    public static final String getHistString(final GenericObject history, String name, String date) {
+    public static String getHistString(final GenericObject history, String name, String date) {
         if (history == null)
             return null;
         
-        String value = history.getString(name);
+        String value = history.getLastString(name);
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
@@ -154,7 +154,7 @@ public final class ClausewitzHistory {
             if (DATE_COMPARATOR.compare(dateObj.name, lastDate) >= 0 &&
                     DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
                 // The new date is after the old date and before or equal to the target date
-                String newVal = dateObj.getString(name);
+                String newVal = dateObj.getLastString(name);
                 if (newVal.length() != 0) {
                     value = newVal;
                     lastDate = dateObj.name;
@@ -164,7 +164,7 @@ public final class ClausewitzHistory {
         return value;
     }
     
-    public static final List<String> getHistStrings(final GenericObject history, String name, String date) {
+    public static List<String> getHistStrings(final GenericObject history, String name, String date) {
         if (history == null)
             return null;
         
@@ -179,7 +179,7 @@ public final class ClausewitzHistory {
             
             if (DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
                 // The new date is before or equal to the target date
-                String value = dateObj.getString(name);
+                String value = dateObj.getLastString(name);
                 if (value.length() != 0) {
                     values.add(value);
                 }
@@ -192,7 +192,7 @@ public final class ClausewitzHistory {
     /**
      * Special utility method because otherwise determining cores is really nasty.
      */
-    public static final List<String> isCoreOf(final GenericObject provHistory, String date) {
+    public static List<String> isCoreOf(final GenericObject provHistory, String date) {
         return getHistStrings(provHistory, date, "add_core", "remove_core");
     }
     
@@ -211,7 +211,7 @@ public final class ClausewitzHistory {
      * could be, for example, the list of country tags that have cores on a
      * particular province.
      */
-    public static final List<String> getHistStrings(
+    public static List<String> getHistStrings(
             final GenericObject history,
             final String date,
             final String adder,
@@ -247,7 +247,7 @@ public final class ClausewitzHistory {
         private static final Map<String, String[]> splitMap = new HashMap<String, String[]>(100);
         private static final Pattern dot = Pattern.compile("\\.");
 
-        private static final String[] split(final String s) {
+        private static String[] split(final String s) {
             String[] split = splitMap.get(s);
             if (split == null) {
                 split = dot.split(s);
@@ -257,7 +257,7 @@ public final class ClausewitzHistory {
         }
         private static final Map<String, Integer> intMap = new HashMap<String, Integer>(100);
 
-        private static final Integer getInt(final String s) {
+        private static Integer getInt(final String s) {
             Integer i = intMap.get(s);
             if (i == null) {
                 i = Integer.valueOf(s);
