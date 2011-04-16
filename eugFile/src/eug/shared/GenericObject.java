@@ -108,6 +108,19 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
 
     /**
+     * Gets the last child object with the given name.
+     * @param childname the name of the object to retrieve.
+     * @return the named child object.
+     */
+    public GenericObject getLastChild(String childname) {
+        for (int i = children.size()-1; i >= 0; i--)
+            if (children.get(i).name.equalsIgnoreCase(childname))
+                return children.get(i);
+
+        return null;
+    }
+
+    /**
      * Gets all child objects with the given name.
      * @param name the name of the objects to retrieve.
      * @return the named child objects.
@@ -135,9 +148,30 @@ public final class GenericObject implements WritableObject, Cloneable {
         if (l == null)
             return null;
         
-        if (l.allWritable.size() == 0) // which means it could have been an empty list parsed as an object with no children
+        if (l.allWritable.isEmpty()) // which means it could have been an empty list parsed as an object with no children
             return convertToList(l);
         
+        return null;
+    }
+
+    /**
+     * Gets the last child list with the given name.
+     * @param listname the name of the list to retrieve.
+     * @return the named list.
+     */
+    public GenericList getLastList(String listname) {
+        for (int i = lists.size() - 1; i >= 0; i--)
+            if (lists.get(i).getName().equalsIgnoreCase(listname))
+                return lists.get(i);
+
+        GenericObject l = getLastChild(listname);
+
+        if (l == null)
+            return null;
+
+        if (l.allWritable.isEmpty()) // which means it could have been an empty list parsed as an object with no children
+            return convertToList(l);
+
         return null;
     }
     
@@ -191,6 +225,19 @@ public final class GenericObject implements WritableObject, Cloneable {
         
         return "";
     }
+
+    /**
+     * Gets the last child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in string form.
+     */
+    public String getLastString(String varname) {
+        for (int i = values.size() - 1; i >= 0; i--)
+            if (values.get(i).varname.equalsIgnoreCase(varname))
+                return values.get(i).getValue();
+
+        return "";
+    }
     
     /**
      * Returns all values of the given string. For example, if an object
@@ -227,12 +274,38 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
 
     /**
+     * Gets the last child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in int form.
+     */
+    public int getLastInt(String varname) {
+        final String val = getLastString(varname);
+        if (val.length() != 0)
+            return Integer.valueOf(val);
+        else
+            return -1;
+    }
+
+    /**
      * Gets the first child variable with the given name.
      * @param childname the name of the variable to retrieve.
      * @return the named child variable in double form.
      */
     public double getDouble(String varname) {
         final String val = getString(varname);
+        if (val.length() != 0)
+            return Double.valueOf(val);
+        else
+            return -1.0;
+    }
+
+    /**
+     * Gets the last child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in double form.
+     */
+    public double getLastDouble(String varname) {
+        final String val = getLastString(varname);
         if (val.length() != 0)
             return Double.valueOf(val);
         else
