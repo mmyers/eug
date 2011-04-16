@@ -43,7 +43,7 @@ public final class EditorUI extends javax.swing.JFrame {
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.7.2";
+    private static final String VERSION = "0.7.3";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
 
@@ -639,17 +639,17 @@ public final class EditorUI extends javax.swing.JFrame {
                 
                 // If it was a double click, go ahead and show an editor.
                 if (clickCount > 1) {
-                    Class c = mapPanel.getMode().getClass();
-                    if (c.equals(ProvinceMode.class)) {
+//                    Class c = mapPanel.getMode().getClass();
+//                    if (c.equals(ProvinceMode.class)) {
                         showProvHistButton.doClick(0);
-                    } else if (c.equals(PoliticalMode.class) ||
-                            c.equals(CountryMode.class) ||
-                            c.equals(SingleCountryMode.class))  {
-                        showCountryHistButton.doClick(0);
-                    } else {
-                        // do what?
-                        showProvHistButton.doClick(0);
-                    }
+//                    } else if (c.equals(PoliticalMode.class) ||
+//                            c.equals(CountryMode.class) ||
+//                            c.equals(SingleCountryMode.class))  {
+//                        showCountryHistButton.doClick(0);
+//                    } else {
+//                        // do what?
+//                        showProvHistButton.doClick(0);
+//                    }
                 }
             }
         });
@@ -658,19 +658,9 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_mapPanelMouseClicked
 
     private void reloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadMenuItemActionPerformed
-        int numProvs = Integer.parseInt(Main.map.getString("max_provinces"));
-        for (int i = 1; i < numProvs; i++) {
-            mapPanel.getDataSource().reloadProvince(i);
-            mapPanel.getDataSource().reloadProvinceHistory(i);
-        }
-        GenericObject countries =
-                EUGFileIO.load(
-                Main.filenameResolver.resolveFilename("common/countries.txt"),
-                defaultSettings);
-        for (ObjectVariable def : countries.values) {
-            mapPanel.getDataSource().reloadCountry(def.varname);
-            mapPanel.getDataSource().reloadCountryHistory(def.varname);
-        }
+        mapPanel.getDataSource().reloadProvinces();
+        mapPanel.getDataSource().reloadCountries();
+        repaint();
     }//GEN-LAST:event_reloadMenuItemActionPerformed
 
     private void scaleColorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleColorsButtonActionPerformed

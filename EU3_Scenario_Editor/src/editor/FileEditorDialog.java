@@ -110,6 +110,7 @@ public class FileEditorDialog extends EditorDialog {
         
         unRegister(this);
         super.close();
+        getParent().repaint();
     }
     
     private static final int MIN_TAG_HASH = "AAA".hashCode();
