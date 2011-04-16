@@ -2,6 +2,16 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.7.3 ===
+
+Changed:
+- Double-clicking a province now always opens the province editor, even in the
+  political view.
+
+Bugfixes:
+- Forcing a reload should no longer freeze the editor for a long time.
+
+
 === 0.7.2 ===
 
 Added:

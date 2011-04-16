@@ -1,26 +1,34 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==  Version 0.7.2 (April 10 2011)  ==|
+|==  Version 0.7.3 (April 16 2011)  ==|
 |==           By MichaelM           ==|
 \=====================================/
 
 
+===================
 === What is it? ===
+===================
 
 This program loads data from either a saved game or history files and shows
-the world map based on it. It lets you click on a province to edit its history
-(if you are viewing history) or save game entry (if you are viewing a saved
-game). There are also a number of other views to help you visualize the game
-data. If you are in the political view, you can click on a country to edit its
-history file. The history editors have some syntax highlighting and validation.
+the world map based on it. It lets you easily edit province and country
+history files (or save game entries). The history editors even have syntax
+highlighting and validation.
+
+There are also a number of views to help you visualize the game data (or maybe
+just find that last colony that's keeping you from getting 100% warscore on your
+mortal enemy).
 
 
+===========================
 === System Requirements ===
+===========================
 
 Java 1.5 or later (tested on Java 1.6)
 
 
+====================
 === Instructions ===
+====================
 
 1. Unzip somewhere.
 2. Edit config.txt so that maindir points to your game installation. If you're
@@ -39,22 +47,25 @@ changes. If you click "Yes", a backup of the old file will be saved (with a '~'
 prepended to its name). Note that at most one backup file exists at a time; if
 you already had a backup file, it will be automatically overwritten.
 
-In the menu titled "Views" are quite a few different ways to view the map. Play
-around with them for a while to get a feel for what you can and can't do.
 
-In most views, if a province history file is not found, the province will
+=== Looking at the world ===
+
+In the menu titled "Views" are quite a few different ways to view the map. Play
+around with them for a while to get a feel for what you can and can't do. If
+the editor feels laggy, turning borders off may help, but then it can be hard
+to pick out a specific province to edit.
+
+In some views, if a province history file is not found, the province will
 appear bright red on the country map, and the message "Province has no history
-file" will appear next to the "Show country history" button. A warning message
-will be printed to the console whenever the mouse touches such a province, so
-there may be a lot of output.
+file" will appear next to the "Show country history" button. This is not
+necessarily an indication of a bug in the mod; EU3 wasteland provinces, for
+instance, often don't have history files.
+
 
 The current date is shown in the toolbar. You can change the numbers to whatever
 you want, and then click "Set date" to apply the changes. The date of course
-only affects views which use history data.
-
-There is also a bookmark list. If you loaded a saved game, there should be two
-"bookmarks" in the list: one at 1.1.1 (before any history), and the other at
-the date of the saved game. Otherwise, the game's bookmarks are loaded.
+only affects views which use history data. The editor also lets you easily
+jump to any of the game's bookmarks (if applicable).
 
 Use Ctrl +/- to zoom in and out. Note that zooming too far in may cause the
 program to run out of memory; thus, I have capped the zoom at 5x. If you
@@ -69,7 +80,9 @@ that much memory. This will likely be necessary for games which have 30+ megabyt
 save files.
 
 
+=======================
 === Troubleshooting ===
+=======================
 
 If the program hangs, check the console window; there will probably be a stack
 trace -- a lot of lines saying something like
@@ -102,7 +115,10 @@ pause
 ----- stop copying here -----
 
 
+==================
 === Known Bugs ===
+==================
+
 
 * In saved games, provinces that were colonized during the game appear as if
   they were controlled by no one. This is because the scenario editor uses the
@@ -124,7 +140,9 @@ pause
         thread!
 
 
+===============
 === Credits ===
+===============
 
 EUG-file handling (lib/eugFile.jar) is based partly on Kinniken's
 VictoriaEditor (http://www.kstudio.net/vedit/). All else is entirely my own
