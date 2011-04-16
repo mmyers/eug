@@ -72,8 +72,20 @@
         <jflex file="src/eug/parser/scanner.flex" verbose="on" />
         <jflex file="src/eug/parser/listScanner.flex" verbose="on" />
         <jflex file="src/eug/parser/tokenScanner.flex" verbose="on" />
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+
+    <target name="-post-jar">
+        <property name="dirname" value="EugFile" />
+        <property name="sourcename" value="EugFile_Code.zip" />
+
+        <delete file="${sourcename}" />
+        <zip destfile="${sourcename}">
+            <zipfileset dir="" prefix="${dirname}">
+                <exclude name="/build/" />
+                <exclude name="/dist/" />
+                <exclude name="**/*.zip" />
+            </zipfileset>
+        </zip>
     </target>
     
 </project>
