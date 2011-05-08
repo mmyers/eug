@@ -75,7 +75,7 @@ public final class ProvinceData {
                 color += (g & 0xFF) << 8;
                 color += (b & 0xFF);
                 
-                final Province p = new Province(id, arr[4], color);
+                final Province p = new Province(id, Text.getText("PROV" + arr[0]), color);
                 
                 rgbMap.put(color, p);
                 allProvs[id] = p;
@@ -92,17 +92,6 @@ public final class ProvinceData {
     public Province getProv(final Color color) {
         return getProv(color.getRGB());
     }
-    
-//    /**
-//     * @param rgb a string with three integer components separated by commas.
-//     */
-//    public Province getProv(final String rgb) {
-//        final String[] components = rgb.split(",");
-//        final int red = Integer.parseInt(components[0]);
-//        final int green = Integer.parseInt(components[1]);
-//        final int blue = Integer.parseInt(components[2]);
-//        return getProv(new Color(red, green, blue));
-//    }
     
     public Province getProv(final int rgb) {
         return rgbMap.get(rgb);
@@ -164,6 +153,7 @@ public final class ProvinceData {
             return color;
         }
         
+        @Override
         public String toString() {
             return id + " = " + name;
         }
