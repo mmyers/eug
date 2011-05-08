@@ -1,0 +1,225 @@
+eu3 = {
+	display = "EU3 Vanilla/NA"
+	map_inverted = true
+	has_sea_list = false
+	land = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		port = xy
+		port_rotation = rotation
+
+		city = xy
+		city_nudge = nudge
+
+		unit = xy
+
+		manufactory = xy
+		manufactory_nudge = nudge
+
+		trade = xy
+		trade_nudge = nudge
+	}
+	sea = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+	}
+}
+
+innomine = {
+	inherit = eu3
+	display = "EU3 In Nomine"
+	has_sea_list = true
+}
+
+httt = {
+	inherit = innomine
+	display = "EU3 Heir to the Throne"
+	sea = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		trade_wind_direction = rotation
+	}
+}
+
+dw = {
+	inherit = httt
+	display = "EU3 Divine Wind"
+	map_inverted = false
+	land = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		port = xy
+		port_rotation = reverserotation
+
+		city = xy
+		city_rotation = rotation
+		city_nudge = nudge
+
+		unit = xy
+
+		manufactory = xy
+		manufactory_rotation = rotation
+		manufactory_nudge = nudge
+
+		trade = xy
+		trade_nudge = nudge
+	}
+}
+
+rome = {
+	display = "Rome"
+	map_inverted = false
+	has_sea_list = false
+	land = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		port = xy
+		port_rotation = rotation
+
+		city = xy
+		city_nudge = nudge
+
+		unit = xy
+
+		siege = xy
+		siege_nudge = nudge
+
+		manufactory = xy
+		manufactory_nudge = nudge
+
+		trade = xy
+		trade_nudge = nudge
+	}
+	sea = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		siege = xy
+		siege_nudge = nudge
+	}
+}
+	
+
+v2 = {
+	display = "Victoria 2"
+	map_inverted = true
+	has_sea_list = true
+	land = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		city = xy
+
+		factory = xy
+
+		building_construction = xy
+
+		military_construction = xy
+
+		building_position = {
+			fort = xy
+			railroad = xy
+			naval_base = xy
+		}
+
+		building_rotation = {
+			fort = rotation
+			railroad = rotation
+			naval_base = rotation
+			aeroplane_factory = rotation
+		}
+
+		building_nudge = {
+			fort = xy
+			railroad = xy
+			naval_base = xy
+		}
+
+		spawn_railway_track = {
+			"empty" = xy
+		}
+	}
+	sea = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		#city = xy
+
+		#factory = xy
+
+		#building_construction = xy
+
+		#military_construction = xy
+
+		#building_rotation = {
+		#	naval_base = rotation
+		#}
+
+		#spawn_railway_track = {
+		#	"empty" = xy
+		#}
+	}
+}
+
+hoi3 = {
+	display = "Hearts of Iron 3"
+	map_inverted = true
+	has_sea_list = true
+	land = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		city = xy
+
+		building_position = {
+			air_base = xy
+			naval_base = xy
+			coastal_fort = xy
+			land_fort = xy
+			anti_air = xy
+			radar_station = xy
+			nuclear_reactor = xy
+			rocket_test = xy
+		}
+
+		building_nudge = {
+		}
+	}
+	sea = {
+		text_position = xy
+		text_rotation = rotation
+		text_scale = scale
+
+		unit = xy
+
+		building_nudge = {
+		}
+	}
+
+}
+		

@@ -1,0 +1,9 @@
+#Specifies the game version to use (as defined in position_types.txt)
+game=httt
+recent={ 
+    httt={ "C:\Games\Europa Universalis III - Copy\map\default.map" }
+    v2={ "C:\Games\Victoria 2 - DEMO\map\default.map" }
+    rome={ "C:\Games\Rome - Demo\map\default.map" }
+    hoi3={ "C:\Games\Hearts of Iron 3 - Demo\map\default.map" }
+    dw={ "C:\Games\Europa Universalis III\map\default.map" }
+} 

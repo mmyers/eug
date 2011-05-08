@@ -1,0 +1,55 @@
+/=================\
+|=== Changelog ===|
+\=================/
+
+
+=== Beta 3 ===
+
+- Rewrote much of the logic; it should now work with any Clausewitz game that
+  is properly defined in position_types.txt.
+- Changed the layout of the editor dialog to show the positions on the left
+  side rather than below.
+
+
+=== Beta 2 ===
+
+- The port text is now printed on the side that the ships would actually be in
+  game, rather than the opposite side. 17blue17 helped me realize that the way
+  I thought was natural was actually counterintuitive.
+- A more helpful tooltip is now shown in the rotation editor dialog.
+
+
+=== Beta 1 ===
+
+- Added config.txt, allowing the .map file to be specified at startup.
+- Bumped to beta, since no major issues have been reported.
+
+
+=== Alpha 5 ===
+
+- Fixed a bug preventing new position entries from being created.
+- If the province in the editor window is too big, a scroll bar will now be
+  shown.
+
+
+=== Alpha 4 ===
+
+- The editor no longer requires text editing. It's all in a form now.
+- Some improvements to the rotation editor.
+
+
+=== Alpha 3 ===
+
+- Added rotation editor, so you won't have to remember how to do radians.
+
+
+=== Alpha 2 ===
+
+- Added text color toggle button, so if the province is dark, you can switch
+  to light text.
+- Fixed placement of province names when there is no text position defined.
+
+
+=== Alpha ===
+
+- Initial release.
