@@ -319,7 +319,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     private void provinceListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_provinceListMouseClicked
         if (evt.getClickCount() == 2) {
             int prov = provinceList.getSelectedIndex();
-            GenericObject position = positions.getChild(prov-1);
+            GenericObject position = positions.getChild(Integer.toString(prov));
             EditorDialog dialog = new EditorDialog(this,
                     mapPanel.createImage(prov),
                     position,
