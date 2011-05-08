@@ -268,7 +268,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     public int getInt(String varname) {
         final String val = getString(varname);
         if (val.length() != 0)
-            return Integer.valueOf(val);
+            return Integer.parseInt(val);
         else
             return -1;
     }
@@ -281,7 +281,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     public int getLastInt(String varname) {
         final String val = getLastString(varname);
         if (val.length() != 0)
-            return Integer.valueOf(val);
+            return Integer.parseInt(val);
         else
             return -1;
     }
@@ -294,7 +294,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     public double getDouble(String varname) {
         final String val = getString(varname);
         if (val.length() != 0)
-            return Double.valueOf(val);
+            return Double.parseDouble(val);
         else
             return -1.0;
     }
@@ -307,9 +307,35 @@ public final class GenericObject implements WritableObject, Cloneable {
     public double getLastDouble(String varname) {
         final String val = getLastString(varname);
         if (val.length() != 0)
-            return Double.valueOf(val);
+            return Double.parseDouble(val);
         else
             return -1.0;
+    }
+
+    /**
+     * Gets the first child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in boolean form.
+     */
+    public boolean getBoolean(String varname) {
+        final String val = getString(varname);
+        if (val.length() != 0)
+            return Boolean.parseBoolean(val);
+        else
+            return false;
+    }
+
+    /**
+     * Gets the last child variable with the given name.
+     * @param childname the name of the variable to retrieve.
+     * @return the named child variable in boolean form.
+     */
+    public boolean getLastBoolean(String varname) {
+        final String val = getLastString(varname);
+        if (val.length() != 0)
+            return Boolean.parseBoolean(val);
+        else
+            return false;
     }
 
     /**
