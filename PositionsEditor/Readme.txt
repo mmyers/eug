@@ -10,7 +10,7 @@
 ===================
 
 This program gives you an easy way of viewing and editing the icon positions
-found in positions.txt.
+found in positions.txt in any Clausewitz game.
 
 
 ===========================

@@ -1,2 +1,2 @@
-java -jar EU3_Positions_Editor.jar
+java -jar PositionsEditor.jar
 pause
