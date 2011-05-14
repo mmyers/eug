@@ -1,7 +1,7 @@
 eu3 = {
 	display = "EU3 Vanilla/NA"
-	map_inverted = true
-	has_sea_list = false
+	map_inverted = yes
+	has_sea_list = no
 	land = {
 		text_position = xy
 		text_rotation = rotation
@@ -33,7 +33,7 @@ eu3 = {
 innomine = {
 	inherit = eu3
 	display = "EU3 In Nomine"
-	has_sea_list = true
+	has_sea_list = yes
 }
 
 httt = {
@@ -53,7 +53,7 @@ httt = {
 dw = {
 	inherit = httt
 	display = "EU3 Divine Wind"
-	map_inverted = false
+	map_inverted = no
 	land = {
 		text_position = xy
 		text_rotation = rotation
@@ -79,8 +79,8 @@ dw = {
 
 rome = {
 	display = "Rome"
-	map_inverted = false
-	has_sea_list = false
+	map_inverted = no
+	has_sea_list = no
 	land = {
 		text_position = xy
 		text_rotation = rotation
@@ -118,8 +118,8 @@ rome = {
 
 v2 = {
 	display = "Victoria 2"
-	map_inverted = true
-	has_sea_list = true
+	map_inverted = yes
+	has_sea_list = yes
 	land = {
 		text_position = xy
 		text_rotation = rotation
@@ -185,8 +185,8 @@ v2 = {
 
 hoi3 = {
 	display = "Hearts of Iron 3"
-	map_inverted = true
-	has_sea_list = true
+	map_inverted = yes
+	has_sea_list = yes
 	land = {
 		text_position = xy
 		text_rotation = rotation
