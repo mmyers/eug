@@ -36,9 +36,9 @@ public final class Text {
 
     public static void initText(File mainDir) {
         try {
-            initTextFromFolder(new File(mainDir.getAbsolutePath() + File.separator + "localisation"));
             if (mainDir.getAbsolutePath().contains(File.separator + "mod" + File.separator))
                 initTextFromFolder(new File(mainDir.getParentFile().getParentFile().getAbsolutePath() + File.separator + "localisation"));
+            initTextFromFolder(new File(mainDir.getAbsolutePath() + File.separator + "localisation"));
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
