@@ -320,7 +320,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     public boolean getBoolean(String varname) {
         final String val = getString(varname);
         if (val.length() != 0)
-            return Boolean.parseBoolean(val);
+            return val.equalsIgnoreCase("yes");
         else
             return false;
     }
@@ -333,7 +333,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     public boolean getLastBoolean(String varname) {
         final String val = getLastString(varname);
         if (val.length() != 0)
-            return Boolean.parseBoolean(val);
+            return val.equalsIgnoreCase("yes");
         else
             return false;
     }
