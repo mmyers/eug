@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileFilter;
 public class PositionsEditorUI extends javax.swing.JFrame {
     
     private static final String APP_NAME    = "EU3 Positions Editor";
-    private static final String APP_VERSION = "Beta 2";
+    private static final String APP_VERSION = "Beta";
     
     private MapPanel mapPanel;
     

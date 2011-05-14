@@ -3,6 +3,13 @@
 \=================/
 
 
+=== Beta 4 ===
+
+- Added an option to use game localization files or rely on the names in
+  definition.csv.
+- Corrected the loading of localization files in mods.
+
+
 === Beta 3 ===
 
 - Rewrote much of the logic; it should now work with any Clausewitz game that
