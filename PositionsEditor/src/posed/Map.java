@@ -26,22 +26,22 @@ public final class Map {
 
     private boolean[] isLand = null;
     
-    public Map(String mapFileName, GameVersion gameVersion) {
+    public Map(String mapFileName, GameVersion gameVersion, boolean useLocalization) {
         this.gameVersion = gameVersion;
         try {
-            loadData(mapFileName);
+            loadData(mapFileName, useLocalization);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
     }
 
-    private void loadData(String filename) throws FileNotFoundException {
+    private void loadData(String filename, boolean useLocalization) throws FileNotFoundException {
         System.out.println("Map file is " + filename);
         mapData = EUGFileIO.load(filename);
         //System.out.println("default.map:");
         //System.out.println(mapData);
         provinceData = new ProvinceData(Integer.parseInt(getString("max_provinces")),
-                new File(filename).getParent() + "/definition.csv");
+                new File(filename).getParent() + "/definition.csv", useLocalization);
 
         if (gameVersion.hasSeaList()) {
             // Initialize boolean array

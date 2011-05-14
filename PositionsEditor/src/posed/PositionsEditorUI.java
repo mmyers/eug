@@ -41,24 +41,25 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     
     private boolean hasUnsavedChanges;
     
-    public PositionsEditorUI(String mapFileName, GameVersion gameVersion) {
+    public PositionsEditorUI(String mapFileName, GameVersion gameVersion, boolean useLocalization) {
         this.gameVersion = gameVersion;
         initComponents();
         
-        load(mapFileName, gameVersion);
+        load(mapFileName, gameVersion, useLocalization);
         
         setLocationRelativeTo(null);
         jSplitPane1.setDividerLocation(0.8);
     }
     
-    private void load(String mapFileName, GameVersion gameVersion) {
+    private void load(String mapFileName, GameVersion gameVersion, boolean useLocalization) {
         File mapFile = new File(mapFileName);
         mapDir = mapFile.getParentFile();
 
         File mainDir = mapDir.getParentFile();
-        Text.initText(mainDir);
+        if (useLocalization)
+            Text.initText(mainDir);
 
-        Map map = new Map(mapFile.getAbsolutePath(), gameVersion);
+        Map map = new Map(mapFile.getAbsolutePath(), gameVersion, useLocalization);
 
         positionsFile = new File(mapFile.getParent() + "/" + map.getString("positions"));
 
@@ -99,7 +100,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         goToProvButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         javax.swing.JSeparator jSeparator1 = new javax.swing.JSeparator();
@@ -155,10 +155,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
-        openMenuItem.setText("Open...");
-        openMenuItem.addActionListener(formListener);
-        fileMenu.add(openMenuItem);
-
         saveMenuItem.setText("Save");
         saveMenuItem.addActionListener(formListener);
         fileMenu.add(saveMenuItem);
@@ -213,8 +209,8 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     private class FormListener implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.awt.event.WindowListener, javax.swing.event.ListSelectionListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == openMenuItem) {
-                PositionsEditorUI.this.openMenuItemActionPerformed(evt);
+            if (evt.getSource() == goToProvButton) {
+                PositionsEditorUI.this.goToProvButtonActionPerformed(evt);
             }
             else if (evt.getSource() == saveMenuItem) {
                 PositionsEditorUI.this.saveMenuItemActionPerformed(evt);
@@ -236,9 +232,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 PositionsEditorUI.this.aboutMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == goToProvButton) {
-                PositionsEditorUI.this.goToProvButtonActionPerformed(evt);
             }
         }
 
@@ -290,31 +283,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             }
         }
     }// </editor-fold>//GEN-END:initComponents
-
-    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        if (hasUnsavedChanges) {
-            int choice = JOptionPane.showConfirmDialog(null, "You have unsaved changes. Would you like to save them before opening a new map?");
-            if (choice == JOptionPane.YES_OPTION) {
-                saveMenuItemActionPerformed(null);
-            } else if (choice == JOptionPane.CANCEL_OPTION) {
-                return;
-            }
-        }
-        
-        JFileChooser chooser = new JFileChooser("C:\\Program Files\\Paradox Interactive\\Europa Universalis III");
-        chooser.setDialogTitle("Select map file");
-        chooser.setFileFilter(new MapFileFilter());
-        
-        int choice = chooser.showOpenDialog(this);
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            load(chooser.getSelectedFile().getAbsolutePath(), gameVersion);
-        } else {
-            System.out.println("No map selected.");
-//            System.out.println("Exiting...");
-            System.exit(0);
-        }
-        
-    }//GEN-LAST:event_openMenuItemActionPerformed
 
     private void provinceListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_provinceListMouseClicked
         if (evt.getClickCount() == 2) {
@@ -482,7 +450,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     javax.swing.JButton goToProvButton;
     javax.swing.JSplitPane jSplitPane1;
     javax.swing.JScrollPane mapScrollPane;
-    private javax.swing.JMenuItem openMenuItem;
     javax.swing.JEditorPane positionTextArea;
     javax.swing.JList provinceList;
     private javax.swing.JMenuItem saveAsMenuItem;

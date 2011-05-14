@@ -1,5 +1,6 @@
 #Specifies the game version to use (as defined in position_types.txt)
 game=httt
+use_localization=yes
 recent={ 
     httt={ "C:\Games\Europa Universalis III - Copy\map\default.map" }
     v2={ "C:\Games\Victoria 2 - DEMO\map\default.map" }

@@ -31,7 +31,7 @@ public final class ProvinceData {
      * @param numProvs the number of provinces in the map.
      * @param defFileName the filename of the province color definitions.
      */
-    public ProvinceData(int numProvs, String defFileName) {
+    public ProvinceData(int numProvs, String defFileName, boolean useLocalization) {
 //        final int numProvs = Integer.parseInt(map.getString("max_provinces"));
         
         rgbMap = new HashMap<Integer, Province>(numProvs);
@@ -42,7 +42,7 @@ public final class ProvinceData {
             defFileName = "map/" + defFileName;
         
         try {
-            parseDefs(defFileName, numProvs);
+            parseDefs(defFileName, numProvs, useLocalization);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -50,7 +50,8 @@ public final class ProvinceData {
         }
     }
     
-    private void parseDefs(String fileName, int numProvs) throws FileNotFoundException, IOException {
+    private void parseDefs(String fileName, int numProvs, boolean useLocalization)
+            throws FileNotFoundException, IOException {
         final BufferedReader reader = new BufferedReader(new FileReader(fileName));
 
         try {
@@ -79,7 +80,8 @@ public final class ProvinceData {
                 color += (g & 0xFF) << 8;
                 color += (b & 0xFF);
 
-                final Province p = new Province(id, Text.getText("PROV" + arr[0]), color);
+                String provName = useLocalization ? Text.getText("PROV" + arr[0]) : arr[4];
+                final Province p = new Province(id, provName, color);
 
                 rgbMap.put(color, p);
                 allProvs[id] = p;

@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -117,6 +118,9 @@ public class PositionsEditor {
         gameTypePanel.add(gameBox);
         lowerPanel.add(gameTypePanel, BorderLayout.WEST);
 
+        final JCheckBox useLocCheckBox = new JCheckBox("Use localized names", config.getBoolean("use_localization"));
+        lowerPanel.add(useLocCheckBox);
+
         JPanel buttonPanel = new JPanel();
         JButton okButton = new JButton("  OK  ");
         okButton.addActionListener(new ActionListener() {
@@ -126,6 +130,8 @@ public class PositionsEditor {
 
                 GameVersion version = (GameVersion) gameBox.getSelectedItem();
                 config.setString("game", version.getName());
+                
+                config.setBoolean("use_localization", useLocCheckBox.isSelected());
 
                 GenericObject recent = config.getChild("recent");
                 if (recent == null)
@@ -140,7 +146,7 @@ public class PositionsEditor {
 
                 dialog.dispose();
                 
-                PositionsEditorUI ui = new PositionsEditorUI(mapFile, version);
+                PositionsEditorUI ui = new PositionsEditorUI(mapFile, version, useLocCheckBox.isSelected());
                 ui.setVisible(true);
             }
         });

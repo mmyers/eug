@@ -24,8 +24,8 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     
     /** Creates a new instance of MapPanelDataModel */
-    public MapPanelDataModel(final MapData data, final int numProvs, final String defFileName) {
-        provinceData = new ProvinceData(numProvs, defFileName);
+    public MapPanelDataModel(final MapData data, final int numProvs, final String defFileName, boolean useLocalization) {
+        provinceData = new ProvinceData(numProvs, defFileName, useLocalization);
         mapData = data;
     }
     

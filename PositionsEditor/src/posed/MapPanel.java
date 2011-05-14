@@ -78,8 +78,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
      * The other map files are assumed to be in the same directory.
      * @param positions The contents of the positions.txt file.
      */
-    public MapPanel(String mapFileName, GenericObject positions, GameVersion gameVersion) {
-        this(new Map(mapFileName, gameVersion), new File(mapFileName).getParentFile(), positions, gameVersion);
+    public MapPanel(String mapFileName, GenericObject positions, GameVersion gameVersion, boolean useLocalization) {
+        this(new Map(mapFileName, gameVersion, useLocalization), new File(mapFileName).getParentFile(), positions, gameVersion);
     }
     
     public MapPanel(Map map, File mapDir, GenericObject positions, GameVersion gameVersion) {
