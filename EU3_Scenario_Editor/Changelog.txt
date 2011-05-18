@@ -2,6 +2,16 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.7.4 ===
+
+Changed:
+- Provinces are now shown with their names from the localization files, not
+  the names defined in definition.csv.
+
+Bugfixes:
+- Fixed crash when loading a localization file with a blank line.
+
+
 === 0.7.3 ===
 
 Changed:
