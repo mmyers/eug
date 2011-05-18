@@ -51,7 +51,7 @@ public final class Text {
             reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(1024000, (int)f.length()));
             try {
                 while ((line = reader.readLine()) != null) {
-                    if (line.charAt(0) == '#')
+                    if (line.length() == 0 || line.charAt(0) == '#')
                         continue;
 //                    splitLine = semicolon.split(line); //line.split(";");
 //                    if (splitLine.length < 2) {
