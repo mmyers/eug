@@ -160,7 +160,12 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public List<Integer[]> getLinesInProv(int provId) {
-        return mapData.getLinesInProv(provinceData.getProvByID(provId).getColor());
+        ProvinceData.Province p = provinceData.getProvByID(provId);
+        if (p == null) {
+            System.err.println("Unknown province " + provId);
+            return Collections.EMPTY_LIST;
+        } else
+            return mapData.getLinesInProv(p.getColor());
     }
     
 }
