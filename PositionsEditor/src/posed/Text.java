@@ -9,6 +9,7 @@ package posed;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -49,8 +50,9 @@ public final class Text {
     private static void initTextFromFolder(File locFolder) throws FileNotFoundException, IOException {
         java.io.BufferedReader reader;
         String line;
-        //String[] splitLine;
-        for (File f : locFolder.listFiles()) {
+        File[] files = locFolder.listFiles();
+        Arrays.sort(files);
+        for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
             
@@ -70,7 +72,9 @@ public final class Text {
                         System.err.println("Malformed line in file " + f.getPath() + ":");
                         System.err.println(line);
                     }
-                    text.put(line.substring(0, firstSemi).toLowerCase(), line.substring(firstSemi + 1, secondSemi));
+                    String key = line.substring(0, firstSemi).toLowerCase();
+                    if (!text.containsKey(key))
+                        text.put(key, line.substring(firstSemi + 1, secondSemi));
                 }
             } finally {
                 reader.close();

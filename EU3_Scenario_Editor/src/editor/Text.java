@@ -9,6 +9,7 @@ package editor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 //import java.util.regex.Pattern;
 
@@ -39,8 +40,9 @@ public final class Text {
     private static void initText() throws FileNotFoundException, IOException {
         java.io.BufferedReader reader;
         String line;
-        //String[] splitLine;
-        for (File f : Main.filenameResolver.listFiles("localisation")) {
+        File[] files = Main.filenameResolver.listFiles("localisation");
+        Arrays.sort(files);
+        for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
             
@@ -53,17 +55,6 @@ public final class Text {
                 while ((line = reader.readLine()) != null) {
                     if (line.length() == 0 || line.charAt(0) == '#')
                         continue;
-//                    splitLine = semicolon.split(line); //line.split(";");
-//                    if (splitLine.length < 2) {
-//                        if (!line.contains(";")) {
-//                            // If it contains ";", then it's probably just a line like ;;;;;;;;;;;;
-//                            // If not, we need to know what it is.
-//                            System.err.println("Malformed line in file " + f.getPath() + ":");
-//                            System.err.println(line);
-//                        }
-//                        continue;
-//                    }
-//                    text.put(splitLine[0].toLowerCase(), splitLine[1]); // English
 
                     int firstSemi = line.indexOf(';');
                     int secondSemi = line.indexOf(';', firstSemi + 1);
@@ -71,7 +62,9 @@ public final class Text {
                         System.err.println("Malformed line in file " + f.getPath() + ":");
                         System.err.println(line);
                     }
-                    text.put(line.substring(0, firstSemi).toLowerCase(), line.substring(firstSemi + 1, secondSemi));
+                    String key = line.substring(0, firstSemi).toLowerCase();
+                    if (!text.containsKey(key))
+                        text.put(key, line.substring(firstSemi + 1, secondSemi));
                 }
             } finally {
                 reader.close();
