@@ -11,12 +11,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -34,7 +34,7 @@ import javax.swing.JOptionPane;
  * - the root of the object tree
  * - quick access to various kinds of objects
  * - access to info loaded from the game's config files,
- * like contsnat lists
+ * like constant lists
  */
 public class VicScenario extends Scenario {
     
@@ -94,11 +94,11 @@ public class VicScenario extends Scenario {
          * The following methods are used to find commonly-used objects
          * for quick access later
          */
-        setProvVector();
+        setupProvinces();
         System.out.println(provinces.size()+" provinces.");
-        setPopVector();
+        setupPops();
         System.out.println(populations.size()+" populations.");
-        setCountryVector();
+        setupCountries();
         System.out.println(countries.size()+" countries.");
         
     }
@@ -166,7 +166,6 @@ public class VicScenario extends Scenario {
             cL = br.readLine();
             
             while (cL != null) {
-                
                 if (cL.charAt(0) != '#') {
                     colors.put(cL.split(",")[0].toLowerCase(),Integer.decode("0x"+cL.split(",")[1]));
                 }
@@ -226,7 +225,7 @@ public class VicScenario extends Scenario {
                     s = currentLine.split(":")[0];//contsant list name
                     constantPrefixes.put(s,currentLine.split(":")[1]);//prefix
                     values = (currentLine.split(":")[2]).split(",");//list of possible values
-                    list = new Vector<String>();
+                    list = new ArrayList<String>();
                     
                     for (int i = 0; i < values.length; i++)
                         list.add(values[i]);
@@ -341,15 +340,15 @@ public class VicScenario extends Scenario {
 //        return ((EditorTemplate)editorTemplates.get(edType)).createEditor(go, objType);
 //    }
     
-    private void setPopVector() {
+    private void setupPops() {
         
         lastPopID = 0;
         
-        populations = new Vector<GenericObject>(5000);
+        populations = new ArrayList<GenericObject>(5000);
         popMap = new HashMap<Integer, GenericObject>(5000);
         
         //populations are stored in provinces
-        for (GenericObject prov : provinces) {
+        for (GenericObject prov : provinces.values()) {
             for (GenericObject pop : prov.children) {
                 if (pop.name.equals("pop")) {
                     populations.add(pop);
@@ -690,8 +689,11 @@ public class VicScenario extends Scenario {
     }
     
     public Province getProvince(int id) {
+        if (provinces.containsKey(id))
+            return new Province(provinces.get(id), this);
+
         String sid = String.valueOf(id);
-        for (GenericObject prov : provinces) {
+        for (GenericObject prov : provinces.values()) {
             if (prov.getString("id").equals(sid))
                 return new Province(prov, this);
         }
@@ -699,8 +701,8 @@ public class VicScenario extends Scenario {
         return null;
     }
     
-    private void setCountryVector() {
-        countries = new Vector<GenericObject>();
+    private void setupCountries() {
+        countries = new ArrayList<GenericObject>();
         for (GenericObject obj : root.children) {
             if (obj.name.equals("country")) {
                 countries.add(obj);
@@ -713,12 +715,13 @@ public class VicScenario extends Scenario {
         });
     }
     
-    private void setProvVector() {
-        provinces = new Vector<GenericObject>();
-        for (GenericObject obj : root.children) {
-            if (obj.name.equals("province")) {
-                provinces.add(obj);
-            }
+    private void setupProvinces() {
+        provinces = new HashMap<Integer, GenericObject>();
+        for (GenericObject obj : root.getChildren("province")) {
+            int id = obj.getInt("id");
+            if (id < 0)
+                System.err.println("A province has no id field");
+            provinces.put(id, obj);
         }
     }
     

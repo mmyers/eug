@@ -17,7 +17,7 @@ public abstract class Scenario {
     
     public GenericObject root;
     public List<GenericObject> countries;
-    public List<GenericObject> provinces;
+    public Map<Integer, GenericObject> provinces;
     public String scenarioName;
     public Map<String, String> displayNames;
     

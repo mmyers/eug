@@ -17,12 +17,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -94,8 +94,8 @@ public class EU2Scenario extends Scenario {
          * The following methods are used to find commonly-used objects
          * for quick access later
          */
-        setProvVector();
-        setCountryVector();
+        setupProvinces();
+        setupCountries();
         
 //        root.getChild("header").getList("selectable").sort(); // just for fun
         
@@ -344,8 +344,11 @@ public class EU2Scenario extends Scenario {
     }
     
     public Province getProvince(int id) {
+        if (provinces.containsKey(id))
+            return new Province(provinces.get(id), this);
+        
         String sid = String.valueOf(id);
-        for (GenericObject prov : provinces) {
+        for (GenericObject prov : provinces.values()) {
             if (prov.getString("id").equals(sid))
                 return new Province(prov, this);
         }
@@ -357,8 +360,8 @@ public class EU2Scenario extends Scenario {
         return provTerrain[id] < 5;
     }
     
-    private void setCountryVector() {
-        countries = new Vector<GenericObject>();
+    private void setupCountries() {
+        countries = new ArrayList<GenericObject>();
         for (GenericObject obj : root.children) {
             if (obj.name.equals("country")) {
                 countries.add(obj);
@@ -373,12 +376,13 @@ public class EU2Scenario extends Scenario {
         countryCache = new HashMap<String,EU2Country>(countries.size());
     }
     
-    private void setProvVector() {
-        provinces = new Vector<GenericObject>();
-        for (GenericObject obj : root.children) {
-            if (obj.name.equals("province")) {
-                provinces.add(obj);
-            }
+    private void setupProvinces() {
+        provinces = new HashMap<Integer, GenericObject>();
+        for (GenericObject obj : root.getChildren("province")) {
+            int id = obj.getInt("id");
+            if (id < 0)
+                System.err.println("A province has no id field");
+            provinces.put(id, obj);
         }
     }
     

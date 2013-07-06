@@ -44,14 +44,14 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     
     private void initProvs() {
-        provinces = new ArrayList<GenericObject>(1500);
+        provinces = new HashMap<Integer, GenericObject>(1500);
         for (int i = 1; /* loop until broken */; i++) {
             final GenericObject prov = root.getChild(Integer.toString(i));
             if (prov == null) {
                 lastProvId = i-1;
                 break;
             }
-            provinces.add(prov);
+            provinces.put(i, prov);
         }
     }
     
@@ -75,7 +75,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     // Lazy accessor
-    private List<GenericObject> getProvinces() {
+    private Map<Integer, GenericObject> getProvinces() {
         if (provinces == null)
             initProvs();
         
@@ -102,12 +102,27 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     public GenericObject getProvince(int id) {
         if (id > lastProvId)
-            return null;
+            return tryLoadProvince(id);
         return getProvinces().get(id-1);
     }
     
     public GenericObject getProvinceHistory(int id) {
+        if (id > lastProvId) {
+            GenericObject obj = tryLoadProvince(id);
+            if (obj != null)
+                return obj.getChild("history");
+        }
         return getProvinces().get(id-1).getChild("history");
+    }
+
+    private GenericObject tryLoadProvince(int id) {
+        GenericObject prov = root.getChild(Integer.toString(id));
+        if (prov != null) {
+            provinces.put(id, prov);
+            if (id > lastProvId)
+                lastProvId = id;
+        }
+        return prov;
     }
     
     public List<GenericObject> getWars() {

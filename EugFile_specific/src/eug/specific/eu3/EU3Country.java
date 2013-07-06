@@ -296,7 +296,7 @@ public class EU3Country extends EU3SpecificObject {
         final String otherTag = country.getTag();
         
         ((EU3SaveGame)dataSource).preloadProvinces();
-        for (GenericObject prov : ((EU3SaveGame)dataSource).provinces) {
+        for (GenericObject prov : ((EU3SaveGame)dataSource).provinces.values()) {
             if (prov.getString("owner").equals(otherTag)) {
                 prov.setString("owner", tag);
                 if (prov.getString("controller").equals(otherTag))

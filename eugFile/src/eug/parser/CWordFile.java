@@ -214,7 +214,7 @@ public class CWordFile {
      * @return the next node to read into, which can be either the parameter,
      * the parameter's parent, or <code>null</code>.
      */
-    private final GenericObject readObject(GenericObject current_node) {
+    private GenericObject readObject(GenericObject current_node) {
         if (current_node == null) {
             throw new ParserException("node is null");
             //error("Cannot read into a null node!");
@@ -242,20 +242,6 @@ public class CWordFile {
                                 getNextToken();
                             } while (tokenType == TokenType.COMMENT || tokenType == TokenType.NEWLINE);
                             continue findType;
-//                        case LIST:
-//                            if (!settings.isAllowLists()) {
-//                                warn("Read illegal token: "+tokenizer.getList());
-//                                break;
-//                            }
-//
-//                            if (settings.isIgnoreComments()) {
-//                                current_node.addList(name, tokenizer.getList());
-//                            } else {
-//                                current_node.addList(name, tokenizer.getList(),
-//                                        lastComment, readInlineComment());
-//                            }
-//                            lastComment = null;
-//                            break;
                         case ULSTRING:
                         case DLSTRING:
                             boolean quotes = (tokenType == TokenType.DLSTRING);
@@ -301,7 +287,7 @@ public class CWordFile {
                 break;
             case RBRACE:     // Reached end of a node.
                 if (current_node.getParent() == null) {
-                    throw new ParserException("Unmatched right brace on line " +
+                    throw new ParserException(filename + ": Unmatched right brace on line " +
                             tokenizer.getLine() + ", column " +
                             tokenizer.getColumn());
                 }

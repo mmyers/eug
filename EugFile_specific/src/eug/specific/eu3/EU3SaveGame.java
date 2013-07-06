@@ -12,7 +12,6 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Style;
 import eug.specific.clausewitz.ClausewitzSaveGame;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,7 @@ import java.util.Map;
  */
 public class EU3SaveGame extends ClausewitzSaveGame {
     
-    private final FilenameResolver resolver;
+    //private final FilenameResolver resolver;
     
     /**
      * Creates a new instance of EU3SaveGame
@@ -32,7 +31,7 @@ public class EU3SaveGame extends ClausewitzSaveGame {
     public EU3SaveGame(GenericObject root, String savePath, String mainPath, String modName) {
         super(root, savePath, mainPath, modName);
         
-        resolver = new FilenameResolver(mainPath, modName);
+        //resolver = new FilenameResolver(mainPath, modName);
         
 //        initDisplayNames();
 //        initProvs();
@@ -41,7 +40,7 @@ public class EU3SaveGame extends ClausewitzSaveGame {
     
     public EU3SaveGame(GenericObject root, String savePath, FilenameResolver resolver) {
         super(root, savePath, null, null);
-        this.resolver = resolver;
+        //this.resolver = resolver;
     }
     
     public static EU3SaveGame loadSaveGame(String filename, String mainPath, String modName) {
@@ -81,14 +80,14 @@ public class EU3SaveGame extends ClausewitzSaveGame {
 //    }
     
     private void initProvs() {
-        provinces = new ArrayList<GenericObject>(1500);
+        provinces = new HashMap<Integer, GenericObject>(2048);
         for (int i = 1; /* loop until broken */; i++) {
             final GenericObject prov = root.getChild(Integer.toString(i));
             if (prov == null) {
                 lastProvId = i-1;
                 break;
             }
-            provinces.add(prov);
+            provinces.put(i, prov);
         }
     }
     
@@ -112,7 +111,7 @@ public class EU3SaveGame extends ClausewitzSaveGame {
     }
     
     // Lazy accessor
-    private List<GenericObject> getProvinces() {
+    private Map<Integer, GenericObject> getProvinces() {
         if (provinces == null)
             initProvs();
         
@@ -198,7 +197,7 @@ public class EU3SaveGame extends ClausewitzSaveGame {
         }
         
         // Provinces
-        for (GenericObject prov : provinces) {
+        for (GenericObject prov : provinces.values()) {
             if (prov.getString("owner").equals(oldTag))
                 prov.setString("owner", newTag);
             if (prov.getString("controller").equals(oldTag))
