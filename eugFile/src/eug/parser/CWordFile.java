@@ -277,7 +277,7 @@ public class CWordFile {
                             warn("Reached end of file after " + name + " (unclosed bracket somewhere?)");
                             break;
                         default:
-                            warn("Unexpected token type: " + tokenType);
+                            warn("Unexpected token type: " + tokenType + " on line " + tokenizer.getLine());
                             break;
                     }
                     // If we get here normally, we shouldn't loop again
@@ -304,7 +304,7 @@ public class CWordFile {
                 if (current_node.isRoot() || settings.isTryToRecover())
                     current_node = null;
                 else
-                    throw new ParserException("Node " + current_node.name + " does not terminate");
+                    throw new ParserException("Node " + current_node.name + " does not terminate at the end of the file");
                 break;
             case COMMENT:
                 // Here I'm trying to avoid the problem of file header comments
@@ -339,12 +339,12 @@ public class CWordFile {
                     current_node.addString(token, "1", false, lastComment,
                             readInlineComment());
                 } else {
-                    warn("Warning: Illegal string: " + token);
+                    warn("Warning: Illegal string: " + token + " on line " + tokenizer.getLine());
                 }
                 break;
             case DLSTRING:
                 // Shouldn't happen.
-                warn("Warning: Illegal string: \"" + token + "\"");
+                warn("Warning: Illegal string: \"" + token + "\" on line " + tokenizer.getLine());
                 break;
             case NEWLINE:
                 // Only used for matching header comments to objects.
