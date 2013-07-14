@@ -5,7 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 /**
- * Representes an attribute of a GenericObject.
+ * Represents an attribute of a GenericObject.
  */
 public final class ObjectVariable
         implements WritableObject, Cloneable, Comparable<ObjectVariable> {
@@ -34,7 +34,7 @@ public final class ObjectVariable
     
     public void setValue(String newValue, boolean quotes) {
         value = newValue;
-        inQuotes = (quotes || newValue.contains(" "));
+        inQuotes = quotes;
     }
     
     public String getValue() {
@@ -78,7 +78,7 @@ public final class ObjectVariable
         
         sb.append(varname).append(style.getEqualsSign(depth));
         
-        if (inQuotes)
+        if (inQuotes || value.isEmpty() || value.contains(" "))
             bw.write(sb.append('\"').append(value).append('\"').toString());
         else
             bw.write(sb.append(value).toString());
@@ -91,13 +91,12 @@ public final class ObjectVariable
     
     @Override
     public String toString() {
-//        System.out.println("Called ObjectVariable.toString()");
         return toString(Style.DEFAULT);
     }
     
     public String toString(Style s) {
         StringBuilder sb = new StringBuilder(varname).append(s.getEqualsSign(0));
-        if (inQuotes)
+        if (inQuotes || value.isEmpty() || value.contains(" "))
             sb.append('\"').append(value).append('\"');
         else
             sb.append(value);
@@ -148,5 +147,4 @@ public final class ObjectVariable
         
         return value.compareTo(o.value);
     }
-    
 }

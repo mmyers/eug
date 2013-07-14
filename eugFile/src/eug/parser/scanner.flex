@@ -113,7 +113,7 @@ package eug.parser;
     private void badChar(char c) {
         System.err.println("Illegal character: \'" + c +
             "\' (#" + Integer.toHexString((int)c) + 
-            ") on line " + yyline + ", column " + yycolumn + " of " + filename);
+            ") on line " + getLine() + ", column " + getColumn() + " of " + filename);
     }
 
     /**
@@ -245,10 +245,10 @@ package eug.parser;
     }
 
     /**
-     * Returns the number of newlines encountered up to the start of the token.
+     * Returns the number of newlines encountered up to the start of the token plus one.
      */
     public int getLine() {
-        return yyline;
+        return yyline + 1;
     }
 
    /**
@@ -256,7 +256,7 @@ package eug.parser;
     * the token.
     */
     public int getColumn() {
-        return yycolumn;
+        return yycolumn + 1;
     }
 
     /** 
@@ -347,10 +347,11 @@ ALPHA                       = [[:letter:]_\[\]\-'´¨,]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
 DIGIT                       = [0-9\.\-\+]
 ALNUM                       = {ALPHA}|{DIGIT}
 
-NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012]
+/* \012 is LF; \u00A0 is NBSP */
+NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012\u00A0]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
-WHITE_SPACE_CHAR            = [\n\r\ \t\b\012]
+WHITE_SPACE_CHAR            = [\n\r\ \t\b\012\u00A0]
 /* NON_OPERATOR                = [^(=|{|}|#)] */
 COMMENT_CHAR                = [#;!] /* yes, really! */
 
