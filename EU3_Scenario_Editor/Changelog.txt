@@ -2,6 +2,15 @@
 |=== Changelog ===|
 \=================/
 
+
+=== 0.8 ===
+
+- Complete revamp of all initialization and loading code.
+- Game types are now defined in games.txt
+- Fixed many longstanding bugs
+- Improved error messages throughout the application
+
+
 === 0.7.4 ===
 
 Changed:

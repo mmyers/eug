@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==   Version 0.7.4 (May 17 2011)   ==|
+|==   Version 0.8 (July 14 2011)    ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -31,13 +31,11 @@ Java 1.5 or later (tested on Java 1.6)
 ====================
 
 1. Unzip somewhere.
-2. Edit config.txt so that maindir points to your game installation. If you're
-   using a mod, edit the moddir entry also.
-   Or you can double-click config.bat to get a graphical editor if you have
-   Java 1.6.
-3. Double-click scen-ed.bat. A dialog will appear asking whether you want to
-   load a saved game. If you select "Yes", you will then be asked to choose the
-   saved game file.
+2. Double-click scen-ed.bat.
+3. Choose which game you want in the upper left dropdown, then browse to
+   the location where that game is installed.
+   Then select a mod (if desired) and choose a saved game (if desired).
+4. Click OK to begin.
 
 Click on a province, and its name should be shown at the bottom of the window.
 Click "Show province history" or simply double-click a province to display
@@ -68,8 +66,10 @@ only affects views which use history data. The editor also lets you easily
 jump to any of the game's bookmarks (if applicable).
 
 Use Ctrl +/- to zoom in and out. Note that zooming too far in may cause the
-program to run out of memory; thus, I have capped the zoom at 5x. If you
-get a stack trace that starts with something like "java.lang.OutOfMemoryException"
+program to run out of memory; thus, I have capped the zoom at 5x.
+
+If you get a stack trace that starts with something like
+ "java.lang.OutOfMemoryException"
 then edit the .bat file to look like:
 
 java -Xmx1024m -jar EU3_Scenario_Editor.jar
@@ -151,6 +151,7 @@ Big thanks go to seboden. He has been most helpful in not just finding bugs,
 but also suggesting fixes.
 Thanks also to Kurper and jdrou for making suggestions for the Divine Wind
 version.
+Thanks to everyone who posted feedback and suggestions in the forum thread.
 
 -- MichaelM
 
