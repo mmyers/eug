@@ -22,13 +22,13 @@ public class CtryReligionMode extends CountryMode {
     
     /** Creates a new instance of CtryReligionMode */
     public CtryReligionMode() {
-        super();
     }
     
     public CtryReligionMode(MapPanel panel) {
         super(panel);
     }
     
+    @Override
     protected Color getCtryColor(String country) {
         if (Utilities.isNotACountry(country))
             return Utilities.COLOR_LAND_DEFAULT;
@@ -49,9 +49,10 @@ public class CtryReligionMode extends CountryMode {
     }
     
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final String rel = Text.getText(mapPanel.getModel().getHistString(id, "religion"));

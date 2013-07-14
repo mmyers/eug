@@ -1,6 +1,5 @@
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -26,7 +25,6 @@ public abstract class ProvincePaintingMode extends MapMode {
     // new GradientPaint(0, 0, Color.BLUE.brighter(), 0, mapPanel.getHeight(), Color.CYAN.darker(), true)
     
     protected ProvincePaintingMode() {
-        super();
     }
     
     protected ProvincePaintingMode(MapPanel panel) {
@@ -42,9 +40,9 @@ public abstract class ProvincePaintingMode extends MapMode {
         paintTerraIncognita(g);
         
         // Now, send the rest to the subclass.
-        int maxProvinces = Integer.parseInt(Main.map.getString("max_provinces"));
+        int maxProvinces = Integer.parseInt(getMap().getString("max_provinces"));
         for (int i = 1; i < maxProvinces; i++) {
-            if (Main.map.isLand(i))
+            if (getMap().isLand(i))
                 paintProvince(g, i);
             else
                 paintSeaZone(g, i);

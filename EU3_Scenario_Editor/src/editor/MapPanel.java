@@ -8,6 +8,7 @@ package editor;
 
 import editor.mapmode.MapMode;
 import editor.mapmode.ProvinceMode;
+import eug.shared.FilenameResolver;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -57,6 +58,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
 
     /** @since 0.5pre3 */
     private boolean paintBorders;
+
+    /** @since 0.7.5 */
+    private boolean isMapInverted;
+
+    /** @since 0.7.5 */
+    private Map map;
     
     /**
      * Creates new form MapPanel. {@link #initialize()} must be called before the
@@ -71,13 +78,15 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
      * Loads the necessary data for showing the map. This method must be called
      * before the panel is shown on screen; otherwise, it's just a blank JPanel.
      */
-    public void initialize() {
-        createMapImage();
+    public void initialize(Map map, FilenameResolver resolver, ProvinceData provData, boolean isInverted) {
+        this.map = map;
+        isMapInverted = isInverted;
+        createMapImage(map, resolver);
         
-        System.out.println("Reading map...");
-        final MapData data = new MapData(scaledMapImage, Integer.parseInt(Main.map.getString("max_provinces")));
+        System.out.println("Reading map from image...");
+        final MapData data = new MapData(scaledMapImage, Integer.parseInt(map.getString("max_provinces")));
         System.out.println("Done.");
-        model = new MapPanelDataModel(data);
+        model = new MapPanelDataModel(data, map, provData);
         model.setDate("1453.1.1");
         
         initComponents();
@@ -89,13 +98,13 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         paintBorders = true;
     }
     
-    private void createMapImage() {
+    private void createMapImage(Map map, FilenameResolver resolver) {
         try {
-            String provFileName = Main.map.getString("provinces").replace('\\', '/');
+            String provFileName = map.getString("provinces").replace('\\', '/');
             if (!provFileName.contains("/"))
                 provFileName = "map/" + provFileName;
             
-            mapImage = ImageIO.read(new File(Main.filenameResolver.resolveFilename(provFileName)));
+            mapImage = ImageIO.read(new File(resolver.resolveFilename(provFileName)));
             rescaleMap();
             
         } catch (IOException ex) {
@@ -159,14 +168,14 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         paintLines(g, model.getLinesInProv(provId), p);
     }
     
-    private final void paintLines(final Graphics2D g, final List<Integer[]> lines, final Color c) {
+    private void paintLines(final Graphics2D g, final List<Integer[]> lines, final Color c) {
         paintLines(g, lines, (Paint) c);
     }
     
     /**
      * This is the actual method used to paint a province.
      */
-    private final void paintLines(final Graphics2D g, final List<Integer[]> lines, final Paint paint) {
+    private void paintLines(final Graphics2D g, final List<Integer[]> lines, final Paint paint) {
         // Quick sanity check
         if (lines == null)
             return;
@@ -196,7 +205,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         }
     }
     
-    private final void paintBorders(final Graphics2D g) {
+    private void paintBorders(final Graphics2D g) {
         g.setColor(Color.BLACK);
         
         final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
@@ -303,7 +312,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private boolean isMapRightSideUp() {
-        return !Main.gameVersion.isMapUpsideDown();
+        return !isMapInverted;
     }
     
     private void rescaleMap() {
@@ -376,6 +385,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     public void goToProv(int provId) {
         java.awt.Rectangle r =
                 calculateBounds(model.getMapData().getLinesInProv(model.getProvinceData().getProvByID(provId).getColor()));
+        
+        if (r == null) // province does not appear on the map
+            return;
+
         // We want the point x + width/2, y + height/2 to be in the
         // center of the viewport.
         int x = r.x + r.width/2;
@@ -401,6 +414,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private static java.awt.Rectangle calculateBounds(final List<Integer[]> lines) {
+        if (lines == null || lines.isEmpty())
+            return null;
+
         int xLeft = Integer.MAX_VALUE;
         int xRight = Integer.MIN_VALUE;
         int yTop = Integer.MAX_VALUE;
@@ -520,13 +536,19 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     public void setPaintBorders(boolean paintBorders) {
         this.paintBorders = paintBorders;
     }
-    
-    private void readObject(java.io.ObjectInputStream in)
-    throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        mode = new ProvinceMode(this);
-        overrides = new java.util.HashMap<Integer, Color>();
-        createMapImage();
+
+    /** @since 0.7.5 */
+    public Map getMap() {
+        return map;
     }
+
+    // blah
+//    private void readObject(java.io.ObjectInputStream in)
+//    throws IOException, ClassNotFoundException {
+//        in.defaultReadObject();
+//        mode = new ProvinceMode(this);
+//        overrides = new java.util.HashMap<Integer, Color>();
+//        createMapImage();
+//    }
     
 }

@@ -75,7 +75,7 @@ public final class FortMapMode extends DiscreteScalingMapMode {
     @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         return "Fort level: " + getFortLevel(id);

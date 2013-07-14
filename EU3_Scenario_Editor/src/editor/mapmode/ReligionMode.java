@@ -30,7 +30,6 @@ public final class ReligionMode extends ProvincePaintingMode {
      * Creates a new instance of ReligionMode.
      */
     public ReligionMode() {
-        super();
     }
     
     public ReligionMode(MapPanel panel) {
@@ -82,9 +81,10 @@ public final class ReligionMode extends ProvincePaintingMode {
     }
     
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final String rel = Text.getText(mapPanel.getModel().getHistString(id, "religion"));

@@ -6,7 +6,6 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 public class NativeGroupMode extends GroupMode {
     
     public NativeGroupMode(String nativeGroup) {
-        super(Main.map.getNatives(nativeGroup));
+        provIds = makeIntList(getMap().getNatives(nativeGroup));
     }
     
     public NativeGroupMode(List<String> nativeGroup) {
@@ -27,7 +26,8 @@ public class NativeGroupMode extends GroupMode {
     }
     
     public NativeGroupMode(MapPanel panel, String nativeGroup) {
-        super(panel, Main.map.getNatives(nativeGroup));
+        super(panel);
+        provIds = makeIntList(getMap().getNatives(nativeGroup));
     }
     
     public NativeGroupMode(MapPanel panel, List<String> nativeGroup) {
@@ -36,9 +36,9 @@ public class NativeGroupMode extends GroupMode {
     
     @Override
     public String getTooltipExtraText(final Province current) {
-        if (!editor.Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
-        return "Natives type: " + Main.map.getNativeTypeOfProv(current.getId());
+        return "Natives type: " + getMap().getNativeTypeOfProv(current.getId());
     }
 }

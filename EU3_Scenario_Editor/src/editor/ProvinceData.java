@@ -6,6 +6,7 @@
 
 package editor;
 
+import eug.shared.FilenameResolver;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -28,7 +29,7 @@ public final class ProvinceData {
     /**
      * Creates a new instance of ProvinceData.
      */
-    public ProvinceData(Map map) {
+    public ProvinceData(Map map, FilenameResolver resolver) {
         final int numProvs = Integer.parseInt(map.getString("max_provinces"));
         
         rgbMap = new HashMap<Integer, Province>(numProvs);
@@ -39,7 +40,7 @@ public final class ProvinceData {
             defFileName = "map/" + defFileName;
         
         try {
-            parseDefs(Main.filenameResolver.resolveFilename(defFileName), numProvs);
+            parseDefs(resolver.resolveFilename(defFileName), numProvs);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {

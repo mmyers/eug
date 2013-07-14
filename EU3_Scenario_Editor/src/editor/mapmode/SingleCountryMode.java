@@ -25,7 +25,6 @@ public class SingleCountryMode extends ProvincePaintingMode {
     
     /** Creates a new instance of SingleCountryMode */
     public SingleCountryMode(String tag) {
-        super();
         this.tag = tag;
     }
     
@@ -54,8 +53,9 @@ public class SingleCountryMode extends ProvincePaintingMode {
         this.tag = tag;
     }
     
+    @Override
     public String getTooltipExtraText(Province current) {
-        if (!editor.Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
         final String owner = mapPanel.getModel().getHistString(current.getId(), "owner");

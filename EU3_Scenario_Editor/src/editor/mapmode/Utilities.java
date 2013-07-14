@@ -6,9 +6,9 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.awt.Color;
@@ -21,10 +21,11 @@ import java.util.HashMap;
 
 /**
  * A place for static methods commonly used by mapmodes.
+ * Must first be initialized by calling {@link init}.
  * @author Michael Myers
  * @since 0.5pre3
  */
-final class Utilities {
+public final class Utilities {
     
     /** Creates a new instance of Utilities */
     private Utilities() { }
@@ -71,22 +72,31 @@ final class Utilities {
             ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
     
     
-    private static final GenericObject countries = EUGFileIO.load(
-            Main.filenameResolver.resolveFilename("common/countries.txt"),
-            settings
-            );
+    private static GenericObject countries;
     
     private static final java.util.Map<String, Color> ctryColorCache =
             new HashMap<String, Color>();
     
-    private static final GenericObject religions = EUGFileIO.load(
-            Main.filenameResolver.resolveFilename("common/religion.txt"),
-            settings
-            );
+    private static GenericObject religions;
     
     private static final java.util.Map<String, Color> relColorCache =
             new HashMap<String, Color>();
 
+    private static FilenameResolver resolver;
+
+    /** @since 0.7.5 */
+    public static void init(FilenameResolver resolver) {
+        countries = EUGFileIO.load(
+            resolver.resolveFilename("common/countries.txt"),
+            settings
+            );
+        religions = EUGFileIO.load(
+            resolver.resolveFilename("common/religion.txt"),
+            settings
+            );
+
+        Utilities.resolver = resolver;
+    }
     
     static Color getCtryColor(String country) {
         // Special case: XXX means no one
@@ -102,7 +112,7 @@ final class Utilities {
             String filename = countries.getString(country);
             if (!filename.startsWith("common"))
                 filename = "common/" + filename;
-            filename = Main.filenameResolver.resolveFilename(filename);
+            filename = resolver.resolveFilename(filename);
             
             final GenericObject countryDef = EUGFileIO.load(filename, settings);
             
@@ -119,9 +129,9 @@ final class Utilities {
                 return COLOR_NO_CTRY_DEF;
             }
             
-            final int red = Math.min(Integer.parseInt(color.get(0)), 255);
-            final int green = Math.min(Integer.parseInt(color.get(1)), 255);
-            final int blue = Math.min(Integer.parseInt(color.get(2)), 255);
+            final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
+            final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
+            final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
             
             ret = new Color(red, green, blue);
             
@@ -137,6 +147,21 @@ final class Utilities {
         
         if (ret == null) {
             for (GenericObject group : religions.children) {
+                if (group.name.equalsIgnoreCase(religion)) {
+                        // found it, which means this isn't a group at all
+                        GenericList color = group.getList("color");
+                        if (color == null) {
+                            System.err.println("color for " + religion + " is null");
+                            return COLOR_NO_RELIGION_DEF;
+                        }
+                        ret = new Color(
+                                Float.parseFloat(color.get(0)),
+                                Float.parseFloat(color.get(1)),
+                                Float.parseFloat(color.get(2))
+                                );
+                        relColorCache.put(religion, ret);
+                        return ret;
+                }
                 for (GenericObject rel : group.children) {
                     if (rel.name.equalsIgnoreCase(religion)) {
                         // found it

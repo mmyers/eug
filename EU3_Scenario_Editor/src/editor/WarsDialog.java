@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * WarsDialog.java
  *
  * Created on Feb 11, 2011, 11:55:29 PM
@@ -11,6 +6,7 @@
 
 package editor;
 
+import eug.shared.FilenameResolver;
 import eug.shared.GenericObject;
 import eug.shared.Style;
 import eug.specific.clausewitz.ClausewitzDataSource;
@@ -34,7 +30,7 @@ public class WarsDialog extends javax.swing.JDialog {
     private List<GenericObject> wars;
 
     /** Creates new form WarsDialog */
-    public WarsDialog(final java.awt.Frame parent, ClausewitzDataSource dataSource) {
+    public WarsDialog(final java.awt.Frame parent, ClausewitzDataSource dataSource, final FilenameResolver resolver, final ProvinceData data) {
         super(parent, false);
         initComponents();
 
@@ -73,7 +69,7 @@ public class WarsDialog extends javax.swing.JDialog {
                     int row = warTable.rowAtPoint(e.getPoint());
                     Integer index = (Integer) warTable.getModel().getValueAt(row, 0); // the table might have been sorted and names aren't necessarily unique, so how to find which war to edit?
                     GenericObject war = wars.get(index-1);
-                    EditorDialog ed = new EditorDialog(parent, war.getString("name"), war.toString(Style.EU3_SAVE_GAME));
+                    EditorDialog ed = new EditorDialog(parent, war.getString("name"), war.toString(Style.EU3_SAVE_GAME), resolver, data);
                     ed.setVisible(true);
                 }
             }
@@ -163,11 +159,11 @@ public class WarsDialog extends javax.swing.JDialog {
     private javax.swing.JTable warTable;
     // End of variables declaration//GEN-END:variables
 
-    private class War {
-        private GenericObject data;
-        
-        War(GenericObject data) {
-            this.data = data;
-        }
-    }
+//    private class War {
+//        private GenericObject data;
+//
+//        War(GenericObject data) {
+//            this.data = data;
+//        }
+//    }
 }

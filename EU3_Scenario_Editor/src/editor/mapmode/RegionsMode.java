@@ -6,7 +6,6 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import java.util.List;
@@ -20,7 +19,7 @@ public class RegionsMode extends GroupMode {
     
     /** Creates a new instance of RegionsMode */
     public RegionsMode(String region) {
-        super(Main.map.getRegion(region));
+        provIds = makeIntList(getMap().getRegion(region));
     }
     
     public RegionsMode(List<String> continent) {
@@ -28,19 +27,21 @@ public class RegionsMode extends GroupMode {
     }
     
     public RegionsMode(MapPanel panel, String region) {
-        super(panel, Main.map.getRegion(region));
+        super(panel);
+        provIds = makeIntList(getMap().getRegion(region));
     }
     
     public RegionsMode(MapPanel panel, List<String> region) {
         super(panel, region);
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
-        if (!Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
         StringBuilder ret = new StringBuilder("Regions: ");
-        List<String> regions = Main.map.getRegionsOfProv(current.getId());
+        List<String> regions = getMap().getRegionsOfProv(current.getId());
         java.util.Iterator<String> itr = regions.iterator();
         while (itr.hasNext()) {
             ret.append(itr.next());

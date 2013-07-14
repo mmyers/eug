@@ -8,8 +8,10 @@ package editor;
 
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,11 +42,16 @@ public final class Map {
     private java.util.Map<String, List<String>> regionList = null;
     
     private boolean[] isLand = null;   // for In Nomine mainly
+
+    private FilenameResolver resolver;
+    private GameVersion version;
     
     /**
      * Creates a new instance of Map.
      */
-    public Map() {
+    public Map(FilenameResolver resolver, GameVersion version) {
+        this.resolver = resolver;
+        this.version = version;
         try {
             loadData();
         } catch (FileNotFoundException ex) {
@@ -54,8 +61,8 @@ public final class Map {
 
     
     private void loadData() throws FileNotFoundException {
-        System.out.println("Map file is " + Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
-        mapData = EUGFileIO.load(Main.filenameResolver.resolveFilename(MAP_DIR_NAME + "/default.map"));
+        //System.out.println("Map file is " + resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
+        mapData = EUGFileIO.load(resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
         if (mapData == null) {
             throw new RuntimeException("Failed to load map file");
         }
@@ -65,17 +72,17 @@ public final class Map {
             contFilename = MAP_DIR_NAME + '/' + contFilename;
         
         continents = EUGFileIO.load(
-                Main.filenameResolver.resolveFilename(contFilename),
+                resolver.resolveFilename(contFilename),
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
         
-        if (Main.gameVersion.hasClimateTxt()) {
+        if (version.hasClimateTxt()) {
             String climateFilename = mapData.getString("climate").replace('\\', '/');
             if (!climateFilename.contains("/"))
                 climateFilename = MAP_DIR_NAME + '/' + climateFilename;
 
             climates = EUGFileIO.load(
-                    Main.filenameResolver.resolveFilename(climateFilename),
+                    resolver.resolveFilename(climateFilename),
                     ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                     );
         }
@@ -83,22 +90,22 @@ public final class Map {
         String nativesFilename = "common/natives.txt";
         
         natives = EUGFileIO.load(
-                Main.filenameResolver.resolveFilename(nativesFilename),
+                resolver.resolveFilename(nativesFilename),
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
         
-        if (Main.gameVersion.hasRegions()) {
+        if (version.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
             if (!regFilename.contains("/"))
                 regFilename = MAP_DIR_NAME + '/' + regFilename;
 
             regions = EUGFileIO.load(
-                    Main.filenameResolver.resolveFilename(regFilename),
+                    resolver.resolveFilename(regFilename),
                     ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                     );
         }
         
-        if (Main.gameVersion.hasLandList()) {
+        if (version.hasLandList()) {
             // Initialize boolean array
             isLand = new boolean[mapData.getInt("max_provinces")];
             for (int i = 1; i < isLand.length; i++) {
@@ -114,6 +121,8 @@ public final class Map {
                     isLand[id] = false;
                 }
             }
+        } else if (mapData.getString("sea_starts").isEmpty()) {
+            System.err.println("Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
         }
     }
     
@@ -267,7 +276,7 @@ public final class Map {
     }
     
     public Iterable<Integer> getLandProvs() {
-        if (Main.gameVersion.hasLandList())
+        if (version.hasLandList())
             return new INLandProvIterator();
         return new LandProvIterator(mapData.getInt("sea_starts"));
     }
@@ -276,13 +285,13 @@ public final class Map {
         if (provId <= 0)
             return false;
         
-        if (Main.gameVersion.hasLandList())
+        if (version.hasLandList())
             return isLand[provId];
         return provId < mapData.getInt("sea_starts");
     }
 
     public int getFirstSeaProv() {
-        if (Main.gameVersion.hasLandList()) {
+        if (version.hasLandList()) {
             for (int i = 1; i < isLand.length; i++) {
                 if (!isLand[i])
                     return i;

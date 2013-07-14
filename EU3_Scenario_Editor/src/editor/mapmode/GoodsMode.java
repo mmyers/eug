@@ -6,13 +6,12 @@
 
 package editor.mapmode;
 
-import editor.GameVersion;
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import editor.Text;
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.awt.Color;
@@ -24,15 +23,18 @@ import java.util.HashMap;
  * @author Michael Myers
  */
 public class GoodsMode extends ProvincePaintingMode {
-    
+
+    private boolean isVictoriaStyle;
+    private FilenameResolver resolver;
     
     /** Creates a new instance of GoodsMode */
     public GoodsMode() {
-        super();
     }
     
-    public GoodsMode(MapPanel panel) {
+    public GoodsMode(MapPanel panel, boolean isVictoriaStyle, FilenameResolver resolver) {
         super(panel);
+        this.isVictoriaStyle = isVictoriaStyle;
+        this.resolver = resolver;
     }
     
     protected void paintProvince(Graphics2D g, int provId) {
@@ -52,8 +54,9 @@ public class GoodsMode extends ProvincePaintingMode {
     }
     
     
+    @Override
     public String getTooltipExtraText(Province current) {
-        if (!editor.Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(current.getId(), "trade_goods"));
@@ -64,22 +67,22 @@ public class GoodsMode extends ProvincePaintingMode {
 
 
 
-    private static GenericObject allGoods;
+    private GenericObject allGoods;
 
-    private static final java.util.Map<String, Color> goodsColorCache =
+    private final java.util.Map<String, Color> goodsColorCache =
             new HashMap<String, Color>();
 
-    static Color getGoodsColor(String good) {
+    Color getGoodsColor(String good) {
         good = good.toLowerCase();
 
         Color ret = goodsColorCache.get(good);
 
         if (ret == null) {
-            if (Main.gameVersion == GameVersion.VICTORIA) {
+            if (isVictoriaStyle) {
                 // Victoria 2: goods are divided by type and colors are 0-255
                 if (allGoods == null) {
                     allGoods = EUGFileIO.load(
-                        Main.filenameResolver.resolveFilename("common/goods.txt"),
+                        resolver.resolveFilename("common/goods.txt"),
                         ParserSettings.getQuietSettings()
                         );
                 }
@@ -106,7 +109,7 @@ public class GoodsMode extends ProvincePaintingMode {
                     // EU3 and Rome: goods are top-level objects and colors are 0-1.0
                 if (allGoods == null) {
                     allGoods = EUGFileIO.load(
-                        Main.filenameResolver.resolveFilename("common/tradegoods.txt"),
+                        resolver.resolveFilename("common/tradegoods.txt"),
                         ParserSettings.getQuietSettings()
                         );
                 }

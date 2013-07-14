@@ -22,7 +22,6 @@ public final class PoliticalMode extends ProvincePaintingMode {
     
     /** Creates a new instance of PoliticalMode */
     public PoliticalMode() {
-        super();
     }
     
     public PoliticalMode(MapPanel panel) {
@@ -57,10 +56,10 @@ public final class PoliticalMode extends ProvincePaintingMode {
     }
     
     
-    
+    @Override
     public String getTooltipExtraText(final Province curr) {
         final int id = curr.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         String owner = mapPanel.getModel().getHistString(id, "owner");

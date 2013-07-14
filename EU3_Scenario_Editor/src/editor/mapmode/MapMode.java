@@ -6,6 +6,7 @@
 
 package editor.mapmode;
 
+import editor.Map;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import java.awt.Graphics;
@@ -38,6 +39,10 @@ public abstract class MapMode {
     
     public void setMapPanel(MapPanel mapPanel) {
         this.mapPanel = mapPanel;
+    }
+
+    protected Map getMap() {
+        return mapPanel.getMap();
     }
     
     public abstract void paint(final Graphics2D g);

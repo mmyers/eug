@@ -6,6 +6,7 @@
 
 package editor;
 
+import eug.shared.FilenameResolver;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
@@ -46,8 +47,8 @@ public class FileEditorDialog extends EditorDialog {
      * @param p         the <code>Province</code> that this dialog will display
      *                  the history file for.
      */
-    private FileEditorDialog(final java.awt.Frame parent, final ProvinceData.Province p) {
-        super(parent, p.getName());
+    private FileEditorDialog(java.awt.Frame parent, ProvinceData.Province p, FilenameResolver resolver, ProvinceData data) {
+        super(parent, p.getName(), resolver, data);
         
         this.id = p.getId();
         this.name = p.getName();
@@ -55,8 +56,8 @@ public class FileEditorDialog extends EditorDialog {
         register(this); // Register last in case exceptions occur
     }
     
-    private FileEditorDialog(final java.awt.Frame parent, String countryTag, String countryName) {
-        super(parent, countryName);
+    private FileEditorDialog(java.awt.Frame parent, String countryTag, String countryName, FilenameResolver resolver, ProvinceData data) {
+        super(parent, countryName, resolver, data);
         
         this.id = countryTag.hashCode();
         this.tag = countryTag;
@@ -169,12 +170,12 @@ public class FileEditorDialog extends EditorDialog {
      * @param p      the <code>Province</code> that the dialog will show the
      *               history file for.
      */
-    public static void showDialog(java.awt.Frame parent, ProvinceData.Province p) {
+    public static void showDialog(java.awt.Frame parent, ProvinceData.Province p, FilenameResolver resolver, ProvinceData data) {
         final FileEditorDialog d = showing.get(p.getId());
         if (d == null) {
             // No previous one, so create new.
             try {
-                new FileEditorDialog(parent, p).setVisible(true);
+                new FileEditorDialog(parent, p, resolver, data).setVisible(true);
             } catch (RuntimeException ex) {
                 JOptionPane.showMessageDialog(null,
                         "Error with province " + p + ": " + ex.getMessage(),
@@ -194,12 +195,12 @@ public class FileEditorDialog extends EditorDialog {
      * @param countryName the country's name. Used in the dialog's title, and
      *                    if no previous country history file existed.
      */
-    public static void showDialog(java.awt.Frame parent, String countryTag, String countryName) {
+    public static void showDialog(java.awt.Frame parent, String countryTag, String countryName, FilenameResolver resolver, ProvinceData data) {
         final FileEditorDialog d = showing.get(countryTag.hashCode());
         if (d == null) {
             // No previous one, so create new.
             try {
-                new FileEditorDialog(parent, countryTag, countryName).setVisible(true);
+                new FileEditorDialog(parent, countryTag, countryName, resolver, data).setVisible(true);
             } catch (RuntimeException ex) {
                 JOptionPane.showMessageDialog(null,
                         "Error with country " + countryTag + ": " + ex.getMessage(),

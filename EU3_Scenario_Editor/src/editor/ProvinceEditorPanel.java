@@ -8,6 +8,7 @@ package editor;
 
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.specific.clausewitz.ClausewitzHistory;
@@ -28,7 +29,9 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
     
     private String date;
     
-    private static final List<String> techGroups = initGroups();
+    private static List<String> techGroups;
+
+    private FilenameResolver resolver;
     
     /**
      * Tech group check boxes (for discoveries) are dynamically created based
@@ -39,10 +42,10 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
             new HashMap<String, JCheckBox>();
     
     
-    private static List<String> initGroups() {
+    private static List<String> initGroups(FilenameResolver resolver) {
         final List<String> ret = new ArrayList<String>();
         final GenericObject techFile =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/technology.txt"));
+                EUGFileIO.load(resolver.resolveFilename("common/technology.txt"));
         
         for (ObjectVariable var : techFile.getChild("groups").values) {
             ret.add(var.varname);
@@ -52,9 +55,10 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
     }
     
     /** Creates new form ProvinceEditorPanel */
-    public ProvinceEditorPanel(int provId) {
+    public ProvinceEditorPanel(int provId, FilenameResolver resolver) {
         date = "1453.1.1";
         this.provId = provId;
+        this.resolver = resolver;
         loadData();
         initComponents();
     }
@@ -200,7 +204,7 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
     private void loadData() {
         clear();
         
-        String filename = Main.filenameResolver.getProvinceHistoryFile(provId);
+        String filename = resolver.getProvinceHistoryFile(provId);
         
         if (filename == null) {
             // must be terra incognita.

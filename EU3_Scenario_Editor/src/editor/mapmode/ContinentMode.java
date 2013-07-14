@@ -6,7 +6,6 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import java.util.List;
@@ -20,7 +19,7 @@ public class ContinentMode extends GroupMode {
     
     /** Creates a new instance of ContinentMode */
     public ContinentMode(String continent) {
-        super(Main.map.getContinent(continent));
+        provIds = makeIntList(getMap().getContinent(continent));
     }
     
     public ContinentMode(List<String> continent) {
@@ -28,15 +27,17 @@ public class ContinentMode extends GroupMode {
     }
     
     public ContinentMode(MapPanel panel, String continent) {
-        super(panel, Main.map.getContinent(continent));
+        super(panel);
+        provIds = makeIntList(getMap().getContinent(continent));
     }
     
     public ContinentMode(MapPanel panel, List<String> continent) {
         super(panel, continent);
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
-        String continent = Main.map.getContinentOfProv(current.getId());
+        String continent = getMap().getContinentOfProv(current.getId());
         if (continent.startsWith("("))
             return "";
         

@@ -1,22 +1,2 @@
-#Note: Lines beginning with a # are comments and are ignored by the program.
-
-#Game directory definition
-#Uncomment the one that fits your needs, or put in your own.
-
-#maindir = "C:/Program Files/Paradox Interactive/Europa Universalis III/"
-#maindir = "C:/Program Files/Paradox Interactive/Europa Universalis 3/"
-maindir = "C:/Games/Europa Universalis III/"
-#maindir = "C:/Games/Victoria 2 - DEMO/"
-#maindir = "C:/Games/Hearts of Iron 3 - Demo/"
-#maindir = "C:/Games/Rome - Demo/"
-
-#Game version
-#Valid entries are "EU3 Vanilla" (valid also for NA), "In Nomine", "HTTT",
-#"Divine Wind", "Victoria 2", "HOI3", or "Rome"
-gameversion = "HTTT"
-
-#Mod directory definition
-#If you are using this with a mod, uncomment the line below and replace it
-#with the name of the mod (without any slashes).
-
-#moddir = "MagnaMundi Platinum"
+#Automatically generated file
+game = dw

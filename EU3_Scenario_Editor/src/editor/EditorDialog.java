@@ -8,9 +8,15 @@ package editor;
 
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.FlavorEvent;
@@ -41,6 +47,9 @@ public class EditorDialog extends JDialog {
             eug.parser.ParserSettings.getDefaults().setPrintTimingInfo(false));
     
     private static Font font = initFont();
+
+    private FilenameResolver resolver;
+    private ProvinceData provinceData;
     
     private static Font initFont() {
         String fontName = config.getString("editor.font.name");
@@ -57,21 +66,25 @@ public class EditorDialog extends JDialog {
     }
     
     /** Creates new form EditorDialog */
-    public EditorDialog(final java.awt.Frame parent, final String name) {
+    public EditorDialog(java.awt.Frame parent, String name, FilenameResolver resolver, ProvinceData data) {
         super(parent, false);
         setTitle(name);
         
         originalContents = "";
+        this.resolver = resolver;
+        this.provinceData = data;
         setup();
         setLocationRelativeTo(parent);
     }
     
     /** Creates new form EditorDialog */
-    public EditorDialog(final java.awt.Frame parent, final String name, final String contents) {
+    public EditorDialog(java.awt.Frame parent, String name, String contents, FilenameResolver resolver, ProvinceData data) {
         super(parent, false);
         setTitle(name);
         
         originalContents = contents;
+        this.resolver = resolver;
+        this.provinceData = data;
         setup();
         setLocationRelativeTo(parent);
     }
@@ -430,15 +443,15 @@ public class EditorDialog extends JDialog {
     }//GEN-LAST:event_findMenuItemActionPerformed
     
     private void showProvinceListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvinceListMenuItemActionPerformed
-        ProvinceListDialog.showDialog((java.awt.Frame) getOwner()); //new ProvinceListDialog((java.awt.Frame) getOwner()).setVisible(true);
+        ProvinceListDialog.showDialog((java.awt.Frame) getOwner(), provinceData);
     }//GEN-LAST:event_showProvinceListMenuItemActionPerformed
     
     private void showCultureListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCultureListMenuItemActionPerformed
-        CultureListDialog.showDialog((java.awt.Frame) getOwner()); //new CultureListDialog((java.awt.Frame) getOwner()).setVisible(true);
+        CultureListDialog.showDialog((java.awt.Frame) getOwner(), resolver);
     }//GEN-LAST:event_showCultureListMenuItemActionPerformed
     
     private void showCountryListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCountryListMenuItemActionPerformed
-        CountryListDialog.showDialog((java.awt.Frame) getOwner()); //new CountryListDialog((java.awt.Frame) getOwner()).setVisible(true);
+        CountryListDialog.showDialog((java.awt.Frame) getOwner(), resolver);
     }//GEN-LAST:event_showCountryListMenuItemActionPerformed
     
     /*
@@ -756,7 +769,7 @@ public class EditorDialog extends JDialog {
     }
     
     public static void main(String[] args) {
-        new EditorDialog(null, "Test", "country = {\n\ttag = ENG\n\tai = \"england.ai\"\n\tmajor = yes\n\tbadboy = 0\n}")
+        new EditorDialog(null, "Test", "country = {\n\ttag = ENG\n\tai = \"england.ai\"\n\tmajor = yes\n\tbadboy = 0\n}", null, null)
         .setVisible(true);
     }
     
@@ -1110,11 +1123,11 @@ public class EditorDialog extends JDialog {
     
     //<editor-fold defaultstate="collapsed" desc=" CountryListDialog ">
     private static final class CountryListDialog extends JDialog {
-        CountryListDialog(java.awt.Frame parent) {
+        CountryListDialog(java.awt.Frame parent, FilenameResolver resolver) {
             super(parent, "Countries", false);
             
             GenericObject countries =
-                    EUGFileIO.load(Main.filenameResolver.resolveFilename("common/countries.txt"),
+                    EUGFileIO.load(resolver.resolveFilename("common/countries.txt"),
                     ParserSettings.getNoCommentSettings());
             
             String[][] tagNameTable = new String[countries.size()][2];
@@ -1141,9 +1154,9 @@ public class EditorDialog extends JDialog {
             pack();
         }
         private static CountryListDialog dialog;
-        public static void showDialog(java.awt.Frame parent) {
+        public static void showDialog(java.awt.Frame parent, FilenameResolver resolver) {
             if (dialog == null) {
-                dialog = new CountryListDialog(parent);
+                dialog = new CountryListDialog(parent, resolver);
             }
             dialog.setVisible(true);
         }
@@ -1152,10 +1165,10 @@ public class EditorDialog extends JDialog {
     
     //<editor-fold defaultstate="collapsed" desc=" ProvinceListDialog ">
     private static final class ProvinceListDialog extends JDialog {
-        ProvinceListDialog(java.awt.Frame parent) {
+        ProvinceListDialog(java.awt.Frame parent, ProvinceData provinceData) {
             super(parent, "Provinces", false);
             
-            ProvinceData.Province[] provs = Main.provinceData.getAllProvs();
+            ProvinceData.Province[] provs = provinceData.getAllProvs();
             
             String[][] provNameTable = new String[provs.length][3];
             int i = 0;
@@ -1189,9 +1202,9 @@ public class EditorDialog extends JDialog {
         }
         
         private static ProvinceListDialog dialog;
-        public static void showDialog(java.awt.Frame parent) {
+        public static void showDialog(java.awt.Frame parent, ProvinceData provinceData) {
             if (dialog == null) {
-                dialog = new ProvinceListDialog(parent);
+                dialog = new ProvinceListDialog(parent, provinceData);
             }
             dialog.setVisible(true);
         }
@@ -1200,14 +1213,14 @@ public class EditorDialog extends JDialog {
     
     //<editor-fold defaultstate="collapsed" desc=" CultureListDialog ">
     private static final class CultureListDialog extends JDialog {
-        CultureListDialog(java.awt.Frame parent) {
+        CultureListDialog(java.awt.Frame parent, FilenameResolver resolver) {
             super(parent, "Cultures", false);
             
             GenericObject cultureGroups =
-                    EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                    EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                     ParserSettings.getNoCommentSettings());
             
-            // No easy way to do this with an array, so use vector instead.
+            // No easy way to do this with an array or a list, so use vector instead.
             Vector<Vector<String>> cultureGroupNameTable =
                     new Vector<Vector<String>>();
             
@@ -1247,9 +1260,9 @@ public class EditorDialog extends JDialog {
             pack();
         }
         private static CultureListDialog dialog;
-        public static void showDialog(java.awt.Frame parent) {
+        public static void showDialog(java.awt.Frame parent, FilenameResolver resolver) {
             if (dialog == null) {
-                dialog = new CultureListDialog(parent);
+                dialog = new CultureListDialog(parent, resolver);
             }
             dialog.setVisible(true);
         }

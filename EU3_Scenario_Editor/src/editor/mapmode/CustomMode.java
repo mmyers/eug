@@ -27,7 +27,6 @@ public class CustomMode extends ProvincePaintingMode {
     
     /** Creates a new instance of CustomMode */
     public CustomMode(String name, String value) {
-        super();
         this.name = name;
         this.value = value.toLowerCase();
     }
@@ -53,9 +52,10 @@ public class CustomMode extends ProvincePaintingMode {
         return;
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         // Default is to only show extra text for land provinces
-        if (!editor.Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
         final String prop = mapPanel.getModel().getHistString(current.getId(), name);
@@ -97,8 +97,8 @@ public class CustomMode extends ProvincePaintingMode {
         this.notFoundColor = notFoundColor;
     }
     
+    @Override
     public String toString() {
         return "Provinces with " + name + " = " + value;
     }
-    
 }

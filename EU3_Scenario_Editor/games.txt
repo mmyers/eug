@@ -1,0 +1,79 @@
+eu3 = {
+	display = "EU3 Vanilla/NA"
+	start_date = 1453.5.29
+	map_inverted = yes
+	has_land_list = no
+	has_regions = no
+	has_climate_txt = yes
+	has_bookmarks = yes
+	save_type = eu3
+	view_set = eu3
+}
+
+innomine = {
+	inherit = eu3
+	display = "EU3 In Nomine"
+	has_land_list = yes
+        has_regions = yes
+	view_set = in_nomine
+}
+
+httt = {
+	inherit = innomine
+	display = "EU3 Heir to the Throne"
+}
+
+dw = {
+	inherit = httt
+	display = "EU3 Divine Wind"
+	map_inverted = no
+}
+
+magnamundi = {
+	inherit = innomine
+	display = "Magna Mundi"
+        #province_loc = "PROV_%06d" # for example, PROV_000001
+}
+
+rome = {
+	display = "Rome"
+        start_date = 473.1.1
+	map_inverted = no
+	has_land_list = no
+	has_regions = no
+	has_climate_txt = no
+	has_bookmarks = yes
+        save_type = eu3
+        view_set = rome
+}
+
+
+v2 = {
+	display = "Victoria 2"
+	#start_date = 1836.1.1
+	map_inverted = yes
+	has_land_list = yes
+	has_regions = yes
+	has_climate_txt = no
+	has_bookmarks = yes
+	save_type = victoria
+	view_set = victoria2
+}
+
+hoi3 = {
+	display = "Hearts of Iron 3"
+	start_date = 1936.1.1
+	map_inverted = yes
+	has_land_list = yes
+	has_regions = yes
+	has_climate_txt = no
+	has_bookmarks = no
+	save_type = victoria
+	view_set = hoi3
+}
+
+ck2 = {
+	inherit = dw
+	display = "Crusader Kings 2"
+	view_set = ck2
+}

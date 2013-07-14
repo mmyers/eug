@@ -18,13 +18,13 @@ public class TestEditorDialog extends EditorDialog {
     
     /** Creates a new instance of TestEditorDialog */
     public TestEditorDialog(int id) {
-        super(null, "Test");
+        super(null, "Test", null, null);
         this.id = id;
         showing.put(id, this);
     }
     
     public TestEditorDialog(int id, String contents) {
-        super(null, "Test", contents);
+        super(null, "Test", contents, null, null);
         this.id = id;
         showing.put(id, this);
     }

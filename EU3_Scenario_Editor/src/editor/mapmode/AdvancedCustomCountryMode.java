@@ -32,6 +32,7 @@ public class AdvancedCustomCountryMode extends CustomCountryMode {
         this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
     }
     
+    @Override
     protected Color getCtryColor(String country) {
         country = country.toUpperCase();
         
@@ -44,9 +45,10 @@ public class AdvancedCustomCountryMode extends CustomCountryMode {
         }
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final String tag = mapPanel.getModel().getHistString(id, "owner");
@@ -58,6 +60,7 @@ public class AdvancedCustomCountryMode extends CustomCountryMode {
         return ret.toString();
     }
     
+    @Override
     public String toString() {
         return "Countries with " + name + " matching " + pattern;
     }

@@ -24,7 +24,6 @@ public class CoreMapMode extends ProvincePaintingMode {
     
     /** Creates a new instance of CoreMapMode */
     public CoreMapMode(String tag) {
-        super();
         this.tag = tag;
     }
     
@@ -47,8 +46,9 @@ public class CoreMapMode extends ProvincePaintingMode {
         return;
     }
     
+    @Override
     public String getTooltipExtraText(Province current) {
-        if (!editor.Main.map.isLand(current.getId()))
+        if (!getMap().isLand(current.getId()))
             return "";
         
         final List<String> coreOf = mapPanel.getModel().isCoreOf(current.getId());

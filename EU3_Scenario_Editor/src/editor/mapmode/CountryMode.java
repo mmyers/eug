@@ -14,9 +14,7 @@ import java.awt.Graphics2D;
  */
 public class CountryMode extends ProvincePaintingMode {
     
-    
     public CountryMode() {
-        super();
     }
     
     public CountryMode(MapPanel panel) {
@@ -37,9 +35,10 @@ public class CountryMode extends ProvincePaintingMode {
         return Utilities.getCtryColor(country);
     }
     
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final String ret = Text.getText(mapPanel.getModel().getHistString(id, "owner"));

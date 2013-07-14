@@ -28,13 +28,19 @@ public class GroupMode extends ProvincePaintingMode {
      * Creates a new instance of GroupMode
      */
     public GroupMode(List<String> provIds) {
-        super();
         this.provIds = makeIntList(provIds);
     }
     
     public GroupMode(MapPanel panel, List<String> provIds) {
         super(panel);
         this.provIds = makeIntList(provIds);
+    }
+
+    protected GroupMode() {
+    }
+
+    protected GroupMode(MapPanel panel) {
+        super(panel);
     }
     
     protected void paintProvince(final Graphics2D g, int provId) {
@@ -51,10 +57,14 @@ public class GroupMode extends ProvincePaintingMode {
         }
     }
     
-    private List<Integer> makeIntList(List<String> provIds) {
+    protected List<Integer> makeIntList(List<String> provIds) {
         final List<Integer> ret = new ArrayList<Integer>(provIds.size());
         for (String id : provIds) {
-            ret.add(Integer.parseInt(id));
+            try {
+                ret.add(Integer.parseInt(id));
+            } catch (NumberFormatException ex) {
+                System.err.println("Expected province ID but found " + id + "; list was " + provIds);
+            }
         }
         return ret;
     }

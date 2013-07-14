@@ -6,6 +6,7 @@
 
 package editor;
 
+import eug.shared.FilenameResolver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,20 +28,16 @@ public final class Text {
     
     //private static final Pattern semicolon = Pattern.compile(";");
     
-    static {
-        try {
-            initText();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-    
-    private static void initText() throws FileNotFoundException, IOException {
+    /**
+     * Must be called before {@link getText} is used.
+     * @param resolver
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static void initText(FilenameResolver resolver) throws FileNotFoundException, IOException {
         java.io.BufferedReader reader;
         String line;
-        File[] files = Main.filenameResolver.listFiles("localisation");
+        File[] files = resolver.listFiles("localisation");
         Arrays.sort(files);
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
@@ -57,11 +54,16 @@ public final class Text {
                         continue;
 
                     int firstSemi = line.indexOf(';');
-                    int secondSemi = line.indexOf(';', firstSemi + 1);
-                    if (firstSemi < 0 || secondSemi < 0) {
+                    if (firstSemi < 0) {
                         System.err.println("Malformed line in file " + f.getPath() + ":");
                         System.err.println(line);
+                        continue;
                     }
+
+                    int secondSemi = line.indexOf(';', firstSemi + 1);
+                    if (secondSemi < 0)
+                        secondSemi = line.length();
+                    
                     String key = line.substring(0, firstSemi).toLowerCase();
                     if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));

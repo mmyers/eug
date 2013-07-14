@@ -11,7 +11,6 @@ import java.awt.Graphics2D;
  */
 public class ProvinceMode extends MapMode {
     public ProvinceMode() {
-        super();
     }
     
     public ProvinceMode(MapPanel panel) {
@@ -29,5 +28,4 @@ public class ProvinceMode extends MapMode {
     public boolean paintsBorders() {
         return false;
     }
-    
 }

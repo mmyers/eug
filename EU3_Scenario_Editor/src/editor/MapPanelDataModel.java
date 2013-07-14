@@ -28,21 +28,27 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     private final MapData mapData;
     
+    private final Map map;
+    
     private ClausewitzDataSource dataSource;
     
     
     private String date;
     
     /** Creates a new instance of MapPanelDataModel */
-    public MapPanelDataModel(final MapData data) {
-        this(data, null);
+    public MapPanelDataModel(MapData data, Map map, ProvinceData pData) {
+        //this(data, null, pData);
+        this.mapData = data;
+        this.map = map;
+        this.provinceData = pData;
+        this.dataSource = null;
     }
     
-    public MapPanelDataModel(final MapData data, ClausewitzDataSource source) {
-        provinceData = Main.provinceData;
-        mapData = data;
-        dataSource = source;
-    }
+//    private MapPanelDataModel(MapData data, ClausewitzDataSource source, ProvinceData provinceData) {
+//        this.provinceData = provinceData;
+//        mapData = data;
+//        dataSource = source;
+//    }
     
     
     public ProvinceData getProvinceData() {
@@ -70,7 +76,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public void preloadProvs() {
-        dataSource.preloadProvinces(Main.map.getFirstSeaProv());
+        dataSource.preloadProvinces(map.getFirstSeaProv());
     }
     
     public void preloadCountries() {
@@ -118,7 +124,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     public List<String> getCountries(String date) {
         final java.util.Map<String, Object> ret = new HashMap<String, Object>();
         
-        for (Integer id : Main.map.getLandProvs()) {
+        for (Integer id : map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
             
             String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);
@@ -142,7 +148,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     public List<String> getTags(String date) {
         final java.util.Map<String, Object> ret = new HashMap<String, Object>();
         
-        for (Integer id : Main.map.getLandProvs()) {
+        for (Integer id : map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
             
             String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);

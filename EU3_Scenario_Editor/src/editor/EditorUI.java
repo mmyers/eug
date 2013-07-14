@@ -10,6 +10,7 @@ import editor.ProvinceData.Province;
 import editor.mapmode.*;
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
+import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
@@ -43,95 +44,89 @@ public final class EditorUI extends javax.swing.JFrame {
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.7.4";
+    private static final String VERSION = "0.8";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
 
     private boolean isSavedGame = false;
+
+    private GameVersion version;
+    private FilenameResolver resolver;
+    private Map map;
+    private ProvinceData provinceData;
     
     /**
      * Creates new form EditorUI.
      */
-    public EditorUI() {
-//        screen = this.getGraphicsConfiguration().getBounds();
+    public EditorUI(String saveFile, GameVersion version, FilenameResolver resolver) {
+        this.version = version;
+        this.resolver = resolver;
+        this.map = new Map(resolver, version);
+        this.provinceData = new ProvinceData(map, resolver);
         initComponents();
         
-        mapPanel.initialize();
+        mapPanel.initialize(map, resolver, provinceData, version.isMapUpsideDown());
         pack();
         
-        // Make sure the window isn't too big
-        final java.awt.Rectangle bounds = getGraphicsConfiguration().getBounds();
-        setSize(Math.min(getWidth(), bounds.width), Math.min(getHeight(), bounds.height));
+        setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
         
         mapPanel.centerMap();
-        setDataSource();
+        setDataSource(saveFile);
         addFilters();
-        //viewProvincesMenuItem.doClick();
+    }
+
+    private boolean setStartDateOld(GenericObject defines) {
+        GenericObject startDate = defines.getChild("start_date");
+        if (startDate == null)
+            return false;
+
+        yearSpinner.setValue(startDate.getInt("year"));
+        monthSpinner.setValue(startDate.getInt("month"));
+        daySpinner.setValue(startDate.getInt("day"));
+        return true;
+    }
+
+    private boolean setStartDateNew(String startDate) {
+        if (startDate == null || startDate.isEmpty())
+            return false;
+        
+        final String[] date = startDate.split("\\.");
+        if (date.length < 3)
+            return false;
+        
+        yearSpinner.setValue(Integer.parseInt(date[0]));
+        monthSpinner.setValue(Integer.parseInt(date[1]));
+        daySpinner.setValue(Integer.parseInt(date[2]));
+        return true;
     }
     
-    private void setDataSource() {
-        int choice = JOptionPane.showConfirmDialog(this, "Do you want to load a saved game?");
-        if (choice == JOptionPane.NO_OPTION) {
+    private void setDataSource(String saveFile) {
+        if (saveFile == null) {
             System.out.println("Loading province history...");
 
             ClausewitzScenario scen = null;
-            switch (Main.gameVersion) {
-                case VICTORIA:
-                case HOI3:
-                    scen = new Vic2Scenario(Main.filenameResolver);
-                    break;
-                case VANILLA:
-                case IN_NOMINE:
-                case HEIR_TO_THE_THRONE:
-                case DIVINE_WIND:
-                case ROME:
-                    scen = new EU3Scenario(Main.filenameResolver);
-                    break;
-                default:
-                    System.err.println("Forgot to implement this");
-                    System.exit(1);
+            if (version.getSaveType().equalsIgnoreCase("eu3"))
+                scen = new EU3Scenario(resolver);
+            else if (version.getSaveType().equalsIgnoreCase("victoria"))
+                scen = new Vic2Scenario(resolver);
+            else {
+                System.err.println("Unknown or missing scenario type specified by config.");
+                System.err.println("Defaulting to EU3");
+                scen = new EU3Scenario(resolver);
             }
 
             mapPanel.setDataSource(scen);
             System.out.println("Done.");
             FileEditorDialog.setDataSource(scen);
-            
-            GenericObject defines =
-                    EUGFileIO.load(Main.filenameResolver.resolveFilename("common/defines.txt"), defaultSettings);
 
-            switch (Main.gameVersion) {
-                case VANILLA:
-                    yearSpinner.setValue(1453);
-                    monthSpinner.setValue(5);
-                    daySpinner.setValue(29);
-                    break;
-                case IN_NOMINE:
-                    GenericObject startDate = defines.getChild("start_date");
-                    yearSpinner.setValue(startDate.getInt("year"));
-                    monthSpinner.setValue(startDate.getInt("month"));
-                    daySpinner.setValue(startDate.getInt("day"));
-                    break;
-                case HEIR_TO_THE_THRONE:
-                case DIVINE_WIND:
-                    final String[] date = defines.getString("start_date").split("\\.");
-                    yearSpinner.setValue(Integer.parseInt(date[0]));
-                    monthSpinner.setValue(Integer.parseInt(date[1]));
-                    daySpinner.setValue(Integer.parseInt(date[2]));
-                    break;
-                case ROME:
-                    yearSpinner.setValue(473); // just a guess here since I only have the demo
-                    monthSpinner.setValue(1);
-                    daySpinner.setValue(1);
-                    break;
-                case VICTORIA:
-                    yearSpinner.setValue(1836);
-                    monthSpinner.setValue(1);
-                    daySpinner.setValue(1);
-                    break;
-                case HOI3:
-                    yearSpinner.setValue(1936); // just a guess here since I only have the demo
-                    monthSpinner.setValue(1);
-                    daySpinner.setValue(1);
+            if (!setStartDateNew(version.getStartDate())) {
+                GenericObject defines =
+                        EUGFileIO.load(resolver.resolveFilename("common/defines.txt"), defaultSettings);
+
+                if (defines != null) {
+                    if (!setStartDateOld(defines))
+                        setStartDateNew(defines.getString("start_date"));
+                }
             }
             
             String date = yearSpinner.getValue().toString() + "." +
@@ -139,82 +134,63 @@ public final class EditorUI extends javax.swing.JFrame {
                     daySpinner.getValue().toString();
             mapPanel.getModel().setDate(date);
 
-            if (Main.gameVersion != GameVersion.HOI3)
+            if (version.hasBookmarks())
                 readBookmarks();
-        } else if (choice == JOptionPane.CANCEL_OPTION) {
-            dispose();
-            System.exit(0);
         } else {
-            JFileChooser chooser = new JFileChooser(Main.filenameResolver.getModDirName() + "/save games");
-            chooser.setFileFilter(new SaveGameFileFilter());
-            int secondChoice = chooser.showOpenDialog(this);
-            if (secondChoice == JFileChooser.APPROVE_OPTION) {
-                System.out.println("Loading saved game...");
+            System.out.println("Loading saved game...");
 
-                ClausewitzSaveGame save = null;
-                switch (Main.gameVersion) {
-                    case VICTORIA:
-                    case HOI3:
-                        save = Vic2SaveGame.loadSaveGame(
-                                chooser.getSelectedFile().getAbsolutePath(),
-                                Main.filenameResolver);
-                        break;
-                    case VANILLA:
-                    case IN_NOMINE:
-                    case HEIR_TO_THE_THRONE:
-                    case DIVINE_WIND:
-                    case ROME:
-                        save = EU3SaveGame.loadSaveGame(
-                            chooser.getSelectedFile().getAbsolutePath(),
-                            Main.filenameResolver);
-                        break;
-                    default:
-                        System.err.println("Forgot to implement this");
-                        System.exit(1);
-                }
-
-                System.out.println("Done.");
-                
-                System.out.println("Loading province history...");
-                mapPanel.setDataSource(save);
-                System.out.println("Done.");
-                
-                FileEditorDialog.setDataSource(save);
-                
-                String[] date = save.getDate().split("\\.");
-                ((SpinnerNumberModel)yearSpinner.getModel()).setMaximum(Integer.parseInt(date[0]));
-                
-                mapPanel.getModel().setDate(save.getDate());
-                ((SpinnerNumberModel)yearSpinner.getModel()).setValue(Integer.parseInt(date[0]));
-                ((SpinnerNumberModel)monthSpinner.getModel()).setValue(Integer.parseInt(date[1]));
-                ((SpinnerNumberModel)daySpinner.getModel()).setValue(Integer.parseInt(date[2]));
-                
-                bookmarkMenu.add(new BookmarkAction("Game start", "The world before any history", "1.1.1"));
-                bookmarkMenu.add(new BookmarkAction("Current year", "The current game year", save.getDate()));
-                bookmarkMenu.pack();
-
-                isSavedGame = true;
-            } else {
-                // do it again
-                setDataSource();
+            ClausewitzSaveGame save = null;
+            if (version.getSaveType().equalsIgnoreCase("eu3"))
+                save = EU3SaveGame.loadSaveGame(saveFile, resolver);
+            else if (version.getSaveType().equalsIgnoreCase("victoria"))
+                save = Vic2SaveGame.loadSaveGame(saveFile, resolver);
+            else {
+                System.err.println("Unknown or missing save game type specified by config.");
+                System.err.println("Defaulting to EU3");
+                save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             }
+
+            System.out.println("Done.");
+
+            System.out.println("Loading province history...");
+            mapPanel.setDataSource(save);
+            System.out.println("Done.");
+
+            FileEditorDialog.setDataSource(save);
+
+            String[] date = save.getDate().split("\\.");
+            ((SpinnerNumberModel)yearSpinner.getModel()).setMaximum(Integer.parseInt(date[0]));
+
+            mapPanel.getModel().setDate(save.getDate());
+            ((SpinnerNumberModel)yearSpinner.getModel()).setValue(Integer.parseInt(date[0]));
+            ((SpinnerNumberModel)monthSpinner.getModel()).setValue(Integer.parseInt(date[1]));
+            ((SpinnerNumberModel)daySpinner.getModel()).setValue(Integer.parseInt(date[2]));
+
+            bookmarkMenu.add(new BookmarkAction("Game start", "The world before any history", "1.1.1"));
+            bookmarkMenu.add(new BookmarkAction("Current year", "The current game year", save.getDate()));
+            bookmarkMenu.pack();
+
+            isSavedGame = true;
         }
     }
     
     private void readBookmarks() {
         final GenericObject bookmarks =
                 EUGFileIO.load(
-                Main.filenameResolver.resolveFilename("common/bookmarks.txt"),
+                resolver.resolveFilename("common/bookmarks.txt"),
                 ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
                 );
         
-        for (GenericObject bookmark : bookmarks.children) {
-            bookmarkMenu.add(
-                    new BookmarkAction(
-                    Text.getText(bookmark.getString("name")),
-                    Text.getText(bookmark.getString("desc")),
-                    bookmark.getString("date")
-                    ));
+        if (bookmarks != null)
+        {
+            for (GenericObject bookmark : bookmarks.children) {
+                bookmarkMenu.add(
+                        new BookmarkAction(
+                        Text.getText(bookmark.getString("name")),
+                        Text.getText(bookmark.getString("desc")),
+                        bookmark.getString("date")
+                        ));
+            }
         }
         
         bookmarkMenu.pack();
@@ -278,6 +254,8 @@ public final class EditorUI extends javax.swing.JFrame {
 
         jLabel1.setText("Current view: ");
         toolBar.add(jLabel1);
+
+        viewModeLabel.setText("Provinces");
         toolBar.add(viewModeLabel);
         toolBar.add(jSeparator6);
 
@@ -417,7 +395,10 @@ public final class EditorUI extends javax.swing.JFrame {
     private class FormListener implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.awt.event.WindowListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == bookmarksButton) {
+            if (evt.getSource() == scaleColorsButton) {
+                EditorUI.this.scaleColorsButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == bookmarksButton) {
                 EditorUI.this.bookmarksButtonActionPerformed(evt);
             }
             else if (evt.getSource() == showProvHistButton) {
@@ -434,9 +415,6 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 EditorUI.this.aboutMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == scaleColorsButton) {
-                EditorUI.this.scaleColorsButtonActionPerformed(evt);
             }
         }
 
@@ -520,17 +498,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_mapPanelMousePressed
     
     private void showCountryHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCountryHistButtonActionPerformed
-        FileEditorDialog.showDialog(this, lastCountry, Text.getText(lastCountry));
-//        final String tag = lastCountry;
-//        final String name = Text.getText(tag);
-//        EditorDialog ed = new EditorDialog(this, name,
-//                mapPanel.getModel().getDataSource().getCountryAsStr(tag)
-//                );
-//        ed.setVisible(true);
-//        if (ed.textHasChanged()) {
-//            JOptionPane.showMessageDialog(this, "You changed the text!");
-//            mapPanel.getModel().getDataSource().saveCountry(tag, name, ed.getText());
-//        }
+        FileEditorDialog.showDialog(this, lastCountry, Text.getText(lastCountry), resolver, provinceData);
 //        mapPanel.getModel().getDataSource().reloadCountry(tag);
 //        mapPanel.repaint();
     }//GEN-LAST:event_showCountryHistButtonActionPerformed
@@ -587,19 +555,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
-        FileEditorDialog.showDialog(EditorUI.this, currentProvince);
-//        final Province prov = currentProvince;
-        
-//        EditorDialog ed = new EditorDialog(EditorUI.this, prov.getName(),
-//                mapPanel.getModel().getDataSource().getProvinceAsStr(prov.getId())
-//                );
-//        ed.setVisible(true);
-//        if (ed.textHasChanged()) {
-//            JOptionPane.showMessageDialog(this, "You changed the text!");
-//            mapPanel.getModel().getDataSource().saveProvince(prov.getId(), prov.getName(), ed.getText());
-//        } else {
-//            JOptionPane.showMessageDialog(this, "You didn't change the text.");
-//        }
+        FileEditorDialog.showDialog(EditorUI.this, currentProvince, resolver, provinceData);
 //        mapPanel.getModel().getDataSource().reloadProvince(prov.getId());
 //        mapPanel.repaint();
     }//GEN-LAST:event_showProvHistButtonActionPerformed
@@ -740,28 +696,28 @@ public final class EditorUI extends javax.swing.JFrame {
             // Do some neat stuff if we're viewing a land province
             //if (Main.map.isLand(lastProv.getId())) {
                 if (mode instanceof ContinentMode) {
-                    String cont = Main.map.getContinentOfProv(lastProv.getId());
+                    String cont = map.getContinentOfProv(lastProv.getId());
                     if (!cont.equals("(none)")) {
                         mapPanel.setMode(new ContinentMode(mapPanel, cont));
                         viewModeLabel.setText("Provinces in " + cont);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof RegionsMode) {
-                    String reg = Main.map.getRegionsOfProv(lastProv.getId()).get(0);
+                    String reg = map.getRegionsOfProv(lastProv.getId()).get(0);
                     if (!reg.equals("(none)")) {
                         mapPanel.setMode(new RegionsMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof ClimateMode) {
-                    String climate = Main.map.getClimateOfProv(lastProv.getId());
+                    String climate = map.getClimateOfProv(lastProv.getId());
                     if (!climate.equals("(none)")) {
                         mapPanel.setMode(new ClimateMode(mapPanel, climate));
                         viewModeLabel.setText("Provinces with climate " + climate);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof NativeGroupMode) {
-                    String nativeType = Main.map.getNativeTypeOfProv(lastProv.getId());
+                    String nativeType = map.getNativeTypeOfProv(lastProv.getId());
                     if (!nativeType.equals("(none)")) {
                         mapPanel.setMode(new NativeGroupMode(mapPanel, nativeType));
                         viewModeLabel.setText("Provinces with " + nativeType + " natives");
@@ -849,29 +805,11 @@ public final class EditorUI extends javax.swing.JFrame {
         GenericObject allViews = EUGFileIO.load("views.txt", defaultSettings);
         GenericObject allColors = EUGFileIO.load("colors.txt", defaultSettings);
 
-        GenericList views;
-        switch (Main.gameVersion) {
-            case VANILLA:
-                views = allViews.getList("eu3");
-                break;
-            case IN_NOMINE:
-            case HEIR_TO_THE_THRONE:
-            case DIVINE_WIND:
-                views = allViews.getList("in_nomine");
-                break;
-            case VICTORIA:
-                views = allViews.getList("victoria2");
-                break;
-            case HOI3:
-                views = allViews.getList("hoi3");
-                break;
-            case ROME:
-                views = allViews.getList("rome");
-                break;
-            default:
-                System.err.println("Cannot find view set for " + Main.gameVersion);
-                views = allViews.getList("eu3");
-                break;
+        GenericList views = allViews.getList(version.getViewSet());
+        if (views == null) {
+            System.err.println("No view set specified.");
+            System.err.println("Defaulting to EU3");
+            views = allViews.getList("eu3");
         }
 
         for (String viewName : views) {
@@ -888,11 +826,11 @@ public final class EditorUI extends javax.swing.JFrame {
                 JMenu menu = new JMenu("Continents");
                 addContinentFilters(menu);
                 viewMenu.add(menu);
-            } else if (view.equals("regions-menu") && Main.gameVersion.hasRegions()) {
+            } else if (view.equals("regions-menu") && version.hasRegions()) {
                 JMenu menu = new JMenu("Regions");
                 addRegionFilters(menu);
                 viewMenu.add(menu);
-            } else if (view.equals("climates-menu") && Main.gameVersion.hasClimateTxt()) {
+            } else if (view.equals("climates-menu") && version.hasClimateTxt()) {
                 JMenu menu = new JMenu("Climates");
                 addClimateFilters(menu);
                 viewMenu.add(menu);
@@ -928,6 +866,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(menu);
             } else if (view.equals("trade-goods")) {
                 viewMenu.add(new GoodsFilterAction());
+            } else if (view.equals("victoria-trade-goods")) {
+                viewMenu.add(new GoodsFilterAction(true));
             } else if (view.equals("trade-goods-menu")) {
                 JMenu menu = new JMenu("Single trade good");
                 addGoodsFilters(menu);
@@ -1010,7 +950,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addReligionFilters(JMenu rootMenu) {
         final GenericObject religions =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/religion.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/religion.txt"),
                 defaultSettings);
 
         Collections.sort(religions.children, new ObjectComparator());
@@ -1047,7 +987,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addBuildingFilters(JMenu rootMenu, GenericObject colors) {
         final GenericObject buildings =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/buildings.txt"),
                 defaultSettings);
         
         Collections.sort(buildings.children, new ObjectComparator());
@@ -1097,7 +1037,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private void addHOI3BuildingFilters(JMenu rootMenu, GenericObject colors) {
         // HOI3 buildings are on a scale of 0-10 in each province
         final GenericObject buildings =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/buildings.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/buildings.txt"),
                 defaultSettings);
 
         Collections.sort(buildings.children, new ObjectComparator());
@@ -1112,8 +1052,11 @@ public final class EditorUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked") // array of lists, can't use generics
     private void addCountryFilters(JMenu rootMenu) {
         final GenericObject countries =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/countries.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/countries.txt"),
                 defaultSettings);
+
+        if (countries == null)
+            return;
         
         Collections.sort(countries.values, new VariableComparator());
         
@@ -1165,7 +1108,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addOldCultureFilters(JMenu rootMenu) { // EU3 vanilla and NA
         final GenericObject cultures =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
         
         Collections.sort(cultures.lists, new ListComparator());
@@ -1178,17 +1121,19 @@ public final class EditorUI extends javax.swing.JFrame {
 
             JMenu groupMenu = new JMenu(Text.getText(group.getName()));
 
-            StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+            if (group.size() > 0) {
+                StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
 
-            for (String culture : group) {
-                groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
-                pattern.append(culture).append('|');
+                for (String culture : group) {
+                    groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
+                    pattern.append(culture).append('|');
+                }
+
+                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+                pattern.append(')');
+
+                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.getName()), "culture", pattern.toString()));
             }
-
-            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-            pattern.append(')');
-
-            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.getName()), "culture", pattern.toString()));
 
             rootMenu.add(groupMenu);
             if (counter++ > 25) {
@@ -1200,7 +1145,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
     private void addNewCultureFilters(JMenu rootMenu) { // In Nomine and newer, and also Victoria 2
         final GenericObject cultures =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
 
         final ObjectComparator comp = new ObjectComparator();
@@ -1212,17 +1157,19 @@ public final class EditorUI extends javax.swing.JFrame {
 
             JMenu groupMenu = new JMenu(Text.getText(group.name));
 
-            StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+            if (!group.children.isEmpty()) {
+                StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
 
-            for (GenericObject culture : group.children) {
-                groupMenu.add(new CustomFilterAction(Text.getText(culture.name), "culture", culture.name));
-                pattern.append(culture.name).append('|');
+                for (GenericObject culture : group.children) {
+                    groupMenu.add(new CustomFilterAction(Text.getText(culture.name), "culture", culture.name));
+                    pattern.append(culture.name).append('|');
+                }
+
+                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+                pattern.append(')');
+
+                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
             }
-
-            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-            pattern.append(')');
-
-            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
 
             rootMenu.add(groupMenu);
             if (counter++ > 25) {
@@ -1234,7 +1181,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
     private void addRomeCultureFilters(JMenu rootMenu) {
         final GenericObject cultures =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/cultures.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
 
         final ObjectComparator comp = new ObjectComparator();
@@ -1246,17 +1193,19 @@ public final class EditorUI extends javax.swing.JFrame {
 
             JMenu groupMenu = new JMenu(Text.getText(group.name));
 
-            StringBuilder pattern = new StringBuilder().append('(');
+            if (!group.children.isEmpty()) {
+                StringBuilder pattern = new StringBuilder().append('(');
 
-            for (String culture : groupCultures) {
-                groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
-                pattern.append(culture).append('|');
+                for (String culture : groupCultures) {
+                    groupMenu.add(new CustomFilterAction(Text.getText(culture), "culture", culture));
+                    pattern.append(culture).append('|');
+                }
+
+                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+                pattern.append(')');
+                
+                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
             }
-
-            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-            pattern.append(')');
-
-            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
 
             rootMenu.add(groupMenu);
         }
@@ -1264,7 +1213,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addGoodsFilters(JMenu rootMenu) {
         final GenericObject goods =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/tradegoods.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/tradegoods.txt"),
                 defaultSettings);
         
         Collections.sort(goods.children, new ObjectComparator());
@@ -1282,7 +1231,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
     private void addVictoriaGoodsFilters(JMenu rootMenu) {
         final GenericObject goods =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/goods.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/goods.txt"),
                 defaultSettings);
 
         Collections.sort(goods.children, new ObjectComparator());
@@ -1313,7 +1262,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addGovernmentFilters(JMenu rootMenu) {
         final GenericObject governments =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/governments.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/governments.txt"),
                 defaultSettings);
         
 //        Collections.sort(governments.children, new ObjectComparator());
@@ -1351,12 +1300,13 @@ public final class EditorUI extends javax.swing.JFrame {
             rootMenu.add(religiousMenu);
             rootMenu.add(normalMenu);
             
-        } else {
-        
+        } else if (!governments.isEmpty()) {
             for (GenericObject government : governments.children) {
                 allGovernments.append(government.name).append('|');
                 rootMenu.add(new CustomCountryFilterAction(Text.getText(government.name), "government", government.name));
             }
+        } else {
+            return;
         }
         
         allGovernments.deleteCharAt(allGovernments.length()-1); // get rid of the last '|'
@@ -1367,7 +1317,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addTechGroupFilters(JMenu rootMenu) {
         GenericObject groups =
-                EUGFileIO.load(Main.filenameResolver.resolveFilename("common/technology.txt"),
+                EUGFileIO.load(resolver.resolveFilename("common/technology.txt"),
                 defaultSettings);
         
         groups = groups.getChild("groups");
@@ -1385,19 +1335,19 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addContinentFilters(JMenu rootMenu) {
-        for (String cont : Main.map.getContinents().keySet()) {
+        for (String cont : map.getContinents().keySet()) {
             rootMenu.add(new ContinentFilterAction(Text.getText(cont), cont));
         }
     }
     
     private void addClimateFilters(JMenu rootMenu) {
-        for (String climate : Main.map.getClimates().keySet()) {
+        for (String climate : map.getClimates().keySet()) {
             rootMenu.add(new ClimateFilterAction(Text.getText(climate), climate));
         }
     }
     
     private void addRegionFilters(JMenu rootMenu) {
-        java.util.Map<String, List<String>> regions = Main.map.getRegions();
+        java.util.Map<String, List<String>> regions = map.getRegions();
         List<String> regionNames = new ArrayList<String>(regions.keySet());
         Collections.sort(regionNames, new StringComparator());
         
@@ -1413,7 +1363,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addNativesFilters(JMenu rootMenu, GenericObject colors) {
         JMenu nativeTypesMenu = new JMenu("Native types");
-        for (String nativeType : Main.map.getNatives().keySet()) {
+        for (String nativeType : map.getNatives().keySet()) {
             nativeTypesMenu.add(new NativesFilterAction(Text.getText(nativeType), nativeType));
         }
         rootMenu.add(nativeTypesMenu);
@@ -1442,7 +1392,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JSpinner monthSpinner;
     private javax.swing.JLabel provNameLabel;
     javax.swing.JMenuItem reloadMenuItem;
-    private javax.swing.JButton scaleColorsButton;
+    javax.swing.JButton scaleColorsButton;
     private javax.swing.JButton setDateButton;
     private javax.swing.JMenuItem setDateMenuItem;
     private javax.swing.JButton showCountryHistButton;
@@ -1465,19 +1415,6 @@ public final class EditorUI extends javax.swing.JFrame {
     private final Action setDateAction = new SetDateAction();
     
     // Inner classes
-    
-    private static class SaveGameFileFilter extends javax.swing.filechooser.FileFilter {
-        public boolean accept(File f) {
-            return f.isDirectory() || f.getName().toLowerCase().endsWith(".eu3")
-                || f.getName().toLowerCase().endsWith(".v2")
-                || f.getName().toLowerCase().endsWith(".rome")
-                || f.getName().toLowerCase().endsWith(".hoi3");
-        }
-        
-        public String getDescription() {
-            return "Saved game files";
-        }
-    }
     
     private static class ObjectComparator implements Comparator<GenericObject>, Serializable {
         private static final long serialVersionUID = 1L;
@@ -1551,7 +1488,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(MNEMONIC_KEY, KeyEvent.VK_G);
         }
         public void actionPerformed(ActionEvent e) {
-            final int maxProv = Integer.parseInt(Main.map.getString("max_provinces")) - 1;
+            final int maxProv = Integer.parseInt(map.getString("max_provinces")) - 1;
             String response =
                     JOptionPane.showInputDialog(EditorUI.this,
                     "Enter a province ID number (between 1 and " + maxProv +
@@ -1601,9 +1538,6 @@ public final class EditorUI extends javax.swing.JFrame {
             System.out.println("Setting date to " + date);
             mapPanel.getModel().setDate(date);
 //            ((ProvinceEditorPanel)innerProvincePanel).setDate(date);
-//            String country = (String) countryComboBox.getSelectedItem();
-//            countryComboBox.setModel(new DefaultComboBoxModel(new java.util.Vector<String>(mapPanel.getModel().getTags())));
-//            countryComboBox.setSelectedItem(country);
             mapPanel.repaint();
         }
     }
@@ -1618,7 +1552,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(SHORT_DESCRIPTION, "Edit " + name + "'s country history file");
         }
         public void actionPerformed(ActionEvent e) {
-            FileEditorDialog.showDialog(EditorUI.this, tag, name);
+            FileEditorDialog.showDialog(EditorUI.this, tag, name, resolver, provinceData);
         }
     }
     
@@ -1716,7 +1650,10 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private class GoodsFilterAction extends FilterAction {
         public GoodsFilterAction() {
-            super("Trade goods", new GoodsMode(mapPanel));
+            this(false);
+        }
+        public GoodsFilterAction(boolean isVictoria) {
+            super("Trade goods", new GoodsMode(mapPanel, isVictoria, resolver));
             putValue(SHORT_DESCRIPTION, "Trade goods");
         }
     }
@@ -1860,7 +1797,7 @@ public final class EditorUI extends javax.swing.JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            WarsDialog dlg = new WarsDialog(EditorUI.this, mapPanel.getDataSource());
+            WarsDialog dlg = new WarsDialog(EditorUI.this, mapPanel.getDataSource(), resolver, provinceData);
             dlg.setVisible(true);
         }
     }

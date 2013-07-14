@@ -104,3 +104,12 @@ hoi3 = {
 	leadership
 	wars
 }
+
+ck2 = {
+	provinces
+	new-cultures-menu
+	province-religions
+	#religions
+	religions-menu
+        #capitals
+}

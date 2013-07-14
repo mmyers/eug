@@ -39,7 +39,6 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
      * Creates a new instance of DiscreteScalingMapMode.
      */
     public DiscreteScalingMapMode(String prop, int min, int max, int step) {
-        super();
         this.prop = prop;
         this.min = min;
         this.max = max;
@@ -107,7 +106,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         String value = mapPanel.getModel().getHistString(id, prop);

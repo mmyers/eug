@@ -28,7 +28,6 @@ public class CustomCountryMode extends CountryMode {
     
     /** Creates a new instance of CustomCountryMode */
     public CustomCountryMode(String name, String value) {
-        super();
         this.name = name;
         this.value = value.toLowerCase();
     }
@@ -57,7 +56,7 @@ public class CustomCountryMode extends CountryMode {
     @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!editor.Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final String tag = mapPanel.getModel().getHistString(id, "owner");

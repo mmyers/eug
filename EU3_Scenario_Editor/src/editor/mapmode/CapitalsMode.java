@@ -28,7 +28,6 @@ public final class CapitalsMode extends ProvincePaintingMode {
             new HashMap<Integer, String>(100);
     
     public CapitalsMode() {
-        super();
     }
     
     public CapitalsMode(MapPanel panel) {

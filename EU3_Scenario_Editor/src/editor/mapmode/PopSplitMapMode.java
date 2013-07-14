@@ -6,7 +6,6 @@
 
 package editor.mapmode;
 
-import editor.Main;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import java.awt.Color;
@@ -26,7 +25,6 @@ public class PopSplitMapMode extends ProvincePaintingMode {
     private static final double ratio = MAX_COLOR / MAX_PERCENT;
     
     public PopSplitMapMode() {
-        super();
     }
     
     public PopSplitMapMode(MapPanel panel) {
@@ -61,7 +59,7 @@ public class PopSplitMapMode extends ProvincePaintingMode {
     @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
-        if (!Main.map.isLand(id))
+        if (!getMap().isLand(id))
             return "";
         
         final StringBuilder ret = new StringBuilder();
