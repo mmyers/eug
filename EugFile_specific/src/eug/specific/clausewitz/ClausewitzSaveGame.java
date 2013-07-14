@@ -103,7 +103,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     public GenericObject getProvince(int id) {
         if (id > lastProvId)
             return tryLoadProvince(id);
-        return getProvinces().get(id-1);
+        return getProvinces().get(id);
     }
     
     public GenericObject getProvinceHistory(int id) {
@@ -112,7 +112,11 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
             if (obj != null)
                 return obj.getChild("history");
         }
-        return getProvinces().get(id-1).getChild("history");
+        
+        GenericObject obj = getProvinces().get(id);
+        if (obj == null)
+            return new GenericObject();
+        return obj.getChild("history");
     }
 
     private GenericObject tryLoadProvince(int id) {
@@ -180,11 +184,11 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     public String getProvinceAsStr(int id) {
-        return getProvinces().get(id-1).toString(Style.EU3_SAVE_GAME);
+        return getProvinces().get(id).toString(Style.EU3_SAVE_GAME);
     }
     
     public String getProvinceHistoryAsStr(int id) {
-        return getProvinces().get(id-1).getChild("history").toString(Style.EU3_SAVE_GAME);
+        return getProvinces().get(id).getChild("history").toString(Style.EU3_SAVE_GAME);
     }
     
     public void saveCountry(String tag, String cname, final String data) {
@@ -196,7 +200,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     public void saveProvince(int id, String pname, final String data) {
-        final GenericObject province = getProvinces().get(id-1);
+        final GenericObject province = getProvinces().get(id);
         province.clear();
         final GenericObject newProvince = EUGFileIO.loadFromString(data);
         province.addAllChildren(newProvince.getChild(Integer.toString(id)));
