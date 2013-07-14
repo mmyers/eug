@@ -139,7 +139,7 @@ package eug.parser;
      * Returns the number of newlines encountered up to the start of the token.
      */
     public int getLine() {
-        return yyline;
+        return yyline + 1;
     }
 
    /**
@@ -147,7 +147,7 @@ package eug.parser;
     * the token.
     */
     public int getColumn() {
-        return yycolumn;
+        return yycolumn + 1;
     }
 
     /** 
@@ -218,7 +218,7 @@ ALPHA                       = [[:letter:]_\[\]\-'´¨,]   //[A-Za-zÀ-ÿ_\[\]\-'´¨]
 DIGIT                       = [0-9\.\-\+]
 ALNUM                       = {ALPHA}|{DIGIT}
 
-NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012]
+NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012\u00A0]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
 COMMENT_CHAR                = [#;!]
