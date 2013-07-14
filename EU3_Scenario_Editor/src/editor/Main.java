@@ -40,14 +40,6 @@ import javax.swing.JTextField;
  */
 public class Main {
     
-    //private FilenameResolver resolver;
-    
-    //public static final GameVersion gameVersion = setVersion();
-    
-    //public static final Map map = new Map();  // must be initialized after filenameResolver
-    
-    //public static final ProvinceData provinceData = new ProvinceData(map);
-    
     private GenericObject config;
     
     /** Creates a new instance of Main */
@@ -64,15 +56,6 @@ public class Main {
 //        } catch (Exception ex) {
 //            ex.printStackTrace();
 //        }
-
-        //FilenameResolver resolver = new FilenameResolver(new java.io.File("config.txt"));
-        
-        //System.out.println("Main EU3 directory is " + resolver.getMainDirName());
-        
-        //if (resolver.getModDirName().length() == 0)
-        //    System.out.println("No mod");
-        //else
-        //    System.out.println("Mod directory is " + resolver.getModDirName());
         
         File configFile = new File("config.txt");
         GenericObject config =
@@ -81,32 +64,6 @@ public class Main {
         Main main = new Main(config);
         main.showDialog();
     }
-
-//    private static GameVersion setVersion() {
-//        String version = EUGFileIO.load("config.txt").getString("gameversion").toLowerCase();
-//        // bring on the Java 7 string switch statement!
-//        if (version.equals("eu3 vanilla"))
-//            return GameVersion.VANILLA;
-//        else if (version.equals("in nomine")) {
-//            return GameVersion.IN_NOMINE;
-//        } else if (version.equals("httt")) {
-//            return GameVersion.HEIR_TO_THE_THRONE;
-//        } else if (version.equals("divine wind")) {
-//            return GameVersion.DIVINE_WIND;
-//        } else if (version.equals("victoria 2")) {
-//            return GameVersion.VICTORIA;
-//        } else if (version.equals("hoi3")) {
-//            return GameVersion.HOI3;
-//        } else if (version.equals("rome")) {
-//            return GameVersion.ROME;
-//        } else if (version.equals("magna mundi")) {
-//            return GameVersion.MAGNA_MUNDI;
-//        } else if (version.equals("crusader kings 2")) {
-//            return GameVersion.CK2;
-//        }
-//        System.err.println("Game version '" + version + "' not recognized");
-//        return GameVersion.VANILLA;
-//    }
     
     private void showDialog() {
         final JComboBox modBox = new JComboBox(); // referenced in several places
@@ -115,7 +72,6 @@ public class Main {
         dialog.setLayout(new BorderLayout());
 
         JPanel filePanel = new JPanel();
-        //filePanel.setBorder(BorderFactory.createTitledBorder("Game folder"));
         filePanel.setLayout(new GridLayout(0, 1));
 
         JPanel gameDirPanel = new JPanel();
@@ -240,10 +196,6 @@ public class Main {
         dialog.add(topPanel, BorderLayout.NORTH);
 
         JPanel lowerPanel = new JPanel(new BorderLayout());
-        //lowerPanel.add(gameTypePanel, BorderLayout.WEST);
-
-        //final JCheckBox useLocCheckBox = new JCheckBox("Use localized names", config.getBoolean("use_localization"));
-        //lowerPanel.add(useLocCheckBox);
 
         JPanel buttonPanel = new JPanel();
         JButton okButton = new JButton("  OK  ");
@@ -357,6 +309,7 @@ public class Main {
         }
         return ret;
     }
+
 
     private static class Mod {
         private String name;

@@ -2,22 +2,11 @@ package editor;
 
 import eug.parser.EUGFileIO;
 import eug.parser.ParserSettings;
-import eug.shared.FilenameResolver;
 import eug.shared.GenericObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameVersion {
-
-//    VANILLA             (false, true,  false, true),
-//    IN_NOMINE           (true,  true,  true,  true),
-//    HEIR_TO_THE_THRONE  (true,  true,  true,  true),
-//    DIVINE_WIND         (true,  false, true,  true),
-//    MAGNA_MUNDI         (true,  true,  true,  true),
-//    ROME                (false, false, false, true),
-//    VICTORIA            (true,  true,  true,  false),
-//    HOI3                (true,  true,  true,  false),
-//    CK2                 (true,  false,  true,  false);
 
     private static List<GameVersion> gameVersions;
     
@@ -165,35 +154,4 @@ public class GameVersion {
     public String toString() {
         return display;
     }
-
-//    public static GameVersion detectGame(FilenameResolver gameResolver) {
-//        if (gameResolver.getMainDirName().contains("Victoria")) {
-//            return GameVersion.VICTORIA;
-//        } else if (gameResolver.getMainDirName().contains("Hearts")) {
-//            return GameVersion.HOI3;
-//        } else if (gameResolver.getMainDirName().contains("Rome")) {
-//            return GameVersion.ROME;
-//        } else if (gameResolver.getMainDirName().contains("Magna")) {
-//            return GameVersion.MAGNA_MUNDI;
-//        } else if (gameResolver.getMainDirName().contains("Crusader")) {
-//            return GameVersion.CK2;
-//        } else if (gameResolver.getMainDirName().contains("Europa")) {
-//            GenericObject mapData = EUGFileIO.load(gameResolver.resolveFilename("map/default.map"), ParserSettings.getQuietSettings());
-//            if (mapData.getString("sea_starts").length() != 0)
-//                return GameVersion.VANILLA; // vanilla had sea_starts = <province id> instead of sea_starts = { <list> }
-//
-//            GenericObject defines = EUGFileIO.load(gameResolver.resolveFilename("common/defines.txt"), ParserSettings.getQuietSettings());
-//            if (defines.containsChild("startdate"))
-//                return GameVersion.IN_NOMINE;
-//
-//            if (new java.io.File(gameResolver.resolveFilename("common/faction.txt")).exists())
-//                return GameVersion.DIVINE_WIND;
-//            else
-//                return GameVersion.HEIR_TO_THE_THRONE;
-//        } else {
-//            System.out.println("Could not detect game version");
-//            System.exit(-1);
-//            return null;
-//        }
-//    }
 }
