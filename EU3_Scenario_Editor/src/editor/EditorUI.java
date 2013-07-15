@@ -25,7 +25,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -186,7 +185,7 @@ public final class EditorUI extends javax.swing.JFrame {
             for (GenericObject bookmark : bookmarks.children) {
                 bookmarkMenu.add(
                         new BookmarkAction(
-                        Text.getText(bookmark.getString("name")),
+                        Text.getText(bookmark.getString("name")) + " (" + bookmark.getString("date") + ")",
                         Text.getText(bookmark.getString("desc")),
                         bookmark.getString("date")
                         ));

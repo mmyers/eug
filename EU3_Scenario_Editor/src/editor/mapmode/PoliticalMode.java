@@ -40,7 +40,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
                 mapPanel.paintProvince(g, provId, p);
 //            else
 //                System.err.println("Unknown problem in PoliticalMode.java");
-        } else if (!owner.equalsIgnoreCase(controller)) {
+        } else if (!owner.equalsIgnoreCase(controller) && !controller.isEmpty()) { // colonies don't always have a controller in history
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.getCtryColor(controller));
 //            if (p != null)
                 mapPanel.paintProvince(g, provId, p);

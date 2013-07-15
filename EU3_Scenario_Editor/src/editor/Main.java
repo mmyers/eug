@@ -225,14 +225,14 @@ public class Main {
                 game.setString("main", gameDirField.getText(), true);
                 if (saveFile != null)
                     game.setString("recent", saveFile, true);
-                String mod = ((Mod) modBox.getSelectedItem()).getName();
-                game.setString("lastmod", mod.equals("None") ? "" : mod, true);
+                Mod mod = (Mod) modBox.getSelectedItem();
+                game.setString("lastmod", mod.getName().equals("None") ? "" : mod.getName(), true);
 
                 EUGFileIO.save(config, "config.txt", null, true, Style.AGCEEP);
 
                 dialog.dispose();
 
-                FilenameResolver resolver = new FilenameResolver(gameDirField.getText(), mod.equals("None") ? "" : mod);
+                FilenameResolver resolver = new FilenameResolver(gameDirField.getText(), mod.getName().equals("None") ? "" : mod.getModPath());
 
                 startEditor(saveFile, version, resolver);
             }
@@ -275,12 +275,26 @@ public class Main {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
+        } catch (OutOfMemoryError er) {
+            javax.swing.JOptionPane.showMessageDialog(null,
+                    "Out of memory. Please see readme.txt for information on solving this.",
+                    "Out of Memory",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
 
         editor.mapmode.Utilities.init(resolver);
 
-        EditorUI ui = new EditorUI(saveFile, version, resolver);
-        ui.setVisible(true);
+        try {
+            EditorUI ui = new EditorUI(saveFile, version, resolver);
+            ui.setVisible(true);
+        } catch (OutOfMemoryError er) {
+            javax.swing.JOptionPane.showMessageDialog(null,
+                    "Out of memory. Please see readme.txt for information on solving this.",
+                    "Out of Memory",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
     }
     
     // returns a Vector to use in a combo box
@@ -303,7 +317,7 @@ public class Main {
         
         for (File f : mods) {
             GenericObject obj = EUGFileIO.load(f, ParserSettings.getQuietSettings());
-            String modPath = f.getParentFile().getPath() + File.separator + f.getName().substring(0, f.getName().length()-4);
+            String modPath = f.getName().substring(0, f.getName().length()-4);
             Mod mod = new Mod(obj.getString("name"), f.getAbsolutePath(), modPath);
             ret.add(mod);
         }

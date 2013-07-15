@@ -1,3 +1,7 @@
+# Settings for each game.
+# The "inherit" command means all settings for that game will be copied
+# unless otherwise specified.
+
 eu3 = {
 	display = "EU3 Vanilla/NA"
 	start_date = 1453.5.29
@@ -13,6 +17,7 @@ eu3 = {
 innomine = {
 	inherit = eu3
 	display = "EU3 In Nomine"
+	start_date = ""
 	has_land_list = yes
         has_regions = yes
 	view_set = in_nomine
