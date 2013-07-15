@@ -3,6 +3,15 @@
 \=================/
 
 
+=== 0.8.1 ===
+
+- Fixed mod loading broken in previous release.
+- In Nomine and later EU3 versions no longer inherit the EU3 1.0 start date.
+- Political mode now assumes that provinces with no controller listed are controlled by the owner.
+- Bookmarks now display the date next to the name.
+- Out-of-memory errors now cause an error message to appear rather than silently shutting the application down.
+
+
 === 0.8 ===
 
 - Complete revamp of all initialization and loading code.

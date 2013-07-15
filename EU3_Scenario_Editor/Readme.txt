@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==   Version 0.8 (July 14 2011)    ==|
+|==  Version 0.8.1 (July 14 2011)   ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -31,7 +31,7 @@ Java 1.5 or later (tested on Java 1.6)
 ====================
 
 1. Unzip somewhere.
-2. Double-click scen-ed.bat.
+2. Double-click the .jar file (in Windows 7 or later) or scen-ed.bat.
 3. Choose which game you want in the upper left dropdown, then browse to
    the location where that game is installed.
    Then select a mod (if desired) and choose a saved game (if desired).
@@ -68,8 +68,7 @@ jump to any of the game's bookmarks (if applicable).
 Use Ctrl +/- to zoom in and out. Note that zooming too far in may cause the
 program to run out of memory; thus, I have capped the zoom at 5x.
 
-If you get a stack trace that starts with something like
- "java.lang.OutOfMemoryException"
+If y
 then edit the .bat file to look like:
 
 java -Xmx1024m -jar EU3_Scenario_Editor.jar
@@ -84,14 +83,27 @@ save files.
 === Troubleshooting ===
 =======================
 
+
 If the program hangs, check the console window; there will probably be a stack
 trace -- a lot of lines saying something like
 	at javax.swing.JComponent.paint(Unknown Source)
 -- in the window. Post it on the forum and I'll see what I can do.
 
-If it includes something like "OutOfMemory", and you have plenty of memory, you
-can edit the memory in the .bat file as described at the end of the previous
-section.
+
+
+If a popup appears indicating that the program is "Out of Memory" and your
+machine has plenty of memory, then you'll need to use the .bat file to run
+the program.
+If you were already using the .bat file, then you'll need to edit it to:
+
+java -Xmx1024m -jar EU3_Scenario_Editor.jar
+
+where the 1024 is the maximum number of megabytes of memory that the program
+is allowed to use. (Yes, it's silly, but that's how Java operates.) You can
+set this higher than 1024 if you need; 1024 is usually enough, but the
+games and their saves are getting more complex all the time.
+
+
 
 If you get an error indicating that Java is not installed and you know it is,
 it is possible that you are on a 64-bit computer with a 32-bit Java Runtime
@@ -119,12 +131,6 @@ pause
 === Known Bugs ===
 ==================
 
-
-* In saved games, provinces that were colonized during the game appear as if
-  they were controlled by no one. This is because the scenario editor uses the
-  history to determine the controller, and for some reason, the game does not
-  record in the history that the colonizing country also controls the province.
-  There is currently no workaround.
 
 * Some items in save games are time-dependent, like revolt_risk. The editor
   currently does not handle them specially and assumes that anything that has
