@@ -176,34 +176,60 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     
     public String getCountryAsStr(String tag) {
-        return getCountryMap().get(tag.substring(0,3).toUpperCase()).toString(Style.EU3_SAVE_GAME);
+        GenericObject obj = getCountryMap().get(tag.substring(0,3).toUpperCase());
+        if (obj == null)
+            return null;
+        return obj.toString(Style.EU3_SAVE_GAME);
     }
     
     public String getCountryHistoryAsStr(String tag) {
-        return getCountryMap().get(tag.substring(0,3).toUpperCase()).getChild("history").toString(Style.EU3_SAVE_GAME);
+        GenericObject obj = getCountryMap().get(tag.substring(0,3).toUpperCase());
+        if (obj == null)
+            return null;
+        obj = obj.getChild("history");
+        if (obj == null)
+            return null;
+        return obj.toString(Style.EU3_SAVE_GAME);
     }
     
     public String getProvinceAsStr(int id) {
-        return getProvinces().get(id).toString(Style.EU3_SAVE_GAME);
+        GenericObject obj = getProvinces().get(id);
+        if (obj == null)
+            return null;
+        return obj.toString(Style.EU3_SAVE_GAME);
     }
     
     public String getProvinceHistoryAsStr(int id) {
-        return getProvinces().get(id).getChild("history").toString(Style.EU3_SAVE_GAME);
+        GenericObject obj = getProvinces().get(id);
+        if (obj == null)
+            return null;
+        obj = obj.getChild("history");
+        if (obj == null)
+            return null;
+        return obj.toString(Style.EU3_SAVE_GAME);
     }
     
     public void saveCountry(String tag, String cname, final String data) {
         final GenericObject country = getCountryMap().get(tag);
-        country.clear();
         final GenericObject newCountry = EUGFileIO.loadFromString(data);
-        country.addAllChildren(newCountry.getChild(tag));
+        if (country == null) {
+            getCountryMap().put(tag, newCountry);
+        } else {
+            country.clear();
+            country.addAllChildren(newCountry.getChild(tag));
+        }
         hasUnsavedChanges = true;
     }
     
     public void saveProvince(int id, String pname, final String data) {
         final GenericObject province = getProvinces().get(id);
-        province.clear();
         final GenericObject newProvince = EUGFileIO.loadFromString(data);
-        province.addAllChildren(newProvince.getChild(Integer.toString(id)));
+        if (province == null) {
+            getProvinces().put(id, newProvince);
+        } else {
+            province.clear();
+            province.addAllChildren(newProvince.getChild(Integer.toString(id)));
+        }
         hasUnsavedChanges = true;
     }
 

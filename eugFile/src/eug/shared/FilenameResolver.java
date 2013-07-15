@@ -35,7 +35,7 @@ public final class FilenameResolver {
     
     private String modName;
     
-    private String modPrefix = "mod/";
+    private String modPrefix = "mod" + File.separator;
     
     private String modDirName;
     
@@ -103,7 +103,7 @@ public final class FilenameResolver {
         mainDirName = dirName;
         
         if (!(mainDirName.endsWith("/") || mainDirName.endsWith("\\"))) {
-            mainDirName += FILE_SEPARATOR;
+            mainDirName += File.separator;
         }
     }
     
@@ -117,7 +117,7 @@ public final class FilenameResolver {
         
         if (modName.length() != 0) {
             usingMod = true;
-            modDirName = mainDirName + modPrefix + modName + "/";
+            modDirName = mainDirName + modPrefix + modName + File.separator;
             
             if (modFile) {
                 final GenericObject mod = EUGFileIO.load(
@@ -156,7 +156,7 @@ public final class FilenameResolver {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
         if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
-            dirName += FILE_SEPARATOR;
+            dirName += File.separator;
         
         if (!usingMod)
             return mainDirName + dirName;
@@ -194,7 +194,7 @@ public final class FilenameResolver {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
         if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
-            dirName += FILE_SEPARATOR;
+            dirName += File.separator;
         
         if (!usingMod)
             return new File(mainDirName + dirName).listFiles();
@@ -394,7 +394,7 @@ public final class FilenameResolver {
 
         String[] array = enumerateFiles(dirName);
         for (String subdir : array) {
-            ret = getFile(dirName + FILE_SEPARATOR + subdir, prefix, exactMatch);
+            ret = getFile(dirName + File.separator + subdir, prefix, exactMatch);
             if (ret != null)
                 return ret;
         }
