@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Static class which performs I/O of {@link GenericObject GenericObjects}.
@@ -70,6 +72,34 @@ public final class EUGFileIO {
     
     public static GenericObject load(File file, ParserSettings settings) {
         return load(file.getAbsolutePath(), settings);
+    }
+
+    /**
+     * Loads all files into a single GenericObject.
+     * Meant to be used with FilenameResolver.listFiles().
+     */
+    public static GenericObject loadAll(File[] files) {
+        GenericObject root = new GenericObject();
+        for (java.io.File file : files) {
+            GenericObject obj = load(file);
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
+    }
+
+    /**
+     * Loads all files into a single GenericObject.
+     * Meant to be used with FilenameResolver.listFiles().
+     */
+    public static GenericObject loadAll(File[] files, ParserSettings settings) {
+        GenericObject root = new GenericObject();
+        for (java.io.File file : files) {
+            GenericObject obj = load(file, settings);
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
     }
     
     /**

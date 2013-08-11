@@ -41,11 +41,11 @@ public final class Version {
     }
     
     public static int getMinorVersion() {
-        return 8;
+        return 9;
     }
     
     public static int getUpdate() {
-        return 1;
+        return 0;
     }
     
 //    public static int getBuild() {

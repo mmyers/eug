@@ -28,8 +28,6 @@ import java.util.List;
  */
 public final class FilenameResolver {
     
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    
     /** The base directory. */
     private String mainDirName;
     
@@ -122,6 +120,10 @@ public final class FilenameResolver {
             if (modFile) {
                 final GenericObject mod = EUGFileIO.load(
                         mainDirName + modPrefix + modName + ".mod");
+
+                if (mod.contains("path")) // A House Divided 2.2 and anything newer
+                    modDirName = mainDirName + File.separator + mod.getString("path");
+
                 extended = new ArrayList<String>();
                 replaced = new ArrayList<String>();
                 if (mod == null) {
