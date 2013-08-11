@@ -86,14 +86,13 @@ public final class Utilities {
 
     /** @since 0.7.5 */
     public static void init(FilenameResolver resolver) {
-        countries = EUGFileIO.load(
-            resolver.resolveFilename("common/countries.txt"),
-            settings
-            );
-        religions = EUGFileIO.load(
-            resolver.resolveFilename("common/religion.txt"),
-            settings
-            );
+        countries = EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
+        if (countries == null)
+            countries = EUGFileIO.loadAll(resolver.listFiles("common/country_tags"), settings);
+
+        religions = EUGFileIO.load(resolver.resolveFilename("common/religion.txt"), settings);
+        if (religions == null)
+            religions = EUGFileIO.loadAll(resolver.listFiles("common/religions"), settings);
 
         Utilities.resolver = resolver;
     }

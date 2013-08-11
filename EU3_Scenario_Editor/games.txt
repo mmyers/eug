@@ -12,6 +12,7 @@ eu3 = {
 	has_bookmarks = yes
 	save_type = eu3
 	view_set = eu3
+	text = csv
 }
 
 innomine = {
@@ -37,7 +38,13 @@ dw = {
 magnamundi = {
 	inherit = innomine
 	display = "Magna Mundi"
-        #province_loc = "PROV_%06d" # for example, PROV_000001
+	#province_loc = "PROV_%06d" # for example, PROV_000001
+}
+
+eu4 = {
+	inherit = dw
+	display = "EU4"
+	text = yaml
 }
 
 rome = {
@@ -50,6 +57,7 @@ rome = {
 	has_bookmarks = yes
         save_type = eu3
         view_set = rome
+	text = csv
 }
 
 
@@ -63,6 +71,7 @@ v2 = {
 	has_bookmarks = yes
 	save_type = victoria
 	view_set = victoria2
+	text = csv
 }
 
 hoi3 = {
@@ -75,6 +84,7 @@ hoi3 = {
 	has_bookmarks = no
 	save_type = victoria
 	view_set = hoi3
+	text = csv
 }
 
 ck2 = {

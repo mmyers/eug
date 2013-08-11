@@ -229,6 +229,11 @@ public final class Map {
     public List<String> getRegionsOfProv(int provId) {
         return getRegionsOfProv(Integer.toString(provId));
     }
+
+    public void setNatives(GenericObject natives) {
+        this.natives = natives;
+        this.nativeList = null;
+    }
     
     public java.util.Map<String, List<String>> getNatives() {
         if (nativeList == null) {

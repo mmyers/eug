@@ -106,12 +106,15 @@ public class GoodsMode extends ProvincePaintingMode {
                     }
                 }
             } else {
-                    // EU3 and Rome: goods are top-level objects and colors are 0-1.0
+                // EU3 and Rome: goods are top-level objects and colors are 0-1.0
                 if (allGoods == null) {
                     allGoods = EUGFileIO.load(
                         resolver.resolveFilename("common/tradegoods.txt"),
                         ParserSettings.getQuietSettings()
                         );
+                    
+                    if (allGoods == null)
+                        allGoods = EUGFileIO.loadAll(resolver.listFiles("common/tradegoods"), ParserSettings.getQuietSettings());
                 }
                 for (GenericObject def : allGoods.children) {
                     if (def.name.equalsIgnoreCase(good)) {

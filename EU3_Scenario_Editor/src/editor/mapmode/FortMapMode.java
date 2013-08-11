@@ -36,11 +36,20 @@ public final class FortMapMode extends DiscreteScalingMapMode {
         setMax(getMaxFortLevel(forts) + 1);
     }
 
+    private static int getFortLevel(GenericObject fort) {
+        if (fort.hasString("fort_level"))
+            return fort.getInt("fort_level");
+        else if (fort.containsChild("modifier"))
+            return fort.getChild("modifier").getInt("fort_level");
+        else
+            return 0;
+    }
+
     private void initialize(final List<GenericObject> forts) {
         this.forts = forts.toArray(new GenericObject[forts.size()]);
         fortLevels = new int[this.forts.length];
         for (int i = 0; i < this.forts.length; i++) {
-            fortLevels[i] = this.forts[i].getInt("fort_level");
+            fortLevels[i] = getFortLevel(this.forts[i]);
         }
     }
 
@@ -67,7 +76,7 @@ public final class FortMapMode extends DiscreteScalingMapMode {
     private static int getMaxFortLevel(final List<GenericObject> forts) {
         int level = 0;
         for (GenericObject fort : forts) {
-            level += fort.getInt("fort_level");
+            level += getFortLevel(fort);
         }
         return level;
     }

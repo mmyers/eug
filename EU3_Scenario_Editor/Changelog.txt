@@ -3,6 +3,16 @@
 \=================/
 
 
+=== 0.8.2 ===
+
+- Made compatible with EU4:
+	- Added EU4 game type in initial game load dialog.
+	- If /common/<file>.txt does not exist, the editor will now check the /common/<file> directory instead.
+	- Detection of which buildings are forts now also checks for a modifier block if no fort_level is found.
+	- Localization now supports YAML files.
+- Fixed several bugs with the wars list.
+
+
 === 0.8.1 ===
 
 - Fixed mod loading broken in previous release.

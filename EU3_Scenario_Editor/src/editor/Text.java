@@ -34,11 +34,19 @@ public final class Text {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static void initText(FilenameResolver resolver) throws FileNotFoundException, IOException {
-        java.io.BufferedReader reader;
-        String line;
+    public static void initText(FilenameResolver resolver, GameVersion version) throws FileNotFoundException, IOException {
         File[] files = resolver.listFiles("localisation");
         Arrays.sort(files);
+
+        if (version.getTextFormat().equals("yaml"))
+            processFilesYaml(files);
+        else
+            processFilesCsv(files);
+    }
+    
+    private static void processFilesCsv(File[] files) throws FileNotFoundException, IOException {
+        java.io.BufferedReader reader;
+        String line;
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -67,6 +75,57 @@ public final class Text {
                     String key = line.substring(0, firstSemi).toLowerCase();
                     if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));
+                }
+            } finally {
+                reader.close();
+            }
+        }
+    }
+
+    private static void processFilesYaml(File[] files) throws FileNotFoundException, IOException {
+        // very naive implementation
+        // EU4 YAML files consist of a single node, defined in the first line
+        // so we skip that line and break everything else at a ":"
+        java.io.BufferedReader reader;
+        String line;
+        for (File f : files) {
+            if (!f.getName().endsWith(".yml"))
+                continue;   // Could use a FileFilter or FilenameFilter
+
+            if (f.length() <= 0) {
+                continue;
+            }
+
+            reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(102400, (int)f.length()));
+            try {
+                line = reader.readLine();
+                if (!line.startsWith("l_english")) {
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.length() == 0 || line.charAt(0) == '#')
+                            continue;
+
+                        int comment = line.indexOf('#');
+                        if (comment > 0)
+                            line = line.substring(0, comment);
+
+                        int firstColon = line.indexOf(':');
+                        if (firstColon < 0) {
+                            System.err.println("Malformed line in file " + f.getPath() + ":");
+                            System.err.println(line);
+                            continue;
+                        }
+
+                        String key = line.substring(0, firstColon).trim().toLowerCase();
+                        if (!text.containsKey(key)) {
+                            String value = line.substring(firstColon + 1).trim();
+                            if (value.startsWith("\""))
+                                value = value.substring(1);
+                            if (value.endsWith("\""))
+                                value = value.substring(0, value.length() - 1);
+                            text.put(key, value);
+                        }
+                    }
                 }
             } finally {
                 reader.close();

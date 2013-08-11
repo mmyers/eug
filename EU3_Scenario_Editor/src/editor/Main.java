@@ -270,7 +270,7 @@ public class Main {
 
     private void startEditor(String saveFile, GameVersion version, FilenameResolver resolver) {
         try {
-            Text.initText(resolver);
+            Text.initText(resolver, version);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -304,8 +304,8 @@ public class Main {
                 if (pathname.isDirectory())
                     return false;
                 String name = pathname.getName();
-                return name.endsWith(".mod")
-                        && new File(pathname.getParentFile().getPath() + File.separator + name.substring(0, name.length()-4)).exists();
+                return name.endsWith(".mod");
+                        //&& new File(pathname.getParentFile().getPath() + File.separator + name.substring(0, name.length()-4)).exists();
             }
         });
 

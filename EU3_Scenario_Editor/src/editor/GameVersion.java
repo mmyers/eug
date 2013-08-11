@@ -24,6 +24,7 @@ public class GameVersion {
     private boolean hasBookmarks;
 
     private String provinceLocFmt;
+    private String textFmt; // Either "csv" or "yaml", as of EU4
 
     private String viewSet;
     
@@ -38,7 +39,7 @@ public class GameVersion {
         for (GenericObject version : allVersions.children) {
             GameVersion newVersion = new GameVersion();
             if (version.hasString("inherit")) {
-                GameVersion old = getByName(version.getString("inherit"));
+                GameVersion old = getByName(version.getString("inherit").toLowerCase());
                 if (old != null) {
                     newVersion.startDate = old.startDate;
                     newVersion.isMapInverted = old.isMapInverted;
@@ -48,13 +49,14 @@ public class GameVersion {
                     newVersion.saveType = old.saveType;
                     newVersion.hasBookmarks = old.hasBookmarks;
                     newVersion.provinceLocFmt = old.provinceLocFmt;
+                    newVersion.textFmt = old.textFmt;
                     newVersion.viewSet = old.viewSet;
                 } else {
                     System.err.println("Invalid 'inherit' directive: '" + version.getString("inherit") + "'");
                 }
             }
 
-            newVersion.name = version.name;
+            newVersion.name = version.name.toLowerCase();
             newVersion.display = version.getString("display");
 
             if (version.hasString("start_date"))
@@ -74,22 +76,28 @@ public class GameVersion {
             else
                 newVersion.provinceLocFmt = "PROV%d";
 
+            if (version.hasString("text"))
+                newVersion.textFmt = version.getString("text").toLowerCase();
+            else
+                newVersion.textFmt = "csv";
+
             if (version.hasString("save_type"))
-                newVersion.saveType = version.getString("save_type");
+                newVersion.saveType = version.getString("save_type").toLowerCase();
 
             if (version.hasString("has_bookmarks"))
                 newVersion.hasBookmarks = version.getBoolean("has_bookmarks");
 
             if (version.hasString("view_set"))
-                newVersion.viewSet = version.getString("view_set");
+                newVersion.viewSet = version.getString("view_set").toLowerCase();
 
             gameVersions.add(newVersion);
         }
     }
 
     public static GameVersion getByName(String name) {
+        name = name.toLowerCase();
         for (GameVersion version : gameVersions) {
-            if (version.getName().equalsIgnoreCase(name))
+            if (version.getName().equals(name))
                 return version;
         }
         return null;
@@ -148,6 +156,10 @@ public class GameVersion {
 
     public String getViewSet() {
         return viewSet;
+    }
+
+    public String getTextFormat() {
+        return textFmt;
     }
 
     @Override

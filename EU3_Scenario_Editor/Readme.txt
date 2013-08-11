@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==  Version 0.8.1 (July 14 2011)   ==|
+|==  Version 0.8.2 (Aug 11 2013)    ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -17,6 +17,11 @@ highlighting and validation.
 There are also a number of views to help you visualize the game data (or maybe
 just find that last colony that's keeping you from getting 100% warscore on your
 mortal enemy).
+
+
+It is known to be compatible with EU3, Rome, Victoria 2, and HOI3. CK2 and EU4
+probably work, but I don't guarantee it; I've only tried it on the demos, which
+means no saved games.
 
 
 ===========================
@@ -46,6 +51,7 @@ prepended to its name). Note that at most one backup file exists at a time; if
 you already had a backup file, it will be automatically overwritten.
 
 
+
 === Looking at the world ===
 
 In the menu titled "Views" are quite a few different ways to view the map. Play
@@ -60,6 +66,7 @@ necessarily an indication of a bug in the mod; EU3 wasteland provinces, for
 instance, often don't have history files.
 
 
+
 The current date is shown in the toolbar. You can change the numbers to whatever
 you want, and then click "Set date" to apply the changes. The date of course
 only affects views which use history data. The editor also lets you easily
@@ -68,15 +75,8 @@ jump to any of the game's bookmarks (if applicable).
 Use Ctrl +/- to zoom in and out. Note that zooming too far in may cause the
 program to run out of memory; thus, I have capped the zoom at 5x.
 
-If y
-then edit the .bat file to look like:
+If you do run out of memory, see the Troubleshooting section below.
 
-java -Xmx1024m -jar EU3_Scenario_Editor.jar
-
-The 1024 is the maximum number of megabytes of memory that can be used for the
-program; you can set this to whatever you think is best as long as your PC has
-that much memory. This will likely be necessary for games which have 30+ megabyte
-save files.
 
 
 =======================

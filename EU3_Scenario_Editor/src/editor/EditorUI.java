@@ -25,6 +25,10 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,6 +102,19 @@ public final class EditorUI extends javax.swing.JFrame {
         daySpinner.setValue(Integer.parseInt(date[2]));
         return true;
     }
+
+    private boolean setStartDateLua(GenericObject definesLua) {
+        if (definesLua.containsChild("NDefines"))
+            definesLua = definesLua.getChild("NDefines");
+
+        if (definesLua.containsChild("NGame"))
+            definesLua = definesLua.getChild("NGame");
+
+        if (definesLua.contains("start_date")) {
+            return setStartDateNew(definesLua.getString("start_date"));
+        }
+        return false;
+    }
     
     private void setDataSource(String saveFile) {
         if (saveFile == null) {
@@ -121,8 +138,10 @@ public final class EditorUI extends javax.swing.JFrame {
             if (!setStartDateNew(version.getStartDate())) {
                 GenericObject defines =
                         EUGFileIO.load(resolver.resolveFilename("common/defines.txt"), defaultSettings);
-
-                if (defines != null) {
+                if (defines == null) {
+                    defines = loadLuaFile(resolver.resolveFilename("common/defines.lua"));
+                    setStartDateLua(defines);
+                } else {
                     if (!setStartDateOld(defines))
                         setStartDateNew(defines.getString("start_date"));
                 }
@@ -173,12 +192,30 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private GenericObject loadLuaFile(String filename) {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(filename));
+            String line = null;
+            StringBuilder stringBuilder = new StringBuilder();
+
+            while((line = reader.readLine()) != null) {
+                int index = line.indexOf("--"); // remove Lua comments
+                if (index > 0)
+                    line = line.substring(0, index);
+                stringBuilder.append(line).append('\n');
+            }
+            
+            return EUGFileIO.loadFromString(stringBuilder.toString(), defaultSettings.setPrintWarnings(false));
+        } catch (FileNotFoundException ex) {
+            return null;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+    
     private void readBookmarks() {
-        final GenericObject bookmarks =
-                EUGFileIO.load(
-                resolver.resolveFilename("common/bookmarks.txt"),
-                ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                );
+        final GenericObject bookmarks = loadFileOrFolder("common/bookmarks", "common/bookmarks.txt");
         
         if (bookmarks != null)
         {
@@ -947,10 +984,20 @@ public final class EditorUI extends javax.swing.JFrame {
         viewMenu.add(new PaintBordersAction());
     }
     
+    private GenericObject loadFileOrFolder(String folderName, String fileName) {
+        java.io.File folder = new java.io.File(resolver.resolveFilename(folderName));
+        java.io.File file = new java.io.File(resolver.resolveFilename(fileName));
+        if (folder.exists() && folder.isDirectory()) {
+            return EUGFileIO.loadAll(resolver.listFiles(folderName), defaultSettings);
+        } else if (file.exists()) {
+            return EUGFileIO.load(file, defaultSettings);
+        } else {
+            return null;
+        }
+    }
+    
     private void addReligionFilters(JMenu rootMenu) {
-        final GenericObject religions =
-                EUGFileIO.load(resolver.resolveFilename("common/religion.txt"),
-                defaultSettings);
+        final GenericObject religions = loadFileOrFolder("common/religions", "common/religion.txt");
 
         Collections.sort(religions.children, new ObjectComparator());
         
@@ -985,41 +1032,63 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addBuildingFilters(JMenu rootMenu, GenericObject colors) {
-        final GenericObject buildings =
-                EUGFileIO.load(resolver.resolveFilename("common/buildings.txt"),
-                defaultSettings);
+        final GenericObject buildings = loadFileOrFolder("common/buildings", "common/buildings.txt");
         
         Collections.sort(buildings.children, new ObjectComparator());
         
-        JMenu capitalBuildingsMenu = new JMenu("Capital buildings");
-        rootMenu.add(capitalBuildingsMenu);
-        boolean hasCapitalBuildings = false;
-        JMenu manufactoriesMenu = new JMenu("Manufactories");
-        rootMenu.add(manufactoriesMenu);
-        boolean hasManufactories = false;
-        java.util.List<GenericObject> forts = new java.util.ArrayList<GenericObject>();
+        java.util.List<GenericObject> forts = new ArrayList<GenericObject>();
+        
+        java.util.List<Action> capitalBuildings = new ArrayList<Action>();
+        java.util.List<Action> manufactories = new ArrayList<Action>();
+        java.util.List<Action> onePerCountry = new ArrayList<Action>();
+        java.util.List<Action> other = new ArrayList<Action>();
 
-        int counter = 0;
         for (GenericObject building : buildings.children) {
-            if (building.hasString("fort_level")) {
+            boolean isFort = building.hasString("fort_level");
+            if (!isFort) {
+                GenericObject mod = building.getChild("modifier");
+                if (mod != null && mod.hasString("fort_level"))
+                    isFort = true;
+            }
+            if (isFort) {
                 forts.add(building);
                 continue;
             }
-            
-            CustomFilterAction act = new CustomFilterAction(Text.getText(building.name), building.name, "yes");
+
+            String display = Text.getText("building_" + building.name);
+            if (display.equals("building_" + building.name))
+                display = Text.getText(building.name);
+            CustomFilterAction act = new CustomFilterAction(display, building.name, "yes");
             if (building.containsList("manufactory")) {
-                manufactoriesMenu.add(act);
-                hasManufactories = true;
-            } else if (building.getString("capital").equals("yes")) {
-                capitalBuildingsMenu.add(act);
-                hasCapitalBuildings = true;
+                manufactories.add(act);
+            } else if (building.getBoolean("capital")) {
+                capitalBuildings.add(act);
+            } else if (building.getBoolean("one_per_country")) {
+                onePerCountry.add(act);
             }  else {
-                rootMenu.add(act);
-                if (counter++ > 25) {
-                    rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
-                    counter = 0;
-                }
+                other.add(act);
             }
+        }
+        
+        if (!manufactories.isEmpty()) {
+            JMenu manufactoriesMenu = (JMenu) rootMenu.add(new JMenu("Manufactories"));
+            for (Action a : manufactories)
+                manufactoriesMenu.add(a);
+        }
+        if (!capitalBuildings.isEmpty()) {
+            JMenu capitalBuildingsMenu = (JMenu) rootMenu.add(new JMenu("Capital buildings"));
+            for (Action a : capitalBuildings)
+                capitalBuildingsMenu.add(a);
+        }
+        if (!onePerCountry.isEmpty()) {
+            JMenu uniqueMenu = (JMenu) rootMenu.add(new JMenu("Unique"));
+            for (Action a : onePerCountry)
+                uniqueMenu.add(a);
+        }
+        for (int i = 0; i < other.size(); i++) {
+            rootMenu.add(other.get(i));
+            if ((i+1) % 25 == 0)
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
         }
 
         if (!forts.isEmpty()) {
@@ -1027,10 +1096,6 @@ public final class EditorUI extends javax.swing.JFrame {
             actn.setStepColors(colors, "fort-level", Color.YELLOW, Color.GREEN.darker(), Color.BLUE.darker());
             rootMenu.add(actn);
         }
-        if (!hasManufactories)
-            rootMenu.remove(manufactoriesMenu);
-        if (!hasCapitalBuildings)
-            rootMenu.remove(capitalBuildingsMenu);
     }
 
     private void addHOI3BuildingFilters(JMenu rootMenu, GenericObject colors) {
@@ -1050,9 +1115,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     @SuppressWarnings("unchecked") // array of lists, can't use generics
     private void addCountryFilters(JMenu rootMenu) {
-        final GenericObject countries =
-                EUGFileIO.load(resolver.resolveFilename("common/countries.txt"),
-                defaultSettings);
+        final GenericObject countries = loadFileOrFolder("common/country_tags", "common/countries.txt");
 
         if (countries == null)
             return;
@@ -1143,9 +1206,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
 
     private void addNewCultureFilters(JMenu rootMenu) { // In Nomine and newer, and also Victoria 2
-        final GenericObject cultures =
-                EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
-                defaultSettings);
+        final GenericObject cultures = loadFileOrFolder("common/cultures", "common/cultures.txt");
 
         final ObjectComparator comp = new ObjectComparator();
         Collections.sort(cultures.children, comp);
@@ -1211,9 +1272,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addGoodsFilters(JMenu rootMenu) {
-        final GenericObject goods =
-                EUGFileIO.load(resolver.resolveFilename("common/tradegoods.txt"),
-                defaultSettings);
+        final GenericObject goods = loadFileOrFolder("common/tradegoods", "common/tradegoods.txt");
         
         Collections.sort(goods.children, new ObjectComparator());
         
@@ -1260,9 +1319,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addGovernmentFilters(JMenu rootMenu) {
-        final GenericObject governments =
-                EUGFileIO.load(resolver.resolveFilename("common/governments.txt"),
-                defaultSettings);
+        final GenericObject governments = loadFileOrFolder("common/governments", "common/governments.txt");
         
 //        Collections.sort(governments.children, new ObjectComparator());
         final StringBuilder allGovernments = new StringBuilder("(");
@@ -1361,6 +1418,9 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addNativesFilters(JMenu rootMenu, GenericObject colors) {
+        final GenericObject natives = loadFileOrFolder("common/natives", "common/natives.txt");
+        map.setNatives(natives);
+        
         JMenu nativeTypesMenu = new JMenu("Native types");
         for (String nativeType : map.getNatives().keySet()) {
             nativeTypesMenu.add(new NativesFilterAction(Text.getText(nativeType), nativeType));

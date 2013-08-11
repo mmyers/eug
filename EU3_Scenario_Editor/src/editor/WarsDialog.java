@@ -47,6 +47,8 @@ public class WarsDialog extends javax.swing.JDialog {
                 row.add(war.getChild("history").getChild(0).name);
             } else if (Character.isDigit(war.children.get(0).name.charAt(0))) { // assume a numerical child is a date
                 row.add(war.children.get(0).name);
+            } else if (war.children.size() > 1 && Character.isDigit(war.children.get(1).name.charAt(0))) {
+                row.add(war.children.get(1).name);
             } else {
                 row.add("Unknown");
             }
@@ -67,6 +69,8 @@ public class WarsDialog extends javax.swing.JDialog {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     int row = warTable.rowAtPoint(e.getPoint());
+                    if (supportsRowSorter)
+                        row = warTable.convertRowIndexToModel(row);
                     Integer index = (Integer) warTable.getModel().getValueAt(row, 0); // the table might have been sorted and names aren't necessarily unique, so how to find which war to edit?
                     GenericObject war = wars.get(index-1);
                     EditorDialog ed = new EditorDialog(parent, war.getString("name"), war.toString(Style.EU3_SAVE_GAME), resolver, data);
