@@ -122,7 +122,7 @@ public final class FilenameResolver {
                         mainDirName + modPrefix + modName + ".mod");
 
                 if (mod.contains("path")) // A House Divided 2.2 and anything newer
-                    modDirName = mainDirName + File.separator + mod.getString("path");
+                    modDirName = mainDirName + mod.getString("path");
 
                 extended = new ArrayList<String>();
                 replaced = new ArrayList<String>();
