@@ -344,7 +344,7 @@ package eug.parser;
 %standalone
 
 ALPHA                       = [[:letter:]_\[\]\-'´¨,]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
-DIGIT                       = [0-9\.\-\+]
+DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
 
 /* \012 is LF; \u00A0 is NBSP */

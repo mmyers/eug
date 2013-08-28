@@ -124,7 +124,7 @@ import java.util.ArrayList;
 %table
 
 ALPHA                       = [[:letter:]_\[\]\-'´¨,]
-DIGIT                       = [0-9\.\-]
+DIGIT                       = [0-9\.\-/]
 
 WHITE_SPACE_CHAR            = [\r\n\ \t\b\012\u00A0]
 //NEWLINE                     = [\r\n]

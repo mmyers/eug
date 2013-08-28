@@ -215,7 +215,7 @@ package eug.parser;
 %standalone
 
 ALPHA                       = [[:letter:]_\[\]\-'´¨,]   //[A-Za-zÀ-ÿ_\[\]\-'´¨]
-DIGIT                       = [0-9\.\-\+]
+DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
 
 NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012\u00A0]
