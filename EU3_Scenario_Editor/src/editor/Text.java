@@ -72,8 +72,8 @@ public final class Text {
                     if (secondSemi < 0)
                         secondSemi = line.length();
                     
-                    String key = line.substring(0, firstSemi).toLowerCase();
-                    if (!text.containsKey(key))
+                    String key = line.substring(0, firstSemi); //.toLowerCase();
+                    //if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));
                 }
             } finally {
@@ -96,14 +96,23 @@ public final class Text {
                 continue;
             }
 
-            reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(102400, (int)f.length()));
+            reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(new java.io.FileInputStream(f), "UTF-8")
+                    , Math.min(102400, (int)f.length()));
             try {
                 line = reader.readLine();
-                if (!line.startsWith("l_english")) {
+
+                if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
+                    line = line.substring(1);
+
+                if (line.startsWith("l_english")) {
+                    System.out.println("Reading " + f.getName());
                     while ((line = reader.readLine()) != null) {
                         line = line.trim();
                         if (line.length() == 0 || line.charAt(0) == '#')
                             continue;
+                        if (line.charAt(0) == '\uFEFF')
+                            line = line.substring(1);
 
                         int comment = line.indexOf('#');
                         if (comment > 0)
@@ -116,15 +125,15 @@ public final class Text {
                             continue;
                         }
 
-                        String key = line.substring(0, firstColon).trim().toLowerCase();
-                        if (!text.containsKey(key)) {
+                        String key = line.substring(0, firstColon).trim(); //.toLowerCase();
+                        //if (!text.containsKey(key)) {
                             String value = line.substring(firstColon + 1).trim();
                             if (value.startsWith("\""))
                                 value = value.substring(1);
                             if (value.endsWith("\""))
                                 value = value.substring(0, value.length() - 1);
                             text.put(key, value);
-                        }
+                        //}
                     }
                 }
             } finally {
@@ -136,7 +145,7 @@ public final class Text {
     public static String getText(final String key) {
         if (key == null)
             return null; // is this a good idea? Won't this just pass the NPE further down the line?
-        final String ret = text.get(key.toLowerCase());
+        final String ret = text.get(key/*.toLowerCase()*/);
         return (ret == null ? key : ret);
     }
     
