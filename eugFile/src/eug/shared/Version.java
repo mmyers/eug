@@ -41,7 +41,7 @@ public final class Version {
     }
     
     public static int getMinorVersion() {
-        return 9;
+        return 10;
     }
     
     public static int getUpdate() {

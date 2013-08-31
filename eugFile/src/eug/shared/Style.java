@@ -287,8 +287,8 @@ public interface Style {
     
     /**
      * <code>Style</code> that formats the same way as EU3 save game files. Tabs
-     * consist of four spaces, and objects are never inline. There is no space
-     * on either side of equals signs. Comments are treated as in
+     * consist of a single tab character, and objects are never inline. There is
+     * no space on either side of equals signs. Comments are treated as in
      * {@link #AGCEEP}, for lack of a better reference.
      */
     //<editor-fold defaultstate="collapsed" desc=" EU3_SAVE_GAME ">
@@ -297,7 +297,7 @@ public interface Style {
         public String getTab(int depth) {
             final StringBuilder sb = new StringBuilder(depth*4);
             for (int i = 0; i < depth; i++)
-                sb.append("    ");
+                sb.append("\t");
             return sb.toString();
         }
         
@@ -311,7 +311,7 @@ public interface Style {
         
         public void printTab(final BufferedWriter bw, int depth) throws IOException {
             for (int i = 0; i < depth; i++)
-                bw.write("    ");
+                bw.write("\t");
         }
         
         public void printEqualsSign(final BufferedWriter bw, int depth) throws IOException {

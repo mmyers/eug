@@ -35,7 +35,8 @@ public final class FilenameResolver {
     
     private String modPrefix = "mod" + File.separator;
     
-    private String modDirName;
+    private String modDirName; // in the game directory
+    private String modDirNameAlt; // in the Documents directory
     
     private List<String> extended;
     private List<String> replaced;
@@ -45,6 +46,12 @@ public final class FilenameResolver {
     /** true <=> main mod directory has a .mod file corresponding to each mod. */
     private boolean modFile = true;
     
+    /**
+     * Clausewitz 2 (V2:AHD, EU4, and later) mods: all folders are extended
+     * and files or folders can be marked "replace_path"
+     * See: http://forum.paradoxplaza.com/forum/showthread.php?587405-HOW-TO-make-a-modfile-with-the-new-mod-folder
+     */
+    private boolean clausewitz2Mod;
     
     /**
      * Creates a new instance of FilenameResolver, loading configuration from
@@ -65,8 +72,7 @@ public final class FilenameResolver {
      * @param mainDirName the fully qualified name of the main directory.
      */
     public FilenameResolver(String mainDirName) {
-        setMainDirectory(mainDirName);
-        setModName("");
+        this(mainDirName, "", false);
     }
     
     /**
@@ -76,6 +82,11 @@ public final class FilenameResolver {
      * @param modName the unqualified name of the mod.
      */
     public FilenameResolver(String mainDirName, String modName) {
+        this(mainDirName, modName, false);
+    }
+    
+    public FilenameResolver(String mainDirName, String modName, boolean clausewitz2Mod) {
+        this.clausewitz2Mod = clausewitz2Mod;
         setMainDirectory(mainDirName);
         setModName(modName != null ? modName : "");
     }
@@ -122,12 +133,15 @@ public final class FilenameResolver {
                         mainDirName + modPrefix + modName + ".mod");
 
                 if (mod.contains("path")) // A House Divided 2.2 and anything newer
-                    modDirName = mainDirName + mod.getString("path");
+                    modDirName = mainDirName + mod.getString("path") + File.separator;
 
                 extended = new ArrayList<String>();
                 replaced = new ArrayList<String>();
                 if (mod == null) {
                     modFile = false;
+                } else if (clausewitz2Mod) {
+                    for (String str : mod.getStrings("replace_path"))
+                        replaced.add(str.toLowerCase());
                 } else {
                     // Lowercase the strings so that resolution is case-insensitive
                     for (String str : mod.getStrings("extend"))
@@ -253,7 +267,7 @@ public final class FilenameResolver {
         
         if (modFile) {
             // EU3-style mod
-            if (isReplaced(splitPath[0])) {
+            if (isReplaced(splitPath[0]) || isReplaced(filename)) {
                 // Case 1: Directory is replaced.
                 // Return the file in the moddir, even if it doesn't exist.
                 return modDirName + filename;
@@ -297,7 +311,49 @@ public final class FilenameResolver {
     }
     
     /**
-     * EU3-specific method to find the province history file for the given
+     * Clausewitz 2 (EU4 and later, I think)
+     * @return the names of all active province history files for the province
+     * @since
+     */
+    public String[] getProvinceHistoryFiles(final int provId) {
+        if (usingMod && clausewitz2Mod) {
+            String id = Integer.toString(provId);
+            File vanillaFile = getFile(mainDirName + "history/provinces", id, true);
+            String modFilePath = getFilePath(modDirName + "history/provinces", id, true);
+
+            if (modFilePath == null)
+                return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
+            else if (vanillaFile == null || replaced.contains("history/provinces/" + vanillaFile.getName()))
+                return new String[] { modFilePath };
+            else
+                return new String[] { vanillaFile.getAbsolutePath(), modFilePath };
+        } else {
+            return new String[] { getProvinceHistoryFile(provId) };
+        }
+    }
+
+    /**
+     * Clausewitz 2 (EU4 and later, I think)
+     * @return the names of all active province history files for the country
+     */
+    public String[] getCountryHistoryFiles(final String tag) {
+        if (usingMod && clausewitz2Mod) {
+            File vanillaFile = getFile(mainDirName + "history/countries", tag, true);
+            String modFilePath = getFilePath(modDirName + "history/countries", tag, true);
+
+            if (modFilePath == null)
+                return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
+            else if (vanillaFile == null || replaced.contains(vanillaFile.getName()))
+                return new String[] { modFilePath };
+            else
+                return new String[] { vanillaFile.getAbsolutePath(), modFilePath };
+        } else {
+            return new String[] { getCountryHistoryFile(tag) };
+        }
+    }
+    
+    /**
+     * Clausewitz 1 method to find the province history file for the given
      * province.<p>
      * Originally package-private, but became public upon moving to eug.shared.
      * @return the name of the province history file, or <code>null</code> if
@@ -307,18 +363,18 @@ public final class FilenameResolver {
         // Can't use resolveFilename, because we don't know what the file is
         // called.
         if (usingMod) {
-            if (isReplaced("history")) {
+            if (isReplaced("history") || isReplaced("history/provinces")) {
                 // Case 1: History is replaced.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
                 // Otherwise, return null.
-                return getFile(modDirName + "history/provinces", Integer.toString(provId), true);
+                return getFilePath(modDirName + "history/provinces", Integer.toString(provId), true);
             } else if (isExtended("history")) {
                 // Case 2: History is extended.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
                 // Otherwise, try to return the vanilla file.
-                final String filename = getFile(
+                final String filename = getFilePath(
                         modDirName + "history/provinces",
                         Integer.toString(provId),
                         true);
@@ -338,7 +394,7 @@ public final class FilenameResolver {
     }
     
     private String getVanillaProvHistoryFile(final int provId) {
-        return getFile(mainDirName + "history/provinces", Integer.toString(provId), true);
+        return getFilePath(mainDirName + "history/provinces", Integer.toString(provId), true);
     }
 
 
@@ -353,7 +409,7 @@ public final class FilenameResolver {
         // Can't use resolveFilename, because we don't know what the file is
         // called.
         if (usingMod) {
-            if (isReplaced("history")) {
+            if (isReplaced("history") || isReplaced("history/provinces")) {
                 // Case 1: History is replaced.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
@@ -390,13 +446,13 @@ public final class FilenameResolver {
 
     private String getVic2ProvHistoryFile(String dirName, String prefix, boolean exactMatch) {
         // first try the directory itself in case some files aren't in subfolders
-        String ret = getFile(dirName, prefix, exactMatch);
+        String ret = getFilePath(dirName, prefix, exactMatch);
         if (ret != null)
             return ret;
 
         String[] array = enumerateFiles(dirName);
         for (String subdir : array) {
-            ret = getFile(dirName + File.separator + subdir, prefix, exactMatch);
+            ret = getFilePath(dirName + File.separator + subdir, prefix, exactMatch);
             if (ret != null)
                 return ret;
         }
@@ -404,16 +460,16 @@ public final class FilenameResolver {
     }
     
     /**
-     * EU3-specific method to find the country history file for the given
+     * Clausewitz 1 method to find the country history file for the given
      * country.
      * @since EUGFile 1.04.00pre1
      */
     public String getCountryHistoryFile(final String tag) {
         if (usingMod) {
-            if (isReplaced("history")) {
-                return getFile(modDirName + "history/countries", tag, false);
+            if (isReplaced("history") || isReplaced("history/countries")) {
+                return getFilePath(modDirName + "history/countries", tag, false);
             } else if (isExtended("history")) {
-                final String filename = getFile(
+                final String filename = getFilePath(
                         modDirName + "history/countries", tag, false);
                 if (filename != null)
                     return filename;
@@ -428,13 +484,13 @@ public final class FilenameResolver {
     }
     
     private String getVanillaCtryHistoryFile(final String tag) {
-        return getFile(mainDirName + "history/countries", tag, false);
+        return getFilePath(mainDirName + "history/countries", tag, false);
     }
     
     private final java.util.Map<String, String[]> directories =
             new java.util.HashMap<String, String[]>();
     
-    private String getFile(final String dirname, final String start, final boolean exactMatch) {
+    private File getFile(String dirname, String start, boolean exactMatch) {
         String[] array = enumerateFiles(dirname);
         
         final int length = start.length();
@@ -447,9 +503,16 @@ public final class FilenameResolver {
         /*for (String name : array)*/ {
             if (name.substring(0, length).equalsIgnoreCase(start) && //!name.contains("~") &&
                     (!exactMatch || !Character.isLetterOrDigit(name.charAt(length)))) {
-                return new File(dirname + File.separatorChar + name).getAbsolutePath();
+                return new File(dirname + File.separatorChar + name);
             }
         }
+        return null;
+    }
+    
+    private String getFilePath(final String dirname, final String start, final boolean exactMatch) {
+        File f = getFile(dirname, start, exactMatch);
+        if (f != null)
+            return f.getAbsolutePath();
         return null;
     }
 
@@ -545,7 +608,13 @@ public final class FilenameResolver {
      * @since EUGFile 1.04.00pre1
      */
     public boolean isExtended(String directory) {
-        return usingMod && extended.contains(directory.toLowerCase());
+        if (usingMod) {
+            if (clausewitz2Mod)
+                return !replaced.contains(directory.toLowerCase());
+            else
+                return extended.contains(directory.toLowerCase());
+        }
+        return false;
     }
     
     /**

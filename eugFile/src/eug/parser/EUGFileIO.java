@@ -14,9 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 /**
  * Static class which performs I/O of {@link GenericObject GenericObjects}.
@@ -79,6 +77,11 @@ public final class EUGFileIO {
      * Meant to be used with FilenameResolver.listFiles().
      */
     public static GenericObject loadAll(File[] files) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return load(files[0]);
+
         GenericObject root = new GenericObject();
         for (java.io.File file : files) {
             GenericObject obj = load(file);
@@ -93,9 +96,44 @@ public final class EUGFileIO {
      * Meant to be used with FilenameResolver.listFiles().
      */
     public static GenericObject loadAll(File[] files, ParserSettings settings) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return load(files[0], settings);
+        
         GenericObject root = new GenericObject();
         for (java.io.File file : files) {
             GenericObject obj = load(file, settings);
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
+    }
+
+    public static GenericObject loadAll(String[] files) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return load(files[0]);
+
+        GenericObject root = new GenericObject();
+        for (String filename : files) {
+            GenericObject obj = load(filename);
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
+    }
+
+    public static GenericObject loadAll(String[] files, ParserSettings settings) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return load(files[0], settings);
+        
+        GenericObject root = new GenericObject();
+        for (String filename : files) {
+            GenericObject obj = load(filename, settings);
             if (obj != null)
                 root.addAllChildren(obj);
         }
