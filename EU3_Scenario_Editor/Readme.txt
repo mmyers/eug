@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==  Version 0.8.2 (Aug 11 2013)    ==|
+|==  Version 0.8.3 (Aug 31 2013)    ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -28,7 +28,7 @@ means no saved games.
 === System Requirements ===
 ===========================
 
-Java 1.5 or later (tested on Java 1.6)
+Java 1.6 or later
 
 
 ====================

@@ -3,6 +3,17 @@
 \=================/
 
 
+=== 0.8.3 ===
+
+- Added support for EU4 saved games.
+- Added trade node view for EU4.
+- Added much better support for Crusader Kings 2 history files.
+- Added title view and title history file editing for CK2.
+- Lakes are now properly treated as sea zones.
+- Fixed controller display in EU4 provinces.
+- New-style mod files (since Victoria 2: A House Divided) should now work correctly
+
+
 === 0.8.2 ===
 
 - Made compatible with EU4:
