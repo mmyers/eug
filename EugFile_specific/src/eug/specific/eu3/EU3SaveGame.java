@@ -12,9 +12,7 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Style;
 import eug.specific.clausewitz.ClausewitzSaveGame;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -23,24 +21,15 @@ import java.util.Map;
  */
 public class EU3SaveGame extends ClausewitzSaveGame {
     
-    //private final FilenameResolver resolver;
-    
     /**
      * Creates a new instance of EU3SaveGame
      */
     public EU3SaveGame(GenericObject root, String savePath, String mainPath, String modName) {
         super(root, savePath, mainPath, modName);
-        
-        //resolver = new FilenameResolver(mainPath, modName);
-        
-//        initDisplayNames();
-//        initProvs();
-//        initCountries();
     }
     
     public EU3SaveGame(GenericObject root, String savePath, FilenameResolver resolver) {
         super(root, savePath, null, null);
-        //this.resolver = resolver;
     }
     
     public static EU3SaveGame loadSaveGame(String filename, String mainPath, String modName) {
@@ -50,74 +39,6 @@ public class EU3SaveGame extends ClausewitzSaveGame {
     public static EU3SaveGame loadSaveGame(String filename, FilenameResolver resolver) {
         return new EU3SaveGame(EUGFileIO.load(filename), filename, resolver);
     }
-    
-//    /** Load English display names from all files in the localisation dir. */
-    // not currently used (Sept 08)
-//    private void initDisplayNames() {
-//        displayNames = new HashMap<String, String>();
-//        
-//        for (File f : resolver.listFiles("localisation")) {
-//            BufferedReader r = null;
-//            try {
-//                r = new BufferedReader(new FileReader(f), (int)f.length());
-//                String line;
-//                while ((line = r.readLine()) != null) {
-//                    String[] array = line.split(";");
-//                    displayNames.put(array[0], array[1]);
-//                }
-//            } catch (FileNotFoundException ex) {
-//                ex.printStackTrace();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            } finally {
-//                if (r != null) {
-//                    try {
-//                        r.close();
-//                    } catch (IOException ex) {} // must never throw exception from 'finally' block
-//                }
-//            }
-//        }
-//    }
-    
-    private void initProvs() {
-        provinces = new HashMap<Integer, GenericObject>(2048);
-        for (int i = 1; /* loop until broken */; i++) {
-            final GenericObject prov = root.getChild(Integer.toString(i));
-            if (prov == null) {
-                lastProvId = i-1;
-                break;
-            }
-            provinces.put(i, prov);
-        }
-    }
-    
-    private static final java.util.regex.Pattern tagPattern =
-            java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
-    private void initCountries() {
-        countryMap = new HashMap<String, GenericObject>(100);
-        for (GenericObject obj : root.children) {
-            if (tagPattern.matcher(obj.name).matches()) {
-                countryMap.put(obj.name, obj);
-            }
-        }
-    }
-    
-    // Lazy accessor
-    private Map<String, GenericObject> getCountryMap() {
-        if (countryMap == null)
-            initCountries();
-        
-        return countryMap;
-    }
-    
-    // Lazy accessor
-    private Map<Integer, GenericObject> getProvinces() {
-        if (provinces == null)
-            initProvs();
-        
-        return provinces;
-    }
-    
     
     public EU3Country getEU3Country(final String tag) {
         return new EU3Country(getCountryMap().get(tag.substring(0,3).toUpperCase()), this);

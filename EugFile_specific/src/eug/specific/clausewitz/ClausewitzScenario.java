@@ -30,8 +30,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     private final Map<String, GenericObject> ctryHistoryCache;
     private final Map<Integer, GenericObject> provHistoryCache;
     
-    private static final ParserSettings settings =
-            ParserSettings.getDefaults().setPrintTimingInfo(false);
+    protected static final ParserSettings settings = ParserSettings.getQuietSettings();
     
     /** Creates a new instance of EU3Scenario */
     public ClausewitzScenario(FilenameResolver resolver) {
@@ -194,7 +193,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         saveFile(filename, data);
     }
     
-    protected static final String getBackupFilename(String filename) {
+    protected static String getBackupFilename(String filename) {
         final File f = new File(filename);
         return f.getParent() + File.separatorChar + "~" + f.getName();
     }
@@ -253,14 +252,14 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         for (int id = start; id < end; id++) {
             hist = provHistoryCache.get(id);
             if (hist == null) {
-                final String histFile = resolveProvinceHistoryFile(id);
+                final String[] histFiles = resolveProvinceHistoryFiles(id);
                 
-                if (histFile == null) {
+                if (histFiles == null || histFiles.length == 0 || histFiles[0] == null) {
 //                    System.err.println("Cannot find province history file for ID " + id);
                     continue;
                 }
                 
-                hist = EUGFileIO.load(histFile, settings);
+                hist = EUGFileIO.loadAll(histFiles, settings);
                 
                 if (hist == null) {
 //                    System.err.println("Failed to load province history file for ID " + id);
@@ -308,19 +307,23 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     protected String resolveProvinceHistoryFile(int id) {
         return resolver.getProvinceHistoryFile(id);
     }
+
+    protected String[] resolveProvinceHistoryFiles(int id) {
+        return resolver.getProvinceHistoryFiles(id);
+    }
     
     /** Gets the province history for the given id, using the cache. */
     private GenericObject getProvHistory(final int id) {
         GenericObject hist = provHistoryCache.get(id);
         if (hist == null) {
-            final String histFile = resolveProvinceHistoryFile(id);
+            final String[] histFiles = resolveProvinceHistoryFiles(id);
             
-            if (histFile == null) {
+            if (histFiles == null || histFiles.length == 0 || histFiles[0] == null) {
                 //System.err.println("Cannot find province history file for ID " + id);
                 return null;
             }
             
-            hist = EUGFileIO.load(histFile, settings);
+            hist = EUGFileIO.loadAll(histFiles, settings);
             
             if (hist == null) {
                 System.err.println("Failed to load province history file for ID " + id);

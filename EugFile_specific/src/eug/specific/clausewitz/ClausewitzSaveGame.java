@@ -21,7 +21,6 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     protected final String savePath;
     
     protected Map<String, GenericObject> countryMap;
-//    private List<GenericObject> provinces;
     
     protected int lastProvId;
     
@@ -43,7 +42,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     
-    private void initProvs() {
+    protected void initProvs() {
         provinces = new HashMap<Integer, GenericObject>(1500);
         for (int i = 1; /* loop until broken */; i++) {
             final GenericObject prov = root.getChild(Integer.toString(i));
@@ -53,13 +52,30 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
             }
             provinces.put(i, prov);
         }
+        if (lastProvId == 0) { // EU4
+            GenericObject provs = root.getChild("provinces");
+            if (provs == null)
+                return;
+
+            for (int i = 1; ; i++) {
+                GenericObject prov = provs.getChild("-" + i);
+                if (prov == null) {
+                    lastProvId = i-1;
+                    break;
+                }
+                provinces.put(i, prov);
+            }
+        }
     }
     
-    private static final java.util.regex.Pattern tagPattern =
+    protected static final java.util.regex.Pattern tagPattern =
             java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
-    private void initCountries() {
+    protected void initCountries() {
         countryMap = new HashMap<String, GenericObject>(100);
-        for (GenericObject obj : root.children) {
+        GenericObject countryRoot = root.getChild("countries");
+        if (countryRoot == null)
+            countryRoot = root;
+        for (GenericObject obj : countryRoot.children) {
             if (tagPattern.matcher(obj.name).matches()) {
                 countryMap.put(obj.name, obj);
             }
@@ -67,7 +83,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     // Lazy accessor
-    private Map<String, GenericObject> getCountryMap() {
+    protected Map<String, GenericObject> getCountryMap() {
         if (countryMap == null)
             initCountries();
         
@@ -75,7 +91,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     // Lazy accessor
-    private Map<Integer, GenericObject> getProvinces() {
+    protected Map<Integer, GenericObject> getProvinces() {
         if (provinces == null)
             initProvs();
         
@@ -228,7 +244,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
             getProvinces().put(id, newProvince);
         } else {
             province.clear();
-            province.addAllChildren(newProvince.getChild(Integer.toString(id)));
+            province.addAllChildren(newProvince.getChild(0));
         }
         hasUnsavedChanges = true;
     }
