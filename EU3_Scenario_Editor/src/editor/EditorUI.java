@@ -14,6 +14,8 @@ import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
+import eug.specific.ck2.CK2DataSource;
+import eug.specific.ck2.CK2Scenario;
 import eug.specific.clausewitz.ClausewitzSaveGame;
 import eug.specific.clausewitz.ClausewitzScenario;
 import eug.specific.eu3.EU3SaveGame;
@@ -47,7 +49,7 @@ public final class EditorUI extends javax.swing.JFrame {
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
     
-    private static final String VERSION = "0.8.1";
+    private static final String VERSION = "0.8.2";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
 
@@ -125,6 +127,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 scen = new EU3Scenario(resolver);
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
                 scen = new Vic2Scenario(resolver);
+            else if (version.getSaveType().equalsIgnoreCase("ck2"))
+                scen = new CK2Scenario(resolver);
             else {
                 System.err.println("Unknown or missing scenario type specified by config.");
                 System.err.println("Defaulting to EU3");
@@ -534,9 +538,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_mapPanelMousePressed
     
     private void showCountryHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCountryHistButtonActionPerformed
-        FileEditorDialog.showDialog(this, lastCountry, Text.getText(lastCountry), resolver, provinceData);
-//        mapPanel.getModel().getDataSource().reloadCountry(tag);
-//        mapPanel.repaint();
+        FileEditorDialog.showDialog(this, lastCountry, getLastCountryName(), resolver, provinceData);
     }//GEN-LAST:event_showCountryHistButtonActionPerformed
     
     /**
@@ -553,6 +555,13 @@ public final class EditorUI extends javax.swing.JFrame {
 //    private transient Point lastClick = null;
     
     private transient String lastCountry = null;
+
+    private String getLastCountryName() {
+        if (mapPanel.getDataSource() instanceof CK2DataSource)
+            return TitleMode.getTitleName(lastCountry, lastProv);
+        else
+            return Text.getText(lastCountry);
+    }
     
     private void mapPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseMoved
         updateMapTooltip(evt.getPoint());
@@ -679,7 +688,14 @@ public final class EditorUI extends javax.swing.JFrame {
         
         if (p.getId() != 0) {
             showProvHistButton.setEnabled(true);
-            lastCountry = mapPanel.getModel().getHistString(p.getId(), "owner");
+            if (mapPanel.getModel().getDataSource() instanceof CK2DataSource) {
+                lastCountry = mapPanel.getModel().getHistString(p.getId(), "title");
+                if (mapPanel.getMode() instanceof TitleMode) {
+                    TitleMode mode = ((TitleMode)mapPanel.getMode());
+                    lastCountry = mode.getLiege(lastCountry);
+                }
+            } else
+                lastCountry = mapPanel.getModel().getHistString(p.getId(), "owner");
         } else {
             showProvHistButton.setEnabled(false);
             lastCountry = "";
@@ -725,7 +741,7 @@ public final class EditorUI extends javax.swing.JFrame {
                         mapPanel.repaint();
                     }
                 }
-                ctryNameLabel.setText(Text.getText(lastCountry));
+                ctryNameLabel.setText(getLastCountryName());
                 showCountryHistButton.setEnabled(true);
             }
             
@@ -854,6 +870,9 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(new ProvinceFilterAction());
             } else if (view.equals("countries")) {
                 viewMenu.add(new PoliticalFilterAction());
+            } else if (view.equals("titles")) {
+                for (TitleMode.TitleType t : TitleMode.TitleType.values())
+                    viewMenu.add(new TitleFilterAction(t));
             } else if (view.equals("country-menu")) {
                 JMenu menu = new JMenu("Single country");
                 addCountryFilters(menu);
@@ -926,6 +945,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(menu);
             } else if (view.equals("cots")) {
                 viewMenu.add(new CustomFilterAction("Centers of trade", "cot", "yes"));
+            } else if (view.equals("tradenodes")) {
+                viewMenu.add(new TradeNodeFilterAction());
             } else if (view.equals("capitals")) {
                 viewMenu.add(new CapitalFilterAction());
             } else if (view.equals("hre")) {
@@ -1685,6 +1706,13 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         }
     }
+
+    private class TitleFilterAction extends FilterAction {
+        public TitleFilterAction(TitleMode.TitleType type) {
+            super(type.getName() + " Titles", new TitleMode(mapPanel, type));
+            putValue(SHORT_DESCRIPTION, type.getName() + " Titles");
+        }
+    }
     
     private class ProvReligionFilterAction extends FilterAction {
         public ProvReligionFilterAction() {
@@ -1721,6 +1749,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public CoreFilterAction(String tag) {
             super("Core", new CoreMapMode(mapPanel, tag));
             putValue(SHORT_DESCRIPTION, "Cores of " + tag);
+        }
+    }
+
+    private class TradeNodeFilterAction extends FilterAction {
+        public TradeNodeFilterAction() {
+            super("Trade nodes", new TradeMode(mapPanel, resolver));
+            putValue(SHORT_DESCRIPTION, "Trade nodes");
         }
     }
     

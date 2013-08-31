@@ -7,6 +7,7 @@
 package editor;
 
 import eug.shared.FilenameResolver;
+import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
@@ -87,7 +88,11 @@ public class FileEditorDialog extends EditorDialog {
      * @param cname the country's name.
      */
     private void readFile(String tag, String cname) {
-        final String data = dataSource.getCountryAsStr(tag);
+        String data = null;
+        if (dataSource instanceof CK2DataSource)
+            data = ((CK2DataSource)dataSource).getTitleAsStr(tag);
+        else
+            data = dataSource.getCountryAsStr(tag);
         
         if (data == null) {
             setOriginalContents("# No previous file for " + cname + "\n");
@@ -122,8 +127,13 @@ public class FileEditorDialog extends EditorDialog {
             dataSource.saveProvince(id, name, getText());
             dataSource.reloadProvince(id);
         } else {
-            dataSource.saveCountry(tag, name, getText());
-            dataSource.reloadCountry(tag);
+            if (dataSource instanceof CK2DataSource) {
+                ((CK2DataSource) dataSource).saveTitle(tag, getText());
+                ((CK2DataSource) dataSource).reloadTitle(tag);
+            } else {
+                dataSource.saveCountry(tag, name, getText());
+                dataSource.reloadCountry(tag);
+            }
         }
     }
     

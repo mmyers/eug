@@ -232,7 +232,10 @@ public class Main {
 
                 dialog.dispose();
 
-                FilenameResolver resolver = new FilenameResolver(gameDirField.getText(), mod.getName().equals("None") ? "" : mod.getModPath());
+                System.out.println("Loading " + version.getDisplay() + ". Mod: " + mod.getName());
+                System.out.println("Game path: " + gameDirField.getText());
+
+                FilenameResolver resolver = new FilenameResolver(gameDirField.getText(), mod.getName().equals("None") ? "" : mod.getModPath(), true);
 
                 startEditor(saveFile, version, resolver);
             }

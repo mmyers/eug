@@ -9,6 +9,7 @@ package editor.mapmode;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import editor.Text;
+import eug.shared.GenericObject;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 
@@ -30,7 +31,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final String owner = mapPanel.getModel().getHistString(provId, "owner");
-        final String controller = (owner == null ? null : mapPanel.getModel().getHistString(provId, "controller"));
+        String controller = owner == null || owner.isEmpty() ? "" : getController(provId);
         
         if (owner == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
@@ -54,7 +55,16 @@ public final class PoliticalMode extends ProvincePaintingMode {
     protected void paintSeaZone(final Graphics2D g, int id) {
         // do nothing
     }
-    
+
+    private String getController(int provId) {
+        String controller = mapPanel.getModel().getHistString(provId, "controller");
+        if (controller.isEmpty()) {
+            GenericObject controllerObj = mapPanel.getModel().getHistObject(provId, "controller");
+            if (controllerObj != null)
+                controller = controllerObj.getString("controller");
+        }
+        return controller;
+    }
     
     @Override
     public String getTooltipExtraText(final Province curr) {
@@ -63,10 +73,10 @@ public final class PoliticalMode extends ProvincePaintingMode {
             return "";
         
         String owner = mapPanel.getModel().getHistString(id, "owner");
-        String controller = mapPanel.getModel().getHistString(id, "controller");
-        
-        if (owner == null && controller == null)
+        if (owner == null || owner.isEmpty())
             return "";
+
+        String controller = getController(curr.getId());
         
         owner = Text.getText(owner);
         controller = Text.getText(controller);

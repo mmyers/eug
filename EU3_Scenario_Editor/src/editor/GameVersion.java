@@ -16,6 +16,7 @@ public class GameVersion {
     private String startDate;
     
     private boolean hasLandList;
+    private boolean hasLakes;
     private boolean isMapInverted;
     private boolean hasRegions;
     private boolean hasClimateTxt;
@@ -44,6 +45,7 @@ public class GameVersion {
                     newVersion.startDate = old.startDate;
                     newVersion.isMapInverted = old.isMapInverted;
                     newVersion.hasLandList = old.hasLandList;
+                    newVersion.hasLakes = old.hasLakes;
                     newVersion.hasRegions = old.hasRegions;
                     newVersion.hasClimateTxt = old.hasClimateTxt;
                     newVersion.saveType = old.saveType;
@@ -70,6 +72,8 @@ public class GameVersion {
                 newVersion.hasRegions = version.getBoolean("has_regions");
             if (version.hasString("has_climate_txt"))
                 newVersion.hasClimateTxt = version.getBoolean("has_climate_txt");
+            if (version.hasString("has_lakes"))
+                newVersion.hasLakes = version.getBoolean("has_lakes");
 
             if (version.hasString("province_loc"))
                 newVersion.provinceLocFmt = version.getString("province_loc");
@@ -132,6 +136,10 @@ public class GameVersion {
     /** True if default.map has a list of sea provinces instead of a sea_starts number. */
     public boolean hasLandList() {
         return hasLandList;
+    }
+
+    public boolean hasLakes() {
+        return hasLakes;
     }
 
     public boolean isMapUpsideDown() {

@@ -51,6 +51,33 @@ in_nomine = {
 	wars
 }
 
+eu4 = { # In Nomine with trade nodes swapped for COTs
+	provinces
+	countries
+	country-menu
+	continents-menu
+	regions-menu
+	climates-menu
+	province-religions
+	religions
+	religions-menu
+	buildings-menu
+	new-cultures-menu
+	trade-goods
+	trade-goods-menu
+	governments-menu
+	tech-groups-menu
+	tradenodes
+        capitals
+	hre
+	base-tax
+	#population
+	manpower
+	revolt-risk
+	natives-menu
+	wars
+}
+
 victoria2 = {
 	provinces
 	countries
@@ -107,6 +134,8 @@ hoi3 = {
 
 ck2 = {
 	provinces
+	titles
+	regions-menu
 	new-cultures-menu
 	province-religions
 	#religions

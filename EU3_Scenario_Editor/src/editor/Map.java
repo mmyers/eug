@@ -121,6 +121,16 @@ public final class Map {
                     isLand[id] = false;
                 }
             }
+
+            if (version.hasLakes()) {
+                GenericList lakes = mapData.getList("lakes");
+                if (lakes != null) {
+                    for (String provId : lakes) {
+                        int id = Integer.parseInt(provId);
+                        isLand[id] = false;
+                    }
+                }
+            }
         } else if (mapData.getString("sea_starts").isEmpty()) {
             System.err.println("Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
         }
@@ -201,8 +211,15 @@ public final class Map {
     public java.util.Map<String, List<String>> getRegions() {
         if (regionList == null) {
             regionList = new HashMap<String, List<String>>(regions.size());
-            for (GenericList cont : regions.lists) {
-                regionList.put(cont.getName(), cont.getList());
+            if (!regions.lists.isEmpty()) {
+                for (GenericList cont : regions.lists) {
+                    regionList.put(cont.getName(), cont.getList());
+                }
+            } else {
+                for (GenericObject reg : regions.children) {
+                    if (reg.containsList("provinces"))
+                        regionList.put(reg.name, reg.getList("provinces").getList());
+                }
             }
         }
         return regionList;

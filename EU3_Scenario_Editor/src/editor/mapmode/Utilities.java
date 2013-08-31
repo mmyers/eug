@@ -82,19 +82,56 @@ public final class Utilities {
     private static final java.util.Map<String, Color> relColorCache =
             new HashMap<String, Color>();
 
+    private static GenericObject titles;
+
+    private static final java.util.Map<String, Color> titleColorCache =
+            new HashMap<String, Color>();
+
     private static FilenameResolver resolver;
 
     /** @since 0.7.5 */
     public static void init(FilenameResolver resolver) {
+        Utilities.resolver = resolver;
+    }
+    
+    public static void initCountries() {
         countries = EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
         if (countries == null)
             countries = EUGFileIO.loadAll(resolver.listFiles("common/country_tags"), settings);
+    }
 
+    private static void initReligions() {
         religions = EUGFileIO.load(resolver.resolveFilename("common/religion.txt"), settings);
         if (religions == null)
             religions = EUGFileIO.loadAll(resolver.listFiles("common/religions"), settings);
+    }
+    
+    private static void initTitles() {
+        titles = EUGFileIO.load(resolver.resolveFilename("common/landed_titles.txt"), settings);
 
-        Utilities.resolver = resolver;
+        readTitleColors(titles);
+    }
+
+    private static void readTitleColors(GenericObject titles) {
+        for (GenericObject title : titles.children) {
+            if (title.isEmpty())
+                continue; // skip bishoprics and such
+
+            GenericList color = title.getList("color");
+
+            if (color == null) {
+                //System.err.println("color for " + title.name + " is null");
+                titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
+            } else {
+                final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
+                final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
+                final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
+
+                titleColorCache.put(title.name, new Color(red, green, blue));
+            }
+
+            readTitleColors(title);
+        }
     }
     
     static Color getCtryColor(String country) {
@@ -104,20 +141,21 @@ public final class Utilities {
         else
             country = toUpperCase(country);
         
+        if (countries == null)
+            initCountries();
         
         Color ret = ctryColorCache.get(country);
         if (ret == null) {
-            
             String filename = countries.getString(country);
             if (!filename.startsWith("common"))
                 filename = "common/" + filename;
             filename = resolver.resolveFilename(filename);
-            
+
             final GenericObject countryDef = EUGFileIO.load(filename, settings);
             
             if (countryDef == null) {
                 System.err.println("No country definition file found for " + country + ".");
-                System.err.println("Expected to find it in " + filename);
+                System.err.println("Expected to find it in " + countries.getString(country));
                 return COLOR_NO_CTRY_DEF;
             }
             
@@ -140,6 +178,9 @@ public final class Utilities {
     }
     
     static Color getReligionColor(String religion) {
+        if (religions == null)
+            initReligions();
+        
         religion = religion.toLowerCase();
         
         Color ret = relColorCache.get(religion);
@@ -184,6 +225,13 @@ public final class Utilities {
         }
         
         return ret;
+    }
+    
+    static Color getTitleColor(String title) {
+        if (titles == null)
+            initTitles();
+
+        return titleColorCache.get(title);
     }
     
     

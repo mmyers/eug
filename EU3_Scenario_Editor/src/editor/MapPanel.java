@@ -380,14 +380,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         return false;
     }
     
-    
-    /** @since 0.3pre1 */
-    public void goToProv(int provId) {
+    private Point getCenterPoint(int provId) {
         java.awt.Rectangle r =
                 calculateBounds(model.getMapData().getLinesInProv(model.getProvinceData().getProvByID(provId).getColor()));
         
         if (r == null) // province does not appear on the map
-            return;
+            return null;
 
         // We want the point x + width/2, y + height/2 to be in the
         // center of the viewport.
@@ -397,8 +395,16 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         // need to adjust them.
         x = (int) (((double) x) * (scaleFactor / DEFAULT_SCALE_FACTOR));
         y = (int) (((double) y) * (scaleFactor / DEFAULT_SCALE_FACTOR));
-        
-        centerMap(x, y);
+
+        return new Point(x, y);
+    }
+    
+    /** @since 0.3pre1 */
+    public void goToProv(int provId) {
+        Point p = getCenterPoint(provId);
+        if (p == null)
+            return;
+        centerMap(p.x, p.y);
     }
     
     /** @since 0.4pre1 */
@@ -540,6 +546,31 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.7.5 */
     public Map getMap() {
         return map;
+    }
+
+    /** @since 0.8.2 */
+    public void drawArrow(int from, int to, Graphics2D g) {
+        Point pFrom = getCenterPoint(from);
+        Point pTo = getCenterPoint(to);
+        if (pFrom == null || pTo == null)
+            return;
+        
+        g.setColor(Color.BLACK);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        double straightLength = pFrom.distance(pTo);
+        double edgeLengthLeft = pFrom.distance(new Point(pTo.x - scaledMapImage.getWidth(), pTo.y));
+        double edgeLengthRight = pFrom.distance(new Point(pTo.x + scaledMapImage.getWidth(), pTo.y));
+        
+        if (straightLength < edgeLengthLeft && straightLength < edgeLengthRight)
+            g.drawLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
+        else if (edgeLengthLeft < edgeLengthRight) {
+            g.drawLine(pFrom.x, pFrom.y, pTo.x - scaledMapImage.getWidth(), pTo.y);
+            g.drawLine(pFrom.x + scaledMapImage.getWidth(), pFrom.y, pTo.x, pTo.y);
+        } else {
+            g.drawLine(pFrom.x, pFrom.y, pTo.x + scaledMapImage.getWidth(), pTo.y);
+            g.drawLine(pFrom.x - scaledMapImage.getWidth(), pFrom.y, pTo.x, pTo.y);
+        }
     }
 
     // blah

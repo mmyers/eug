@@ -45,6 +45,8 @@ eu4 = {
 	inherit = dw
 	display = "EU4"
 	text = yaml
+	has_lakes = yes
+	view_set = eu4
 }
 
 rome = {
@@ -90,5 +92,7 @@ hoi3 = {
 ck2 = {
 	inherit = dw
 	display = "Crusader Kings 2"
+	has_land_list = no
+	save_type = ck2
 	view_set = ck2
 }
