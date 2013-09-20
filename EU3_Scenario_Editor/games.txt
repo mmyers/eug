@@ -52,7 +52,7 @@ eu4 = {
 	has_lakes = yes
 	view_set = eu4
 	new_style_mod = yes
-	mod_path = "Paradox Interactive/Europa Universalis IV Demo"
+	mod_path = "Paradox Interactive/Europa Universalis IV"
 }
 
 rome = {

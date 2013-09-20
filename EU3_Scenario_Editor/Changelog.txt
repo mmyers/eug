@@ -3,6 +3,15 @@
 \=================/
 
 
+=== 0.8.4 ===
+
+- Mods can now be defined in My Documents. The subdirectory is defined in
+  games.txt.
+- Files in the mod directory that have the exact same name and path as a vanilla
+  file are now treated as overwriting that file even if not specified by a
+  replace or replace_path command.
+
+
 === 0.8.3 ===
 
 - Added support for EU4 saved games.
