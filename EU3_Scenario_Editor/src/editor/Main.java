@@ -90,7 +90,7 @@ public class Main {
                 if (choice == JFileChooser.APPROVE_OPTION) {
                     gameDirField.setText(chooser.getSelectedFile().getAbsolutePath());
                     String modPath = chooser.getSelectedFile().getAbsolutePath() + File.separator + "mod";
-                    Vector<Mod> mods = listMods(new File(modPath));
+                    Vector<Mod> mods = listMods(new File(modPath), true);
                     modBox.setModel(new DefaultComboBoxModel(mods));
                 }
             }
@@ -152,7 +152,11 @@ public class Main {
 
                         if (!recent.isEmpty()) {
                             String modPath = new File(recent).getAbsolutePath() + File.separator + "mod";
-                            Vector<Mod> mods = listMods(new File(modPath));
+                            Vector<Mod> mods = listMods(new File(modPath), true);
+                            if (version.getModPath() != null) {
+                                File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
+                                mods.addAll(listMods(new File(documents.getAbsolutePath() + "/" + version.getModPath() + "/mod"), false));
+                            }
                             modBox.setModel(new DefaultComboBoxModel(mods));
 
                             if (!saved.getString("lastmod").isEmpty()) {
@@ -235,7 +239,14 @@ public class Main {
                 System.out.println("Loading " + version.getDisplay() + ". Mod: " + mod.getName());
                 System.out.println("Game path: " + gameDirField.getText());
 
-                FilenameResolver resolver = new FilenameResolver(gameDirField.getText(), mod.getName().equals("None") ? "" : mod.getModPath(), true);
+                FilenameResolver resolver = new FilenameResolver(gameDirField.getText());
+                resolver.setClausewitz2Mod(version.isNewStyleMod());
+                if (version.isNewStyleMod()) {
+                    resolver.setModDirectory(mod.getName().equals("None") ? "" : mod.getModPath());
+                    resolver.setModFileName(mod.getModFilePath());
+                } else {
+                    resolver.setModName(mod.getName().equals("None") ? "" : mod.getModPath());
+                }
 
                 startEditor(saveFile, version, resolver);
             }
@@ -301,7 +312,7 @@ public class Main {
     }
     
     // returns a Vector to use in a combo box
-    private static Vector<Mod> listMods(File moddir) {
+    private static Vector<Mod> listMods(File moddir, boolean includeNone) {
         File[] mods = moddir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
                 if (pathname.isDirectory())
@@ -316,11 +327,17 @@ public class Main {
             mods = new File[] {};
         
         Vector<Mod> ret = new Vector<Mod>(mods.length + 1);
-        ret.add(new Mod("None", moddir.getParent(), moddir.getParent()));
+
+        if (includeNone) {
+            ret.add(new Mod("None", moddir.getParent(), moddir.getParent()));
+        }
         
         for (File f : mods) {
             GenericObject obj = EUGFileIO.load(f, ParserSettings.getQuietSettings());
             String modPath = f.getName().substring(0, f.getName().length()-4);
+            if (obj.contains("path")) {
+                modPath = moddir.getParent() + File.separator + obj.getString("path");
+            }
             Mod mod = new Mod(obj.getString("name"), f.getAbsolutePath(), modPath);
             ret.add(mod);
         }

@@ -28,6 +28,9 @@ public class GameVersion {
     private String textFmt; // Either "csv" or "yaml", as of EU4
 
     private String viewSet;
+
+    private boolean newStyleMod;
+    private String modPath;
     
     private GameVersion() {
     }
@@ -53,6 +56,8 @@ public class GameVersion {
                     newVersion.provinceLocFmt = old.provinceLocFmt;
                     newVersion.textFmt = old.textFmt;
                     newVersion.viewSet = old.viewSet;
+                    newVersion.newStyleMod = old.newStyleMod;
+                    newVersion.modPath = old.modPath;
                 } else {
                     System.err.println("Invalid 'inherit' directive: '" + version.getString("inherit") + "'");
                 }
@@ -93,6 +98,11 @@ public class GameVersion {
 
             if (version.hasString("view_set"))
                 newVersion.viewSet = version.getString("view_set").toLowerCase();
+
+            if (version.hasString("new_style_mod"))
+                newVersion.newStyleMod = version.getBoolean("new_style_mod");
+            if (version.hasString("mod_path"))
+                newVersion.modPath = version.getString("mod_path");
 
             gameVersions.add(newVersion);
         }
@@ -168,6 +178,14 @@ public class GameVersion {
 
     public String getTextFormat() {
         return textFmt;
+    }
+
+    public boolean isNewStyleMod() {
+        return newStyleMod;
+    }
+
+    public String getModPath() {
+        return modPath;
     }
 
     @Override

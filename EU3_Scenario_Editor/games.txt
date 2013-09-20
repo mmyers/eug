@@ -1,6 +1,10 @@
 # Settings for each game.
 # The "inherit" command means all settings for that game will be copied
 # unless otherwise specified.
+# new_style_mod is for mods that default to extending everything and use
+# the replace_path directive instead of replace
+# mod_path is relative to My Documents ("/mod" is automatically appended)
+# view_sets are defined in views.txt.
 
 eu3 = {
 	display = "EU3 Vanilla/NA"
@@ -47,6 +51,8 @@ eu4 = {
 	text = yaml
 	has_lakes = yes
 	view_set = eu4
+	new_style_mod = yes
+	mod_path = "Paradox Interactive/Europa Universalis IV Demo"
 }
 
 rome = {
@@ -74,6 +80,13 @@ v2 = {
 	save_type = victoria
 	view_set = victoria2
 	text = csv
+	mod_path = "Paradox Interactive/Victoria 2"
+}
+
+ahd = {
+	display = "A House Divided"
+	inherit = v2
+	new_style_mod = yes
 }
 
 hoi3 = {
@@ -95,4 +108,6 @@ ck2 = {
 	has_land_list = no
 	save_type = ck2
 	view_set = ck2
+	new_style_mod = yes
+	mod_path = "Paradox Interactive/Crusader Kings II"
 }
