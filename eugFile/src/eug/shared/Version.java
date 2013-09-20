@@ -45,7 +45,7 @@ public final class Version {
     }
     
     public static int getUpdate() {
-        return 0;
+        return 1;
     }
     
 //    public static int getBuild() {

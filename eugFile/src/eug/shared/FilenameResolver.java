@@ -126,33 +126,56 @@ public final class FilenameResolver {
         
         if (modName.length() != 0) {
             usingMod = true;
-            modDirName = mainDirName + modPrefix + modName + File.separator;
-            
-            if (modFile) {
-                final GenericObject mod = EUGFileIO.load(
-                        mainDirName + modPrefix + modName + ".mod");
-
-                if (mod.contains("path")) // A House Divided 2.2 and anything newer
-                    modDirName = mainDirName + mod.getString("path") + File.separator;
-
-                extended = new ArrayList<String>();
-                replaced = new ArrayList<String>();
-                if (mod == null) {
-                    modFile = false;
-                } else if (clausewitz2Mod) {
-                    for (String str : mod.getStrings("replace_path"))
-                        replaced.add(str.toLowerCase());
-                } else {
-                    // Lowercase the strings so that resolution is case-insensitive
-                    for (String str : mod.getStrings("extend"))
-                        extended.add(str.toLowerCase());
-                    for (String str : mod.getStrings("replace"))
-                        replaced.add(str.toLowerCase());
-                }
-            }
+            setModDirectory(mainDirName + modPrefix + modName);
         } else {
             usingMod = false;
             modDirName = mainDirName;
+        }
+    }
+
+    /**
+     * Sets the fully-qualified mod directory. If the .mod file does not have
+     * the same name as the directory (i.e. if the .mod file uses a "path"
+     * directive), the .mod file will not be loaded. Instead, the application
+     * must call {@link #setModFileName(java.lang.String) setModFileName()}.
+     * @param dirName
+     */
+    public void setModDirectory(String dirName) {
+        modDirName = dirName;
+        usingMod = true;
+
+        if (modFile) {
+            File file = new File(modDirName + ".mod");
+
+            if (file.exists())
+                setModFileName(modDirName + ".mod");
+        }
+        
+        if (!(modDirName.endsWith("/") || modDirName.endsWith("\\"))) {
+            modDirName += File.separator;
+        }
+    }
+
+    /**
+     * Sets the fully-qualified name of the .mod file.
+     * @param filename
+     */
+    public void setModFileName(String filename) {
+        final GenericObject mod = EUGFileIO.load(filename);
+
+        extended = new ArrayList<String>();
+        replaced = new ArrayList<String>();
+        if (mod == null) {
+            modFile = false;
+        } else if (clausewitz2Mod) {
+            for (String str : mod.getStrings("replace_path"))
+                replaced.add(str.toLowerCase());
+        } else {
+            // Lowercase the strings so that resolution is case-insensitive
+            for (String str : mod.getStrings("extend"))
+                extended.add(str.toLowerCase());
+            for (String str : mod.getStrings("replace"))
+                replaced.add(str.toLowerCase());
         }
     }
     
@@ -313,20 +336,22 @@ public final class FilenameResolver {
     /**
      * Clausewitz 2 (EU4 and later, I think)
      * @return the names of all active province history files for the province
-     * @since
+     * @since EUGFile 1.10.00
      */
     public String[] getProvinceHistoryFiles(final int provId) {
         if (usingMod && clausewitz2Mod) {
             String id = Integer.toString(provId);
             File vanillaFile = getFile(mainDirName + "history/provinces", id, true);
-            String modFilePath = getFilePath(modDirName + "history/provinces", id, true);
+            File modFile = getFile(modDirName + "history/provinces", id, true);
 
-            if (modFilePath == null)
+            if (modFile == null)
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
-            else if (vanillaFile == null || replaced.contains("history/provinces/" + vanillaFile.getName()))
-                return new String[] { modFilePath };
+            else if (vanillaFile == null
+                    || vanillaFile.getName().equals(modFile.getName())
+                    || replaced.contains("history/provinces/" + vanillaFile.getName()))
+                return new String[] { modFile.getAbsolutePath() };
             else
-                return new String[] { vanillaFile.getAbsolutePath(), modFilePath };
+                return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
         } else {
             return new String[] { getProvinceHistoryFile(provId) };
         }
@@ -335,18 +360,21 @@ public final class FilenameResolver {
     /**
      * Clausewitz 2 (EU4 and later, I think)
      * @return the names of all active province history files for the country
+     * @since EUGFile 1.10.00
      */
     public String[] getCountryHistoryFiles(final String tag) {
         if (usingMod && clausewitz2Mod) {
             File vanillaFile = getFile(mainDirName + "history/countries", tag, true);
-            String modFilePath = getFilePath(modDirName + "history/countries", tag, true);
+            File modFile = getFile(modDirName + "history/countries", tag, true);
 
-            if (modFilePath == null)
+            if (modFile == null)
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
-            else if (vanillaFile == null || replaced.contains(vanillaFile.getName()))
-                return new String[] { modFilePath };
+            else if (vanillaFile == null
+                    || vanillaFile.getName().equals(modFile.getName())
+                    || replaced.contains(vanillaFile.getName()))
+                return new String[] { modFile.getAbsolutePath() };
             else
-                return new String[] { vanillaFile.getAbsolutePath(), modFilePath };
+                return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
         } else {
             return new String[] { getCountryHistoryFile(tag) };
         }
@@ -601,6 +629,14 @@ public final class FilenameResolver {
     public void setModFile(boolean modFile) {
         this.modFile = modFile;
         setModName(modName);
+    }
+    
+    public boolean isClausewitz2Mod() {
+        return clausewitz2Mod;
+    }
+
+    public void setClausewitz2Mod(boolean value) {
+        this.clausewitz2Mod = value;
     }
     
     /**
