@@ -25,6 +25,11 @@ public class Vic2Scenario extends ClausewitzScenario {
     }
 
     @Override
+    protected String[] resolveProvinceHistoryFiles(int id) {
+        return new String[] { resolveProvinceHistoryFile(id) };
+    }
+
+    @Override
     public void saveProvince(int id, String pname, String data) {
         String filename = resolveProvinceHistoryFile(id);
         if (filename == null) {
