@@ -8,9 +8,9 @@ package eug.shared;
 
 import eug.parser.EUGFileIO;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Resolves filenames, given a main directory name and a mod name.
@@ -36,10 +36,9 @@ public final class FilenameResolver {
     private String modPrefix = "mod" + File.separator;
     
     private String modDirName; // in the game directory
-    private String modDirNameAlt; // in the Documents directory
     
-    private List<String> extended;
-    private List<String> replaced;
+    private Set<String> extended;
+    private Set<String> replaced;
     
     private boolean usingMod;
     
@@ -95,8 +94,7 @@ public final class FilenameResolver {
         final GenericObject cfg = EUGFileIO.load(cfgFile);
         
         if (cfg == null) {
-            throw new RuntimeException("Failed to load config from "
-                    + cfgFile.getName());
+            throw new RuntimeException("Failed to load config from " + cfgFile.getName());
         } else {
             setMainDirectory(cfg.getString("maindir"));
             setModName(cfg.getString("moddir"));
@@ -142,6 +140,11 @@ public final class FilenameResolver {
      */
     public void setModDirectory(String dirName) {
         modDirName = dirName;
+        if (dirName == null || dirName.isEmpty()) {
+            usingMod = false;
+            return;
+        }
+
         usingMod = true;
 
         if (modFile) {
@@ -163,8 +166,8 @@ public final class FilenameResolver {
     public void setModFileName(String filename) {
         final GenericObject mod = EUGFileIO.load(filename);
 
-        extended = new ArrayList<String>();
-        replaced = new ArrayList<String>();
+        extended = new HashSet<String>();
+        replaced = new HashSet<String>();
         if (mod == null) {
             modFile = false;
         } else if (clausewitz2Mod) {
@@ -194,8 +197,6 @@ public final class FilenameResolver {
     public String resolveDirectory(String dirName) {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
-        if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
-            dirName += File.separator;
         
         if (!usingMod)
             return mainDirName + dirName;
@@ -203,7 +204,7 @@ public final class FilenameResolver {
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
-            if (isReplaced(splitPath[0])) {
+            if (isFolderReplaced(dirName)) {
                 return modDirName + dirName;
             } else if (isExtended(splitPath[0])) {
                 // XXX I don't think extending directories is done correctly
@@ -232,8 +233,6 @@ public final class FilenameResolver {
     public File[] listFiles(String dirName) {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
-        if (!(dirName.endsWith("/") || dirName.endsWith("\\")))
-            dirName += File.separator;
         
         if (!usingMod)
             return new File(mainDirName + dirName).listFiles();
@@ -241,7 +240,7 @@ public final class FilenameResolver {
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
-            if (isReplaced(splitPath[0])) {
+            if (isFolderReplaced(dirName)) {
                 return new File(modDirName + dirName).listFiles();
             } else if (isExtended(splitPath[0])) {
                 final java.util.List<File> ret = new java.util.ArrayList<File>();
@@ -290,7 +289,7 @@ public final class FilenameResolver {
         
         if (modFile) {
             // EU3-style mod
-            if (isReplaced(splitPath[0]) || isReplaced(filename)) {
+            if (isFileReplaced(splitPath[0], splitPath[1])) {
                 // Case 1: Directory is replaced.
                 // Return the file in the moddir, even if it doesn't exist.
                 return modDirName + filename;
@@ -329,7 +328,7 @@ public final class FilenameResolver {
         
         return new String[] {
             path.substring(0, separatorIdx),
-            path.substring(separatorIdx)
+            path.substring((separatorIdx == path.length()-1) ? separatorIdx : separatorIdx+1)
         };
     }
     
@@ -348,7 +347,7 @@ public final class FilenameResolver {
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
             else if (vanillaFile == null
                     || vanillaFile.getName().equals(modFile.getName())
-                    || replaced.contains("history/provinces/" + vanillaFile.getName()))
+                    || isFileReplaced("history/provinces", vanillaFile.getName()))
                 return new String[] { modFile.getAbsolutePath() };
             else
                 return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
@@ -371,7 +370,7 @@ public final class FilenameResolver {
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
             else if (vanillaFile == null
                     || vanillaFile.getName().equals(modFile.getName())
-                    || replaced.contains(vanillaFile.getName()))
+                    || isFileReplaced("history/countries", vanillaFile.getName()))
                 return new String[] { modFile.getAbsolutePath() };
             else
                 return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
@@ -391,7 +390,7 @@ public final class FilenameResolver {
         // Can't use resolveFilename, because we don't know what the file is
         // called.
         if (usingMod) {
-            if (isReplaced("history") || isReplaced("history/provinces")) {
+            if (isFolderReplaced("history/provinces")) {
                 // Case 1: History is replaced.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
@@ -437,7 +436,7 @@ public final class FilenameResolver {
         // Can't use resolveFilename, because we don't know what the file is
         // called.
         if (usingMod) {
-            if (isReplaced("history") || isReplaced("history/provinces")) {
+            if (isFolderReplaced("history/provinces")) {
                 // Case 1: History is replaced.
                 // If there is a file in the mod's province history folder that
                 // starts with the provId, return it.
@@ -494,7 +493,7 @@ public final class FilenameResolver {
      */
     public String getCountryHistoryFile(final String tag) {
         if (usingMod) {
-            if (isReplaced("history") || isReplaced("history/countries")) {
+            if (isFolderReplaced("history/countries")) {
                 return getFilePath(modDirName + "history/countries", tag, false);
             } else if (isExtended("history")) {
                 final String filename = getFilePath(
@@ -660,5 +659,34 @@ public final class FilenameResolver {
     public boolean isReplaced(String directory) {
         return usingMod && replaced.contains(directory.toLowerCase());
     }
+
+    /**
+     * Returns true if the given file or any parent directory is replaced.
+     */
+    private boolean isFileReplaced(String directory, String filename) {
+        if (isFolderReplaced(directory))
+            return true;
+        
+        return replaced.contains(directory.toLowerCase() + "/" + filename.toLowerCase());
+    }
     
+    private java.util.regex.Pattern SLASH = java.util.regex.Pattern.compile("[//\\\\]");
+
+    /**
+     * Returns true if the given directory or any parent directory is replaced.
+     */
+    private boolean isFolderReplaced(String directory) {
+        if (!usingMod)
+            return false;
+
+        String[] paths = SLASH.split(directory.toLowerCase());
+        StringBuilder pathBuilder = new StringBuilder();
+        for (String path : paths) {
+            pathBuilder.append(path);
+            if (replaced.contains(pathBuilder.toString())) // this is bound to be a lot of duplication
+                return true;
+            pathBuilder.append("/");
+        }
+        return false;
+    }
 }
