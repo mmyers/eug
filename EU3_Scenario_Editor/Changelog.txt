@@ -2,6 +2,14 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.5 ===
+
+- Fixed crash bug in trade map mode.
+- Fort map mode now accepts fractional fort levels.
+- Striped provinces in the political and religious map modes now color the province's value with slightly larger stripes than the province owner's value.
+- Fixed a couple of bugs related to Victoria 2.
+- Fixed a number of issues with replacing files in Clausewitz 2 mods.
+
 
 === 0.8.4 ===
 
