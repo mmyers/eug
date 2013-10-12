@@ -268,41 +268,42 @@ public final class Utilities {
      * The TexturePaints use 8x8 rectangles like the following (where x is the
      * background color and o is the foreground color):
      * 
-     * ooxxxxoo
-     * oxxxxooo
-     * xxxxoooo
-     * xxxoooox
-     * xxooooxx
-     * xooooxxx
-     * ooooxxxx
-     * oooxxxxo
+     * ooxxxxxo
+     * oxxxxxoo
+     * xxxxxooo
+     * xxxxooox
+     * xxxoooxx
+     * xxoooxxx
+     * xoooxxxx
+     * oooxxxxx
      * 
      * Tiling this produces diagonally striped paint.
      */
-    static Paint createPaint(final Color c1, final Color c2) {
-        final ColorPair cp = new ColorPair(c1, c2);
+    static Paint createPaint(final Color background, final Color foreground) {
+        final ColorPair cp = new ColorPair(background, foreground);
         Paint ret = imgCache.get(cp);
         if (ret == null) {
             final BufferedImage img = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
             final Graphics2D g = img.createGraphics();
-            g.setBackground(c2);
+            g.setBackground(background);
             g.clearRect(0, 0, 8, 8);
             
-            g.setColor(c1);
-            g.drawLine(0,0,1,0);
-            g.drawLine(6,0,7,0);
+            g.setColor(foreground);
+            //        (x,y) (x,y)  // done left-to-right, top-to-bottom
+            g.drawLine(0,0,  1,0); // upper left corner
+            g.drawLine(7,0,  7,0); // and upper right
+
+            g.drawLine(0,1,  0,1); // second line
+            g.drawLine(6,1,  7,1);
             
-            g.drawLine(0,1,0,1);
-            g.drawLine(5,1,7,1);
+            g.drawLine(5,2,  7,2);
+            g.drawLine(4,3,  6,3);
+            g.drawLine(3,4,  5,4);
+            g.drawLine(2,5,  4,5);
+            g.drawLine(1,6,  3,6);
             
-            g.drawLine(4, 2, 7, 2);
-            g.drawLine(3, 3, 6, 3);
-            g.drawLine(2, 4, 5, 4);
-            g.drawLine(1, 5, 4, 5);
-            g.drawLine(0, 6, 3, 6);
-            
-            g.drawLine(0, 7, 2, 7);
-            g.drawLine(7, 7, 7, 7);
+            g.drawLine(0,7,  2,7);
+            //g.drawLine(7,7,  7,7);
             g.dispose();
             
             ret = new TexturePaint(img, imageRect);

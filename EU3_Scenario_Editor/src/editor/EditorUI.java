@@ -16,6 +16,7 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck2.CK2Scenario;
+import eug.specific.clausewitz.ClausewitzHistory;
 import eug.specific.clausewitz.ClausewitzSaveGame;
 import eug.specific.clausewitz.ClausewitzScenario;
 import eug.specific.eu3.EU3SaveGame;
@@ -91,9 +92,16 @@ public final class EditorUI extends javax.swing.JFrame {
         return true;
     }
 
+    private static final java.util.regex.Pattern DATE_PATTERN =
+            java.util.regex.Pattern.compile("\\d{4}\\.\\d{1,2}\\.\\d{1,2}");
+
     private boolean setStartDateNew(String startDate) {
         if (startDate == null || startDate.isEmpty())
             return false;
+        java.util.regex.Matcher match = DATE_PATTERN.matcher(startDate);
+        if (!match.find())
+            return false;
+        startDate = match.group();
         
         final String[] date = startDate.split("\\.");
         if (date.length < 3)
@@ -111,6 +119,9 @@ public final class EditorUI extends javax.swing.JFrame {
 
         if (definesLua.containsChild("NGame"))
             definesLua = definesLua.getChild("NGame");
+
+        if (definesLua.containsChild("defines"))
+            definesLua = definesLua.getChild("defines");
 
         if (definesLua.contains("start_date")) {
             return setStartDateNew(definesLua.getString("start_date"));
@@ -223,6 +234,12 @@ public final class EditorUI extends javax.swing.JFrame {
         
         if (bookmarks != null)
         {
+            Collections.sort(bookmarks.children, new Comparator<GenericObject>() {
+                private ClausewitzHistory.DateComparator dc = new ClausewitzHistory.DateComparator();
+                public int compare(GenericObject o1, GenericObject o2) {
+                    return dc.compare(o1.getString("date"), o2.getString("date"));
+                }
+            });
             for (GenericObject bookmark : bookmarks.children) {
                 bookmarkMenu.add(
                         new BookmarkAction(

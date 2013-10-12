@@ -238,6 +238,7 @@ public class Main {
 
                 System.out.println("Loading " + version.getDisplay() + ". Mod: " + mod.getName());
                 System.out.println("Game path: " + gameDirField.getText());
+                System.out.println("Mod path: " + (mod.getName().equals("None") ? "(none)" : mod.getModPath()));
 
                 FilenameResolver resolver = new FilenameResolver(gameDirField.getText());
                 resolver.setClausewitz2Mod(version.isNewStyleMod());

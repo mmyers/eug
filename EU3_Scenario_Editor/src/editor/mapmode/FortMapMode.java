@@ -37,10 +37,11 @@ public final class FortMapMode extends DiscreteScalingMapMode {
     }
 
     private static int getFortLevel(GenericObject fort) {
+        // fort levels are all now multiplied by 10 to guard against fractions
         if (fort.hasString("fort_level"))
-            return fort.getInt("fort_level");
+            return (int) (fort.getDouble("fort_level") * 10);
         else if (fort.containsChild("modifier"))
-            return fort.getChild("modifier").getInt("fort_level");
+            return (int) (fort.getChild("modifier").getDouble("fort_level") * 10);
         else
             return 0;
     }
@@ -86,8 +87,12 @@ public final class FortMapMode extends DiscreteScalingMapMode {
         final int id = current.getId();
         if (!getMap().isLand(id))
             return "";
-        
-        return "Fort level: " + getFortLevel(id);
+
+        int level = getFortLevel(id);
+        if (level/10 == level/10.0)
+            return "Fort level: " + level/10;
+        else
+            return "Fort level: " + level/10.0;
     }
 
 }

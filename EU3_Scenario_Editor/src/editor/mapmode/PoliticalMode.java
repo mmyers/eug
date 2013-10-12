@@ -31,22 +31,16 @@ public final class PoliticalMode extends ProvincePaintingMode {
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final String owner = mapPanel.getModel().getHistString(provId, "owner");
-        String controller = owner == null || owner.isEmpty() ? "" : getController(provId);
+        String controller = (owner == null || owner.isEmpty()) ? "" : getController(provId);
         
         if (owner == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
         } else if (controller == null) {
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.COLOR_NO_HIST);
-//            if (p != null)
-                mapPanel.paintProvince(g, provId, p);
-//            else
-//                System.err.println("Unknown problem in PoliticalMode.java");
-        } else if (!owner.equalsIgnoreCase(controller) && !controller.isEmpty()) { // colonies don't always have a controller in history
+            mapPanel.paintProvince(g, provId, p);
+        } else if (!owner.equalsIgnoreCase(controller) && !controller.isEmpty() && !Utilities.isNotACountry(controller)) { // colonies don't always have a controller in history
             final Paint p = Utilities.createPaint(Utilities.getCtryColor(owner), Utilities.getCtryColor(controller));
-//            if (p != null)
-                mapPanel.paintProvince(g, provId, p);
-//            else
-//                System.err.println("Unknown problem in PoliticalMode.java");
+            mapPanel.paintProvince(g, provId, p);
         } else {
             mapPanel.paintProvince(g, provId, Utilities.getCtryColor(owner));
         }

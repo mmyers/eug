@@ -55,6 +55,10 @@ public class TradeMode extends ProvincePaintingMode {
                 for (GenericObject obj : child.getChildren("outgoing")) {
                     List<Integer> path = new ArrayList<Integer>();
                     GenericList pathList = obj.getList("path");
+
+                    if (pathList == null || pathList.size() == 0)
+                        continue;
+
                     for (String str : pathList)
                         path.add(Integer.parseInt(str));
 
