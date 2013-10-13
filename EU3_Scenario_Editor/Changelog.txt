@@ -2,6 +2,10 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.5.1 ===
+
+- Fixed bug preventing saving of history files.
+
 === 0.8.5 ===
 
 - Fixed crash bug in trade map mode.
