@@ -128,11 +128,11 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void saveCountry(String tag, String cname, final String data) {
         String filename = resolveCountryHistoryFile(tag);
         if (filename == null) {
-            filename = resolver.resolveDirectory("history") + "countries/" +
+            filename = resolver.resolveDirectory("history/countries") + "/" +
                     tag + " - " + cname + ".txt";
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + "countries/" + filename;
+            filename = resolver.resolveDirectory("history/countries") + "/" + filename;
         }
         
         final File file = new File(filename);
@@ -148,11 +148,11 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void saveProvince(int id, String pname, final String data) {
         String filename = resolveProvinceHistoryFile(id);
         if (filename == null) {
-            filename = resolver.resolveDirectory("history") + "provinces/" +
+            filename = resolver.resolveDirectory("history/provinces") + "/" +
                     id + " - " + pname + ".txt";
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + "provinces/" + filename;
+            filename = resolver.resolveDirectory("history/provinces") + "/" + filename;
         }
         
         final File file = new File(filename);
