@@ -59,7 +59,7 @@ class SetConfig extends javax.swing.JFrame {
         cancelButton = new javax.swing.JButton();
         useModDirCheckBox = new javax.swing.JCheckBox();
         browseButton = new javax.swing.JButton();
-        gameVersionComboBox = new javax.swing.JComboBox();
+        gameVersionComboBox = new javax.swing.JComboBox<String>();
         javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
@@ -307,7 +307,7 @@ class SetConfig extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JButton cancelButton;
-    javax.swing.JComboBox gameVersionComboBox;
+    javax.swing.JComboBox<String> gameVersionComboBox;
     private javax.swing.JTextField mainDirTextField;
     private javax.swing.JTextField modDirTextField;
     private javax.swing.JButton okButton;

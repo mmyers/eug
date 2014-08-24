@@ -177,4 +177,9 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         this.name = name;
     }
     
+    @Override
+    public String toString() {
+        return name + " from " + min + " to " + max;
+    }
+    
 }

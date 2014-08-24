@@ -169,7 +169,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         ProvinceData.Province p = provinceData.getProvByID(provId);
         if (p == null) {
             System.err.println("Unknown province " + provId);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else
             return mapData.getLinesInProv(p.getColor());
     }

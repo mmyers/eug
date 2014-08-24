@@ -23,14 +23,14 @@ public final class Text {
     
     // All keys are converted to lower case before putting or getting text, to
     // standardize.
-    private static final java.util.Map<String, String> text =
-            new HashMap<String, String>();
+    private static final java.util.Map<String, String> text = new HashMap<>();
     
     //private static final Pattern semicolon = Pattern.compile(";");
     
     /**
      * Must be called before {@link getText} is used.
      * @param resolver
+     * @param version
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -113,6 +113,9 @@ public final class Text {
                             continue;
                         if (line.charAt(0) == '\uFEFF')
                             line = line.substring(1);
+
+                        while (line.endsWith("\\n"))
+                            line = line + "\n" + reader.readLine();
 
                         int comment = line.indexOf('#');
                         if (comment > 0)

@@ -62,6 +62,14 @@ public class TradeMode extends ProvincePaintingMode {
                     for (String str : pathList)
                         path.add(Integer.parseInt(str));
 
+                    String finalTargetName = obj.getString("name");
+                    GenericObject targetNode = nodes.getChild(finalTargetName);
+                    if (targetNode != null) {
+                        int targetLocation = targetNode.getInt("location");
+                        if (!path.contains(targetLocation))
+                            path.add(targetLocation);
+                    }
+
                     int target = path.get(path.size()-1);
                     if (!incoming.containsKey(target))
                         incoming.put(target, new ArrayList<Integer>());

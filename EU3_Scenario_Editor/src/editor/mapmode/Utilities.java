@@ -74,18 +74,15 @@ public final class Utilities {
     
     private static GenericObject countries;
     
-    private static final java.util.Map<String, Color> ctryColorCache =
-            new HashMap<String, Color>();
+    private static final java.util.Map<String, Color> ctryColorCache = new HashMap<>();
     
     private static GenericObject religions;
     
-    private static final java.util.Map<String, Color> relColorCache =
-            new HashMap<String, Color>();
+    private static final java.util.Map<String, Color> relColorCache = new HashMap<>();
 
     private static GenericObject titles;
 
-    private static final java.util.Map<String, Color> titleColorCache =
-            new HashMap<String, Color>();
+    private static final java.util.Map<String, Color> titleColorCache = new HashMap<>();
 
     private static FilenameResolver resolver;
 
@@ -111,6 +108,20 @@ public final class Utilities {
 
         readTitleColors(titles);
     }
+    
+    private static Color parseFloatColor(GenericList color) {
+        float r = Math.min(1.0f, Float.parseFloat(color.get(0)));
+        float g = Math.min(1.0f, Float.parseFloat(color.get(1)));
+        float b = Math.min(1.0f, Float.parseFloat(color.get(2)));
+        return new Color(r, g, b);
+    }
+    
+    private static Color parseIntColor(GenericList color) {
+        final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
+        final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
+        final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
+        return new Color(red, green, blue);
+    }
 
     private static void readTitleColors(GenericObject titles) {
         for (GenericObject title : titles.children) {
@@ -123,11 +134,7 @@ public final class Utilities {
                 //System.err.println("color for " + title.name + " is null");
                 titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
             } else {
-                final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
-                final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
-                final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
-
-                titleColorCache.put(title.name, new Color(red, green, blue));
+                titleColorCache.put(title.name, parseIntColor(color));
             }
 
             readTitleColors(title);
@@ -166,11 +173,7 @@ public final class Utilities {
                 return COLOR_NO_CTRY_DEF;
             }
             
-            final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
-            final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
-            final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
-            
-            ret = new Color(red, green, blue);
+            ret = parseIntColor(color);
             
             ctryColorCache.put(country, ret);
         }
@@ -194,11 +197,7 @@ public final class Utilities {
                             System.err.println("color for " + religion + " is null");
                             return COLOR_NO_RELIGION_DEF;
                         }
-                        ret = new Color(
-                                Float.parseFloat(color.get(0)),
-                                Float.parseFloat(color.get(1)),
-                                Float.parseFloat(color.get(2))
-                                );
+                        ret = parseFloatColor(color);
                         relColorCache.put(religion, ret);
                         return ret;
                 }
@@ -210,11 +209,7 @@ public final class Utilities {
                             System.err.println("color for " + religion + " is null");
                             return COLOR_NO_RELIGION_DEF;
                         }
-                        ret = new Color(
-                                Float.parseFloat(color.get(0)),
-                                Float.parseFloat(color.get(1)),
-                                Float.parseFloat(color.get(2))
-                                );
+                        ret = parseFloatColor(color);
                         relColorCache.put(religion, ret);
                         return ret;
                     }
@@ -259,8 +254,7 @@ public final class Utilities {
     
     // Texture handling (striped paints)
     
-    private static final java.util.Map<ColorPair, Paint> imgCache =
-            new HashMap<ColorPair, Paint>();
+    private static final java.util.Map<ColorPair, Paint> imgCache = new HashMap<>();
     
     private static final Rectangle imageRect = new Rectangle(0,0,8,8);
     

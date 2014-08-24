@@ -66,7 +66,7 @@ public class Main {
     }
     
     private void showDialog() {
-        final JComboBox modBox = new JComboBox(); // referenced in several places
+        final JComboBox<Mod> modBox = new JComboBox<>(); // referenced in several places
 
         final JDialog dialog = new JDialog((java.awt.Frame)null, "Choose game", true);
         dialog.setLayout(new BorderLayout());
@@ -91,7 +91,7 @@ public class Main {
                     gameDirField.setText(chooser.getSelectedFile().getAbsolutePath());
                     String modPath = chooser.getSelectedFile().getAbsolutePath() + File.separator + "mod";
                     Vector<Mod> mods = listMods(new File(modPath), true);
-                    modBox.setModel(new DefaultComboBoxModel(mods));
+                    modBox.setModel(new DefaultComboBoxModel<>(mods));
                 }
             }
         });
@@ -134,37 +134,34 @@ public class Main {
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel gameTypePanel = new JPanel();
-        final JComboBox gameBox = new JComboBox(GameVersion.getGameVersions().toArray());
+        final JComboBox<GameVersion> gameBox = new JComboBox<>(new Vector<>(GameVersion.getGameVersions()));
         
-        gameBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                modBox.setModel(new DefaultComboBoxModel());
-                gameDirField.setText("");
-                saveGameField.setText("");
-
-                if (config.getChild("paths") != null) {
-                    GameVersion version = (GameVersion) e.getItem();
-                    GenericObject saved = config.getChild("paths").getChild(version.getName());
-                    if (saved != null && saved.size() > 0) {
-                        String recent = saved.getString("main");
-                        gameDirField.setText(recent);
-
-                        if (!recent.isEmpty()) {
-                            String modPath = new File(recent).getAbsolutePath() + File.separator + "mod";
-                            Vector<Mod> mods = listMods(new File(modPath), true);
-                            if (version.getModPath() != null) {
-                                File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
-                                mods.addAll(listMods(new File(documents.getAbsolutePath() + "/" + version.getModPath() + "/mod"), false));
-                            }
-                            modBox.setModel(new DefaultComboBoxModel(mods));
-
-                            if (!saved.getString("lastmod").isEmpty()) {
-                                for (Mod mod : mods) {
-                                    if (mod.getName().equals(saved.getString("lastmod"))) {
-                                        modBox.setSelectedItem(mod);
-                                        break;
-                                    }
+        gameBox.addItemListener((ItemEvent e) -> {
+            modBox.setModel(new DefaultComboBoxModel<>());
+            gameDirField.setText("");
+            saveGameField.setText("");
+            
+            if (config.getChild("paths") != null) {
+                GameVersion version = (GameVersion) e.getItem();
+                GenericObject saved = config.getChild("paths").getChild(version.getName());
+                if (saved != null && saved.size() > 0) {
+                    String recent = saved.getString("main");
+                    gameDirField.setText(recent);
+                    
+                    if (!recent.isEmpty()) {
+                        String modPath = new File(recent).getAbsolutePath() + File.separator + "mod";
+                        Vector<Mod> mods = listMods(new File(modPath), true);
+                        if (version.getModPath() != null) {
+                            File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
+                            mods.addAll(listMods(new File(documents.getAbsolutePath() + "/" + version.getModPath() + "/mod"), false));
+                        }
+                        modBox.setModel(new DefaultComboBoxModel<>(mods));
+                        
+                        if (!saved.getString("lastmod").isEmpty()) {
+                            for (Mod mod : mods) {
+                                if (mod.getName().equals(saved.getString("lastmod"))) {
+                                    modBox.setSelectedItem(mod);
+                                    break;
                                 }
                             }
                         }
@@ -314,6 +311,7 @@ public class Main {
     
     // returns a Vector to use in a combo box
     private static Vector<Mod> listMods(File moddir, boolean includeNone) {
+        System.out.println("Checking for mods in " + moddir.getAbsolutePath());
         File[] mods = moddir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
                 if (pathname.isDirectory())

@@ -57,6 +57,7 @@ eu4 = { # In Nomine with trade nodes swapped for COTs
 	country-menu
 	continents-menu
 	regions-menu
+	colonial-regions
 	climates-menu
 	province-religions
 	religions
@@ -86,6 +87,7 @@ victoria2 = {
 	regions-menu
 	country-religions
 	religions-menu
+	#victoria-buildings-menu
 	new-cultures-menu
 	#trade-goods           #
 	#victoria-goods-menu   # Not for saves, only scenarios (both disabled for now)

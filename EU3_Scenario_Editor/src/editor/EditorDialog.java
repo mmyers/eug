@@ -799,30 +799,27 @@ public class EditorDialog extends JDialog {
     
     //<editor-fold defaultstate="collapsed" desc=" FontSelectorDialog ">
     private static final class FontSelectorDialog extends JDialog {
-        private JList nameList;
-//        private JList typeList;
-        private JList sizeList;
-        private JLabel testLabel;
+        private JList<String> nameList;
+//        private JList<String> typeList;
+        private JList<Integer> sizeList;
+        private final JLabel testLabel;
         
         boolean closedOK = false;
         
         private String name;
-        private int type;
+        private final int type;
         private int size;
         
-        private transient final ListSelectionListener listListener = new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getSource() == nameList)
-                    name = (String)nameList.getSelectedValue();
+        private transient final ListSelectionListener listListener = (ListSelectionEvent e) -> {
+            if (e.getSource() == nameList)
+                name = nameList.getSelectedValue();
 //                else if (e.getSource() == typeList)
-
-//                    type = getType((String)typeList.getSelectedValue());
-                else if (e.getSource() == sizeList)
-                    size = (Integer)sizeList.getSelectedValue();
-                else
-                    System.err.println(e);
-                update();
-            }
+//                    type = getType(typeList.getSelectedValue());
+            else if (e.getSource() == sizeList)
+                size = sizeList.getSelectedValue();
+            else
+                System.err.println(e);
+            update();
         };
         
         FontSelectorDialog(JDialog parent, String family, int type, int size) {
@@ -836,7 +833,7 @@ public class EditorDialog extends JDialog {
             
             JPanel namePanel = new JPanel();
             namePanel.setBorder(BorderFactory.createTitledBorder("Name"));
-            nameList = new JList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
+            nameList = new JList<>(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
             nameList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             nameList.addListSelectionListener(listListener);
             namePanel.add(new JScrollPane(nameList));
@@ -852,7 +849,7 @@ public class EditorDialog extends JDialog {
             
             JPanel sizePanel = new JPanel();
             sizePanel.setBorder(BorderFactory.createTitledBorder("Size"));
-            sizeList = new JList(new Integer[] { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40 } );
+            sizeList = new JList<>(new Integer[] { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40 } );
             sizeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             sizeList.addListSelectionListener(listListener);
             sizePanel.add(new JScrollPane(sizeList));
@@ -874,14 +871,9 @@ public class EditorDialog extends JDialog {
             final JButton okButton = new JButton("OK");
             final JButton cancelButton = new JButton("Cancel");
             
-            ActionListener buttonListener = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getSource() == okButton)
-                        closedOK = true;
-                    else
-                        closedOK = false;
-                    dispose();
-                }
+            ActionListener buttonListener = (ActionEvent e) -> {
+                closedOK = (e.getSource() == okButton);
+                dispose();
             };
             
             okButton.addActionListener(buttonListener);

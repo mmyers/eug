@@ -14,6 +14,7 @@ import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
+import eug.shared.Style;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck2.CK2Scenario;
 import eug.specific.clausewitz.ClausewitzHistory;
@@ -182,6 +183,9 @@ public final class EditorUI extends javax.swing.JFrame {
                 System.err.println("Defaulting to EU3");
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             }
+            
+            if (version.getName().equalsIgnoreCase("EU4"))
+                save.setStyle(Style.EU4_SAVE_GAME);
 
             System.out.println("Done.");
 
@@ -236,6 +240,7 @@ public final class EditorUI extends javax.swing.JFrame {
         {
             Collections.sort(bookmarks.children, new Comparator<GenericObject>() {
                 private ClausewitzHistory.DateComparator dc = new ClausewitzHistory.DateComparator();
+                @Override
                 public int compare(GenericObject o1, GenericObject o2) {
                     return dc.compare(o1.getString("date"), o2.getString("date"));
                 }
@@ -543,14 +548,12 @@ public final class EditorUI extends javax.swing.JFrame {
     private void mapPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseReleased
         if (evt.isPopupTrigger()) {
             popupTriggered(evt);
-            return;
         }
     }//GEN-LAST:event_mapPanelMouseReleased
     
     private void mapPanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMousePressed
         if (evt.isPopupTrigger()) {
             popupTriggered(evt);
-            return;
         }
     }//GEN-LAST:event_mapPanelMousePressed
     
@@ -651,12 +654,11 @@ public final class EditorUI extends javax.swing.JFrame {
         final int clickCount = evt.getClickCount();
         
         java.awt.EventQueue.invokeLater(
-                new Runnable() {
-            public void run() {
-                doMouseClick(lastProv);
-                
-                // If it was a double click, go ahead and show an editor.
-                if (clickCount > 1) {
+                () -> {
+                    doMouseClick(lastProv);
+                    
+                    // If it was a double click, go ahead and show an editor.
+                    if (clickCount > 1) {
 //                    Class c = mapPanel.getMode().getClass();
 //                    if (c.equals(ProvinceMode.class)) {
                         showProvHistButton.doClick(0);
@@ -668,8 +670,7 @@ public final class EditorUI extends javax.swing.JFrame {
 //                        // do what?
 //                        showProvHistButton.doClick(0);
 //                    }
-                }
-            }
+                    }
         });
         
 //        lastClick = evt.getPoint();
@@ -902,6 +903,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 JMenu menu = new JMenu("Regions");
                 addRegionFilters(menu);
                 viewMenu.add(menu);
+            } else if (view.equals("colonial-regions")) {
+                viewMenu.add(new ColonialRegionFilterAction());
             } else if (view.equals("climates-menu") && version.hasClimateTxt()) {
                 JMenu menu = new JMenu("Climates");
                 addClimateFilters(menu);
@@ -1074,12 +1077,12 @@ public final class EditorUI extends javax.swing.JFrame {
         
         Collections.sort(buildings.children, new ObjectComparator());
         
-        java.util.List<GenericObject> forts = new ArrayList<GenericObject>();
+        java.util.List<GenericObject> forts = new ArrayList<>();
         
-        java.util.List<Action> capitalBuildings = new ArrayList<Action>();
-        java.util.List<Action> manufactories = new ArrayList<Action>();
-        java.util.List<Action> onePerCountry = new ArrayList<Action>();
-        java.util.List<Action> other = new ArrayList<Action>();
+        java.util.List<Action> capitalBuildings = new ArrayList<>();
+        java.util.List<Action> manufactories = new ArrayList<>();
+        java.util.List<Action> onePerCountry = new ArrayList<>();
+        java.util.List<Action> other = new ArrayList<>();
 
         for (GenericObject building : buildings.children) {
             boolean isFort = building.hasString("fort_level");
@@ -1160,11 +1163,12 @@ public final class EditorUI extends javax.swing.JFrame {
         
         Collections.sort(countries.values, new VariableComparator());
         
+        @SuppressWarnings("rawtypes")
         List[] menus = new List[26];
         for (int i = 0; i < menus.length; i++) {
-            menus[i] = new ArrayList<JMenu>();
+            menus[i] = new ArrayList<>();
         }
-        List<JMenu> otherMenu = new ArrayList<JMenu>();
+        List<JMenu> otherMenu = new ArrayList<>();
         
         for (ObjectVariable var : countries.values) {
             String cname = Text.getText(var.varname);
@@ -1442,7 +1446,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addRegionFilters(JMenu rootMenu) {
         java.util.Map<String, List<String>> regions = map.getRegions();
-        List<String> regionNames = new ArrayList<String>(regions.keySet());
+        List<String> regionNames = new ArrayList<>(regions.keySet());
         Collections.sort(regionNames, new StringComparator());
         
         int counter = 0;
@@ -1878,6 +1882,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public RegionFilterAction(String name, String regName) {
             super(name, new RegionsMode(mapPanel, regName));
             putValue(SHORT_DESCRIPTION, "Provinces in " + regName);
+        }
+    }
+    
+    private class ColonialRegionFilterAction extends FilterAction {
+        public ColonialRegionFilterAction() {
+            super("Colonial regions", new ColonialRegionsMode(mapPanel, resolver));
+            putValue(SHORT_DESCRIPTION, "Colonial Regions & Trade Companies");
         }
     }
     

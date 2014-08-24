@@ -36,7 +36,7 @@ public class GameVersion {
     }
 
     private static void readVersions() {
-        gameVersions = new ArrayList<GameVersion>();
+        gameVersions = new ArrayList<>();
 
         GenericObject allVersions = EUGFileIO.load("games.txt", ParserSettings.getQuietSettings());
 
