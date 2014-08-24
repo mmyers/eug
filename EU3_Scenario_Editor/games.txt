@@ -1,10 +1,16 @@
 # Settings for each game.
+
 # The "inherit" command means all settings for that game will be copied
 # unless otherwise specified.
+
 # new_style_mod is for mods that default to extending everything and use
 # the replace_path directive instead of replace
-# mod_path is relative to My Documents ("/mod" is automatically appended)
-# view_sets are defined in views.txt.
+
+# mod_path is relative to My Documents ("/mod" is automatically appended).
+# For Mac OS, add "Documents/" to the beginning of each path since Documents
+# isn't the home directory. E.g. `mod_path = "Documents/Paradox Interactive/Europa Universalis IV"`
+
+# view_set names are defined in views.txt.
 
 eu3 = {
 	display = "EU3 Vanilla/NA"

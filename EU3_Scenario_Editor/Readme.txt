@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==  Version 0.8.5 (Oct 12 2013)    ==|
+|==  Version 0.8.6 (Aug 24 2014)    ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -19,8 +19,8 @@ just find that last colony that's keeping you from getting 100% warscore on your
 mortal enemy).
 
 
-It is known to be compatible with EU3, Rome, Victoria 2, and HOI3. CK2 and EU4
-probably work, but I don't guarantee it; I've only tried it on the demos, which
+It is known to be compatible with EU3, EU4, Rome, Victoria 2, and HOI3. CK2
+probably works, but I don't guarantee it; I've only tried it on the demo, which
 means no saved games.
 
 
@@ -28,7 +28,9 @@ means no saved games.
 === System Requirements ===
 ===========================
 
-Java 1.6 or later
+Java 8 or later
+
+If you are on a Mac, please see the special instructions in games.txt.
 
 
 ====================
@@ -140,6 +142,10 @@ pause
 === To do ===
 
     * Add a view mode for discoveries.
+    * Add a color-coded culture map.
+    * Implement an export-to-image function.
+    * Improve error handling behavior. No one wants to see stack traces in
+      console windows.
     * Improve saved game capabilites to allow viewing variables which are not
         in the history (e.g. country national ideas).
     * I don't know what else; what do you think? Post your suggestions on the

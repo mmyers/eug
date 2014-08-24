@@ -2,6 +2,17 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.6 ===
+
+- Added colonial regions and trade companies mapmodes for EU4.
+- EU4 save games are now generated with the correct magic words at the start
+  and end of the file.
+- Victoria 2 province history files now use the correct path.
+- Multiline text strings in .yaml files are now supported.
+- Trade routes in trade mode now include both endpoints as part of the displayed route.
+- Fixed an application hang when a color with invalid RGB values is used in a religions file.
+- File editor dialog now displays the name of the current file in its title bar.
+
 === 0.8.5.1 ===
 
 - Fixed bug preventing saving of history files.
