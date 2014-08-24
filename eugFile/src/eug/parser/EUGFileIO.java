@@ -143,8 +143,7 @@ public final class EUGFileIO {
     /**
      * Loads a {@link GenericObject} tree from the given string.
      * @param str the string to parse.
-     * @param ignoreComments whether or not to ignore comments. This overrides
-     * {@link #ignoreComments}.
+     * @param settings the set of rules to use during parsing.
      * @return the root of the parsed tree.
      */
     public static GenericObject loadFromString(String str, ParserSettings settings) {
@@ -202,9 +201,12 @@ public final class EUGFileIO {
                         (NO_COMMENT.equals(comment) ? "" : "\n\n" + comment),
                         style);
             } else {
-                obj.toFileString(new BufferedWriter(new FileWriter(filename)),
-                        (NO_COMMENT.equals(comment) ? "" : /*filename+"\n"+*/comment),
-                        style);
+                BufferedWriter w = new BufferedWriter(new FileWriter(filename));
+                if (filename.endsWith(".eu4")) {
+                    w.write("EU4txt"); // magic EU4 string
+                    w.newLine();
+                }
+                obj.toFileString(w, (NO_COMMENT.equals(comment) ? "" : comment), style);
             }
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();

@@ -217,20 +217,36 @@ public final class GenericList
         
         bw.write(varname);
         style.printEqualsSign(bw, depth);
-        bw.write("{ ");
+        style.printOpeningBrace(bw, depth);
+        
+        boolean isInline = style.isInline(this);
+        
+        if (!isInline) {
+            bw.newLine();
+            style.printTab(bw, depth+1);
+        }
         
         // only check for quotes once
         if (quotes) {
             for (String str : list) {
                 bw.write("\"");
                 bw.write(str);
-                bw.write("\" ");
+                bw.write("\"");
+                if (!isInline) {
+                    bw.newLine();
+                }
+                bw.write(" ");
             }
         } else {
             for (String str : list) {
                 bw.write(str);
                 bw.write(" ");
             }
+        }
+        
+        if (!isInline) {
+            bw.newLine();
+            style.printTab(bw, depth);
         }
         
         bw.write("}");

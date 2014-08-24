@@ -8,6 +8,7 @@ package eug.shared;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -790,18 +791,24 @@ public final class GenericObject implements WritableObject, Cloneable {
 //            }
         }
         
-        for (WritableObject obj : allWritable) {
+        // Changed from foreach
+        // EU4 saves require the last node (a checksum) to be the last line of the file
+        for (Iterator<WritableObject> it = allWritable.iterator(); it.hasNext();) {
+            WritableObject obj = it.next();
             obj.toFileString(bw, 0, style);
-            bw.newLine();
+            if (it.hasNext())
+                bw.newLine();
         }
         
         bw.close();
     }
     
+    @Override
     public void toFileString(final BufferedWriter bw, int depth) throws IOException {
         toFileString(bw, depth, Style.DEFAULT);
     }
     
+    @Override
     public void toFileString(final BufferedWriter bw, int depth, Style style) throws IOException {
         
         if (name.equals("root")) {
@@ -823,9 +830,9 @@ public final class GenericObject implements WritableObject, Cloneable {
         if (!"".equals(name)) {
             bw.write(name);
             style.printEqualsSign(bw, depth);
-            bw.write("{ ");
+            style.printOpeningBrace(bw, depth);
         } else {
-            bw.write("{ ");
+            style.printOpeningBrace(bw, depth);
         }
         
         if (!sameLine)
@@ -853,9 +860,11 @@ public final class GenericObject implements WritableObject, Cloneable {
             if (inlineComment != null)
                 inlineComment.toFileString(bw, depth, style);
         } else {
-            bw.write(localtab + "} ");
-            if (inlineComment != null)
+            bw.write(localtab + "}");
+            if (inlineComment != null) {
+                bw.write(" ");
                 inlineComment.toFileString(bw, depth, style);
+            }
             if (style.newLineAfterObject())
                 bw.newLine();
         }

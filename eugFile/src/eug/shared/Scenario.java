@@ -6,6 +6,7 @@
 
 package eug.shared;
 
+import eug.parser.EUGFileIO;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +21,14 @@ public abstract class Scenario {
     public Map<Integer, GenericObject> provinces;
     public String scenarioName;
     public Map<String, String> displayNames;
+    protected Style saveStyle = Style.EU3_SAVE_GAME;
     
     /** Creates a new instance of Scenario */
     public Scenario() {
+    }
+    
+    public void setStyle(Style style) {
+        this.saveStyle = style;
     }
     
     public GenericObject getRoot() {
@@ -51,7 +57,7 @@ public abstract class Scenario {
     
     
     public void saveFile(String path) {
-        eug.parser.EUGFileIO.save(root, path);
+        eug.parser.EUGFileIO.save(root, path, EUGFileIO.NO_COMMENT, true, saveStyle);
     }
     
 }

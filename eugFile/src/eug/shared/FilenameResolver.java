@@ -166,8 +166,8 @@ public final class FilenameResolver {
     public void setModFileName(String filename) {
         final GenericObject mod = EUGFileIO.load(filename);
 
-        extended = new HashSet<String>();
-        replaced = new HashSet<String>();
+        extended = new HashSet<>();
+        replaced = new HashSet<>();
         if (mod == null) {
             modFile = false;
         } else if (clausewitz2Mod) {
@@ -243,17 +243,22 @@ public final class FilenameResolver {
             if (isFolderReplaced(dirName)) {
                 return new File(modDirName + dirName).listFiles();
             } else if (isExtended(splitPath[0])) {
-                final java.util.List<File> ret = new java.util.ArrayList<File>();
+                final java.util.Map<String, File> ret = new java.util.HashMap<String, File>();
 
                 final File[] files = new File(mainDirName + dirName).listFiles();
-                ret.addAll(Arrays.asList(files));
+                if (files != null) {
+                    for (File file : files)
+                        ret.put(file.getName().toLowerCase(), file);
+                }
                 
                 final File moddedDir = new File(modDirName + dirName);
                 if (moddedDir.exists()) {
-                    ret.addAll(Arrays.asList(moddedDir.listFiles()));
+                    // only add files which don't use the same name
+                    for (File f : moddedDir.listFiles())
+                        ret.put(f.getName().toLowerCase(), f); // overwrites
                 }
                 
-                return ret.toArray(new File[ret.size()]);
+                return ret.values().toArray(new File[ret.size()]);
             } else {
                 return new File(mainDirName + dirName).listFiles();
             }
