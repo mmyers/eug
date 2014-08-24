@@ -40,9 +40,9 @@ public class Vic2Scenario extends ClausewitzScenario {
         } else {
             String subfolder = new File(filename).getParentFile().getName();
             if (!subfolder.equalsIgnoreCase("provinces"))
-                subfolder = "provinces/" + subfolder;
+                subfolder = "provinces" + File.separator + subfolder;
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + subfolder + filename;
+            filename = resolver.resolveDirectory("history") + File.separator + subfolder + filename;
         }
 
         final File file = new File(filename);

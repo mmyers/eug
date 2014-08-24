@@ -35,6 +35,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         this.root = root;
         this.scenarioName = "";
         this.savePath = savePath;
+        this.saveStyle = Style.EU3_SAVE_GAME;
     }
     
     public static ClausewitzSaveGame loadSaveGame(String filename, String mainPath, String modName) {
@@ -195,7 +196,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         GenericObject obj = getCountryMap().get(tag.substring(0,3).toUpperCase());
         if (obj == null)
             return null;
-        return obj.toString(Style.EU3_SAVE_GAME);
+        return obj.toString(saveStyle);
     }
     
     public String getCountryHistoryAsStr(String tag) {
@@ -205,14 +206,14 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         obj = obj.getChild("history");
         if (obj == null)
             return null;
-        return obj.toString(Style.EU3_SAVE_GAME);
+        return obj.toString(saveStyle);
     }
     
     public String getProvinceAsStr(int id) {
         GenericObject obj = getProvinces().get(id);
         if (obj == null)
             return null;
-        return obj.toString(Style.EU3_SAVE_GAME);
+        return obj.toString(saveStyle);
     }
     
     public String getProvinceHistoryAsStr(int id) {
@@ -222,7 +223,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         obj = obj.getChild("history");
         if (obj == null)
             return null;
-        return obj.toString(Style.EU3_SAVE_GAME);
+        return obj.toString(saveStyle);
     }
     
     public void saveCountry(String tag, String cname, final String data) {
@@ -263,7 +264,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     public void saveChanges() {
         if (hasUnsavedChanges) {
-            EUGFileIO.save(root, savePath, EUGFileIO.NO_COMMENT, true, Style.EU3_SAVE_GAME);
+            EUGFileIO.save(root, savePath, EUGFileIO.NO_COMMENT, true, saveStyle);
             hasUnsavedChanges = false;
         }
     }

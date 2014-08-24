@@ -52,7 +52,7 @@ public class EU3SaveGame extends ClausewitzSaveGame {
     @Override
     public void saveChanges() {
         if (hasUnsavedChanges) {
-            EUGFileIO.save(root, savePath, EUGFileIO.NO_COMMENT, true, Style.EU3_SAVE_GAME);
+            EUGFileIO.save(root, savePath, EUGFileIO.NO_COMMENT, true, saveStyle);
             hasUnsavedChanges = false;
         }
     }

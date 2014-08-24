@@ -7,6 +7,7 @@ import eug.parser.ParserSettings;
 import eug.shared.FilenameResolver;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
+import eug.shared.Style;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -30,19 +31,26 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     private final Map<String, GenericObject> ctryHistoryCache;
     private final Map<Integer, GenericObject> provHistoryCache;
     
+    protected Style saveStyle = Style.EU3_SAVE_GAME;
+    
     protected static final ParserSettings settings = ParserSettings.getQuietSettings();
     
-    /** Creates a new instance of EU3Scenario */
+    /** Creates a new instance of ClausewitzScenario */
     public ClausewitzScenario(FilenameResolver resolver) {
         this.resolver = resolver;
-        ctryHistoryCache = new HashMap<String, GenericObject>();
-        provHistoryCache = new HashMap<Integer, GenericObject>();
+        ctryHistoryCache = new HashMap<>();
+        provHistoryCache = new HashMap<>();
     }
     
     public ClausewitzScenario(String mainDir, String modDir) {
         resolver = new FilenameResolver(mainDir, modDir);
-        ctryHistoryCache = new HashMap<String, GenericObject>();
-        provHistoryCache = new HashMap<Integer, GenericObject>();
+        ctryHistoryCache = new HashMap<>();
+        provHistoryCache = new HashMap<>();
+    }
+    
+    @Override
+    public void setStyle(Style style) {
+        this.saveStyle = style;
     }
     
     public void setResolver(FilenameResolver resolver) {

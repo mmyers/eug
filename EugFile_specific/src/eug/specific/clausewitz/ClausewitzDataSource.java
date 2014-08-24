@@ -6,6 +6,7 @@
 package eug.specific.clausewitz;
 
 import eug.shared.GenericObject;
+import eug.shared.Style;
 import java.util.List;
 
 /**
@@ -17,6 +18,13 @@ import java.util.List;
  * @since EUGFile 1.07.00
  */
 public interface ClausewitzDataSource {
+    
+    /**
+     * Sets the {@code Style} that all data will be saved with. If this is not
+     * called, the implementation is free to choose its own style.
+     * @param style the new {@code Style} to use.
+     */
+    public void setStyle(Style style);
 
     /**
      * Returns the country data for the country with the given tag.

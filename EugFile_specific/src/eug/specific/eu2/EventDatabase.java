@@ -51,9 +51,9 @@ public class EventDatabase {
         
         GenericObject root = EUGFileIO.load(filename, settings);
         if (root == null) {
-            root = EUGFileIO.load(scen.eu2FolderPath + scen.modPath + filename);
+            root = EUGFileIO.load(EU2Scenario.eu2FolderPath + EU2Scenario.modPath + filename);
             if (root == null) {
-                root = EUGFileIO.load(scen.eu2FolderPath + filename);
+                root = EUGFileIO.load(EU2Scenario.eu2FolderPath + filename);
                 if (root == null) {
                     System.err.println("Error: Cannot find file " + filename + " in any known location!");
                     return;
