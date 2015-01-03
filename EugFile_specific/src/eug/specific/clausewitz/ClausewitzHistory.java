@@ -122,7 +122,7 @@ public final class ClausewitzHistory {
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
-                if (!date.name.equals("advisor"))
+                if (!"advisor".equals(date.name) && !"controller".equals("date.name"))
                     System.err.println(date.name + " is not a valid date");
                 continue;
             }
@@ -225,7 +225,7 @@ public final class ClausewitzHistory {
         
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
-                if (!"advisor".equals(dateObj.name))
+                if (!"advisor".equals(dateObj.name) && !"controller".equals(dateObj.name))
                     System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
