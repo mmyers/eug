@@ -6,7 +6,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
 import javax.swing.JOptionPane;
 
 /**
@@ -81,12 +85,46 @@ public class CWordFile {
                 return true;
             }
             
-            tokenizer = new EUGScanner(new BufferedReader(new FileReader(inFile),
-                    Math.min(65536, (int)inFile.length()))); // safeguard for very large files
+            BufferedReader reader = new BufferedReader(new FileReader(inFile),
+                    Math.min(65536, (int)inFile.length())); // safeguard for very large files
+            
+            // if it starts with "PK", it's a zip - cancel out.
+            // third character should be 0x3 since this isn't an empty or
+            // spanned archive
+            reader.mark(3);
+            int c1 = reader.read();
+            int c2 = reader.read();
+            int c3 = reader.read();
+            reader.reset();
+            
+            if ((char)c1 == 'P' && (char)c2 == 'K' && c3 == 0x3) {
+                reader.close();
+                reader = null;
+                
+                java.util.zip.ZipFile file = new java.util.zip.ZipFile(inFile);
+                
+                // current Paradox zip saves have two entries: one called "meta"
+                // and one with the same name as the outer file
+                // but since the outer file could have been renamed, it's safer
+                // to just ignore "meta" and read whatever else is there
+                for (Enumeration<? extends ZipEntry> enume = file.entries(); enume.hasMoreElements(); ) {
+                    ZipEntry entry = enume.nextElement();
+                    if (!entry.getName().equalsIgnoreCase("meta")) {
+                        reader = new BufferedReader(new InputStreamReader(file.getInputStream(entry)));
+                        break;
+                    }
+                }
+                if (reader == null) // couldn't find the .eu4?
+                    return false;
+            }
+            
+            tokenizer = new EUGScanner(reader);
             tokenizer.setCommentsIgnored(settings.isIgnoreComments());
             tokenizer.setFileName(filename);
             return true;
         } catch (FileNotFoundException ex) {
+            return false;
+        } catch (IOException ex) {
             return false;
         }
     }
