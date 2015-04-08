@@ -12,18 +12,20 @@ import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
  * @author Michael Myers
  */
 public final class Map {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Map.class.getName());
     
     static final String MAP_DIR_NAME = "/map";
     
@@ -43,8 +45,8 @@ public final class Map {
     
     private boolean[] isLand = null;   // for In Nomine mainly
 
-    private FilenameResolver resolver;
-    private GameVersion version;
+    private final FilenameResolver resolver;
+    private final GameVersion version;
     
     /**
      * Creates a new instance of Map.
@@ -52,19 +54,21 @@ public final class Map {
     public Map(FilenameResolver resolver, GameVersion version) {
         this.resolver = resolver;
         this.version = version;
-        try {
+//        try {
             loadData();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        }
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//        }
     }
 
     
-    private void loadData() throws FileNotFoundException {
-        //System.out.println("Map file is " + resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
-        mapData = EUGFileIO.load(resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
+    private void loadData() {
+        //log.log(Level.INFO, "Map file is {0}", resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
+        String mapFilename = resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map");
+        mapData = EUGFileIO.load(mapFilename, ParserSettings.getQuietSettings());
         if (mapData == null) {
-            throw new RuntimeException("Failed to load map file");
+            log.log(Level.SEVERE, "Failed to load map file from {0}", mapFilename); 
+            throw new RuntimeException("Failed to load map file " + mapFilename);
         }
         
         String contFilename = mapData.getString("continent").replace('\\', '/');
@@ -114,7 +118,7 @@ public final class Map {
             
             GenericList seaProvs = mapData.getList("sea_starts");
             if (seaProvs == null) {
-                System.err.println("No sea_starts found in default.map; weird things might start happening now");
+                log.log(Level.WARNING, "No sea_starts found in default.map; weird things might start happening now");
             } else {
                 for (String provId : seaProvs) {
                     int id = Integer.parseInt(provId);
@@ -132,13 +136,13 @@ public final class Map {
                 }
             }
         } else if (mapData.getString("sea_starts").isEmpty()) {
-            System.err.println("Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
+            log.log(Level.WARNING, "Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
         }
     }
     
     public java.util.Map<String, List<String>> getContinents() {
         if (contList == null) {
-            contList = new HashMap<String, List<String>>(continents.size());
+            contList = new HashMap<>(continents.size());
             for (GenericList cont : continents.lists) {
                 contList.put(cont.getName(), cont.getList());
             }
@@ -165,8 +169,8 @@ public final class Map {
     
     public java.util.Map<String, List<String>> getClimates() {
         if (climateList == null) {
-            climateList = new HashMap<String, List<String>>(climates.size()+1);
-            final List<String> usedIds = new ArrayList<String>(1000);
+            climateList = new HashMap<>(climates.size()+1);
+            final List<String> usedIds = new ArrayList<>(1000);
             for (GenericList climate : climates.lists) {
                 final List<String> ids = climate.getList();
                 usedIds.addAll(ids);
@@ -174,7 +178,7 @@ public final class Map {
             }
             Collections.sort(usedIds);
             
-            final List<String> unusedIds = new ArrayList<String>();
+            final List<String> unusedIds = new ArrayList<>();
             for (int i : getLandProvs()) {
                 final String sid = Integer.toString(i);
                 final int idx = Collections.binarySearch(usedIds, sid);
@@ -210,7 +214,7 @@ public final class Map {
     
     public java.util.Map<String, List<String>> getRegions() {
         if (regionList == null) {
-            regionList = new HashMap<String, List<String>>(regions.size());
+            regionList = new HashMap<>(regions.size());
             if (!regions.lists.isEmpty()) {
                 for (GenericList cont : regions.lists) {
                     regionList.put(cont.getName(), cont.getList());
@@ -230,12 +234,12 @@ public final class Map {
     }
     
     public List<String> getRegionsOfProv(String provId) {
-        List<String> ret = new ArrayList<String>();
-        for (java.util.Map.Entry<String, List<String>> entry : getRegions().entrySet()) {
-            if (entry.getValue().contains(provId)) {
-                ret.add(entry.getKey());
-            }
-        }
+        List<String> ret = new ArrayList<>();
+        getRegions().entrySet().stream()
+                .filter((entry) -> (entry.getValue().contains(provId)))
+                .forEach((entry) -> {
+            ret.add(entry.getKey());
+        });
         
         if (ret.isEmpty())
             ret.add("(none)");
@@ -254,8 +258,8 @@ public final class Map {
     
     public java.util.Map<String, List<String>> getNatives() {
         if (nativeList == null) {
-            nativeList = new HashMap<String, List<String>>(natives.size()+1);
-            final List<String> usedIds = new ArrayList<String>(1000);
+            nativeList = new HashMap<>(natives.size()+1);
+            final List<String> usedIds = new ArrayList<>(1000);
             for (GenericObject nativeGroup : natives.children) {
                 final List<String> ids = nativeGroup.getList("provinces").getList();
                 usedIds.addAll(ids);
@@ -263,7 +267,7 @@ public final class Map {
             }
             Collections.sort(usedIds);
             
-            final List<String> unusedIds = new ArrayList<String>();
+            final List<String> unusedIds = new ArrayList<>();
             for (int i : getLandProvs()) {
                 final String sid = Integer.toString(i);
                 final int idx = Collections.binarySearch(usedIds, sid);
@@ -335,10 +339,12 @@ public final class Map {
             index = 1;
         }
         
+        @Override
         public Iterator<Integer> iterator() {
             return this;
         }
 
+        @Override
         public boolean hasNext() {
             while (++index < numProvs) {
                 if (isLand[index])
@@ -348,10 +354,12 @@ public final class Map {
             return false;
         }
 
+        @Override
         public Integer next() {
             return index++;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -370,18 +378,22 @@ public final class Map {
             index = 1;
         }
 
+        @Override
         public Iterator<Integer> iterator() {
             return this;
         }
 
+        @Override
         public boolean hasNext() {
             return index < seaStarts;
         }
 
+        @Override
         public Integer next() {
             return index++;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

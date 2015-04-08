@@ -2,6 +2,22 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.7 ===
+
+- Zipped saves can now be loaded. Making any changes will result in a non-zipped
+  save, so be warned.
+- Implemented automatic version checking. On launch, the editor will attempt to
+  read an XML version file hosted on SourceForge, and if a new version is
+  available, the Help menu will draw attention to it. This behavior can be
+  turned off by setting check_for_updates = no in config.txt. Manual version
+  checking is always available via a new item in the Help menu.
+- Implemented proper logging instead of printing to the console. It is no longer
+  necessary to use the .bat file to capture error messages; all output is
+  printed to output.log for easy access.
+- Added Paradox forum thread links to Help->About.
+- "controller" blocks in EU4 saves no longer cause warnings to be printed.
+
+
 === 0.8.6 ===
 
 - Added colonial regions and trade companies mapmodes for EU4.

@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -21,18 +22,18 @@ import java.util.regex.Pattern;
  */
 public final class ProvinceData {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(ProvinceData.class.getName());
+    
     private java.util.Map<Integer, Province> rgbMap;
     private Province[] allProvs;
     private static final int ALPHA = 0xff << 24;
     private static final Pattern SEMICOLON = Pattern.compile(";");
     
-    /**
-     * Creates a new instance of ProvinceData.
-     */
+    
     public ProvinceData(Map map, FilenameResolver resolver) {
         final int numProvs = Integer.parseInt(map.getString("max_provinces"));
         
-        rgbMap = new HashMap<Integer, Province>(numProvs);
+        rgbMap = new HashMap<>(numProvs);
         allProvs = new Province[numProvs];
         
         String defFileName = map.getString("definitions").replace('\\', '/');
@@ -42,16 +43,22 @@ public final class ProvinceData {
         try {
             parseDefs(resolver.resolveFilename(defFileName), numProvs);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, ex.getMessage(), ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+    
+    private Integer tryParseInt(String s) {
+        try {
+            return Integer.valueOf(s);
+        } catch (NumberFormatException ex) {
+            return null;
         }
     }
     
     private void parseDefs(String fileName, int numProvs) throws FileNotFoundException, IOException {
-        final BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             reader.readLine();  // eat first line
             
             for (int i = 1; i < numProvs; i++) {
@@ -61,15 +68,32 @@ public final class ProvinceData {
                 
                 String[] arr = SEMICOLON.split(line);
             
-                if (arr == null) {
-                    System.err.println("Badly formatted province definition: " + line);
+                if (arr == null || arr.length < 4) {
+                    log.log(Level.WARNING, "Badly formatted province definition: {0}", line);
                     continue;
                 }
                 
-                final int id = Integer.parseInt(arr[0]);
-                final int r = (int)Double.parseDouble(arr[1]);
-                final int g = (int)Double.parseDouble(arr[2]);
-                final int b = (int)Double.parseDouble(arr[3]);
+                Integer id = tryParseInt(arr[0]);
+                Integer r = tryParseInt(arr[1]);
+                Integer g = tryParseInt(arr[2]);
+                Integer b = tryParseInt(arr[3]);
+                
+                if (id == null) {
+                    log.log(Level.WARNING, "Failed to read province id in definition line: {0}", line);
+                    continue;
+                }
+                if (r == null) {
+                    log.log(Level.WARNING, "Failed to read province red in definition line: {0}", line);
+                    continue;
+                }
+                if (g == null) {
+                    log.log(Level.WARNING, "Failed to read province green in definition line: {0}", line);
+                    continue;
+                }
+                if (b == null) {
+                    log.log(Level.WARNING, "Failed to read province blue in definition line: {0}", line);
+                    continue;
+                }
                 
                 int color = ALPHA;
                 color += (r & 0xFF) << 16;
@@ -81,8 +105,6 @@ public final class ProvinceData {
                 rgbMap.put(color, p);
                 allProvs[id] = p;
             }
-        } finally {
-            reader.close();
         }
         
         final Province ti = new Province(0, "Terra Incognita", ALPHA);
@@ -132,9 +154,9 @@ public final class ProvinceData {
      */
     public static final class Province {
         
-        private int id;
-        private String name;
-        private int color;
+        private final int id;
+        private final String name;
+        private final int color;
         
         Province(int id, String name, int color) {
             this.id = id;

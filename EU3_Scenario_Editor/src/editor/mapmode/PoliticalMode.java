@@ -55,7 +55,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
         if (controller.isEmpty()) {
             GenericObject controllerObj = mapPanel.getModel().getHistObject(provId, "controller");
             if (controllerObj != null)
-                controller = controllerObj.getString("controller");
+                controller = controllerObj.getString("tag");
         }
         return controller;
     }

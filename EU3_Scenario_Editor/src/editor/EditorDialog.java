@@ -23,6 +23,7 @@ import java.awt.datatransfer.FlavorEvent;
 import java.awt.datatransfer.FlavorListener;
 import java.awt.event.*;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -37,6 +38,8 @@ import javax.swing.undo.UndoManager;
  * @since  0.5pre1
  */
 public class EditorDialog extends JDialog {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(EditorDialog.class.getName());
     
     /** The contents of the original file. */
     private String originalContents;
@@ -178,11 +181,11 @@ public class EditorDialog extends JDialog {
 //                boolean changed = false;
 //                public void actionPerformed(ActionEvent e) {
 //                    if (changed) {
-//                        System.out.println("Changed text");
+//                        log.log(Level.FINEST, "Changed text");
 //                        textAreaKeyTyped();
 //                        changed = false;
 //                    } else {
-//                        System.out.println("Not changed");
+//                        log.log(Level.FINEST, "Not changed");
 //                    }
 //                }
 //            }
@@ -618,13 +621,13 @@ public class EditorDialog extends JDialog {
                     );
             // TODO: Make error stripe
         } catch (BadLocationException ex) {
-            ex.printStackTrace();
+            log.log(Level.WARNING, ex.getMessage(), ex);
         }
     }
     
     private String getUnmatchedBracketText() {
         final java.util.Map<Integer, Integer> brackets =
-                new java.util.TreeMap<Integer, Integer>(findUnmatchedBrackets());
+                new java.util.TreeMap<>(findUnmatchedBrackets());
         
         final StringBuilder text = new StringBuilder("<html>Unmatched brackets:<br>");
         
@@ -675,7 +678,7 @@ public class EditorDialog extends JDialog {
             newDoc.insertString(0, contents.replaceAll("\r\n", "\n"), null);
             textPane.setDocument(newDoc);
         } catch (BadLocationException ex) {
-            ex.printStackTrace();
+            log.log(Level.WARNING, ex.getMessage(), ex);
         }
         initDocument();
         textPane.setCaretPosition(0);
@@ -702,7 +705,7 @@ public class EditorDialog extends JDialog {
             final String text = textPane.getText(0, textPane.getCaretPosition());
             return newLine.split(text, -1).length;
         } catch (BadLocationException ex) {
-            ex.printStackTrace();
+            log.log(Level.WARNING, ex.getMessage(), ex);
             return -1;
         }
     }
@@ -730,7 +733,7 @@ public class EditorDialog extends JDialog {
         try {
             textPane.getDocument().getText(start, getLineEndOffset(lineIndex) - start - 1,segment);
         } catch (BadLocationException ex) {
-            ex.printStackTrace();
+            log.log(Level.WARNING, ex.getMessage(), ex);
         }
     }
     
@@ -750,8 +753,7 @@ public class EditorDialog extends JDialog {
         try {
             undo.undo();
         } catch (CannotUndoException ex) {
-            System.out.println("Unable to undo: " + ex);
-            ex.printStackTrace();
+            log.log(Level.WARNING, "Unable to undo", ex);
         }
         updateUndoStates();
         textAreaKeyTyped();
@@ -761,8 +763,7 @@ public class EditorDialog extends JDialog {
         try {
             undo.redo();
         } catch (CannotRedoException ex) {
-            System.out.println("Unable to redo: " + ex);
-            ex.printStackTrace();
+            log.log(Level.WARNING, "Unable to redo: ", ex);
         }
         updateUndoStates();
         textAreaKeyTyped();
@@ -818,7 +819,7 @@ public class EditorDialog extends JDialog {
             else if (e.getSource() == sizeList)
                 size = sizeList.getSelectedValue();
             else
-                System.err.println(e);
+                log.log(Level.FINER, "Not sure what to do with {0}", e);
             update();
         };
         
@@ -1021,6 +1022,7 @@ public class EditorDialog extends JDialog {
                         KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
                 putValue(MNEMONIC_KEY, KeyEvent.VK_F);
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 final Segment text = new Segment();
                 final String findText = findField.getText();
@@ -1039,18 +1041,16 @@ public class EditorDialog extends JDialog {
                             getLineText(line, text);
                             if (text.toString().contains(findText)) {
                                 // try to figure out where it is
-//                            System.out.println("Found on line " + line);
+//                            log.log(Level.FINEST, "Found on line {0}", line);
                                 for (int i = 0; i < text.count; i++) {
                                     if (lineStart + i < textPane.getCaretPosition())
                                         continue;
                                     
-//                                System.out.println(text.toString());
+//                                log.log(Level.FINEST, text.toString());
                                     String remainder = new String(text.array, text.offset+i, text.count-i);
-//                                System.out.println("remainder = " + remainder);
+//                                log.log(Level.FINEST, "remainder = {0}", remainder);
                                     idx = remainder.indexOf(findText);
-                                    if (idx < 0)
-                                        continue;
-                                    else {
+                                    if (idx >= 0) {
                                         idx += lineStart + i;
                                         textPane.setCaretPosition(idx);
                                         textPane.select(idx, idx + findText.length());
@@ -1058,7 +1058,7 @@ public class EditorDialog extends JDialog {
                                         return;
                                     }
                                 }
-//                            System.err.println("Something is wrong in FindDialog");
+//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
                             }
                         }
                 } else {
@@ -1076,19 +1076,17 @@ public class EditorDialog extends JDialog {
                             getLineText(line, text);
                             if (text.toString().contains(findText)) {
                                 // try to figure out where it is
-                                System.out.println("Found on line " + line);
+                                log.log(Level.FINEST, "Found on line {0}", line);
                                 for (int i = text.count-1; i >= 0; i--) {
                                     // loop until i is at or before the caret
                                     if (lineStart + i > textPane.getCaretPosition())
                                         continue;
                                     
-                                    System.out.println(text.toString());
+                                    log.log(Level.FINEST, text.toString());
                                     String remainder = new String(text.array, text.offset, text.count-i); //text.subSequence(0, i).toString();
-                                    System.out.println("remainder = " + remainder);
+                                    log.log(Level.FINEST, "remainder = {0}", remainder);
                                     idx = remainder.indexOf(findText);
-                                    if (idx < 0)
-                                        continue;
-                                    else {
+                                    if (idx >= 0) {
                                         idx += lineStart + i;
                                         textPane.setCaretPosition(idx);
                                         textPane.select(idx, idx + findText.length());
@@ -1096,7 +1094,7 @@ public class EditorDialog extends JDialog {
                                         return;
                                     }
                                 }
-//                            System.err.println("Something is wrong in FindDialog");
+//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
                             }
                         }
                 }
@@ -1136,7 +1134,7 @@ public class EditorDialog extends JDialog {
             if (supportsRowSorter) {
                 countryTable.setAutoCreateRowSorter(true);
             } else {
-                System.out.println("Table sorting not supported.");
+                log.log(Level.WARNING, "Table sorting not supported.");
             }
             
             setLayout(new BorderLayout());
@@ -1183,7 +1181,7 @@ public class EditorDialog extends JDialog {
             if (supportsRowSorter) {
                 provTable.setAutoCreateRowSorter(true);
             } else {
-                System.out.println("Table sorting not supported.");
+                log.log(Level.WARNING, "Table sorting not supported.");
             }
             
             setLayout(new BorderLayout());
@@ -1242,7 +1240,7 @@ public class EditorDialog extends JDialog {
             if (supportsRowSorter) {
                 cultureTable.setAutoCreateRowSorter(true);
             } else {
-                System.out.println("Table sorting not supported.");
+                log.log(Level.WARNING, "Table sorting not supported.");
             }
             
             setLayout(new BorderLayout());

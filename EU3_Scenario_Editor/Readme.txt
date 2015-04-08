@@ -1,6 +1,6 @@
 /=====================================\
 |==   Clausewitz Scenario Editor    ==|
-|==  Version 0.8.6 (Aug 24 2014)    ==|
+|==  Version 0.8.7 (Apr 07 2014)    ==|
 |==           By MichaelM           ==|
 \=====================================/
 
@@ -86,10 +86,10 @@ If you do run out of memory, see the Troubleshooting section below.
 =======================
 
 
-If the program hangs, check the console window; there will probably be a stack
+If the program hangs, check output.log; there will probably be a stack
 trace -- a lot of lines saying something like
 	at javax.swing.JComponent.paint(Unknown Source)
--- in the window. Post it on the forum and I'll see what I can do.
+-- at the end of the file. Post it on the forum and I'll see what I can do.
 
 
 
@@ -144,8 +144,6 @@ pause
     * Add a view mode for discoveries.
     * Add a color-coded culture map.
     * Implement an export-to-image function.
-    * Improve error handling behavior. No one wants to see stack traces in
-      console windows.
     * Improve saved game capabilites to allow viewing variables which are not
         in the history (e.g. country national ideas).
     * I don't know what else; what do you think? Post your suggestions on the

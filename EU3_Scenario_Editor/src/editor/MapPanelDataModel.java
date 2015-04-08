@@ -13,12 +13,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
  * @author Michael Myers
  */
 public class MapPanelDataModel implements java.io.Serializable {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(MapPanelDataModel.class.getName());
     
     private static final long serialVersionUID = 1L;
     
@@ -35,7 +38,6 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     private String date;
     
-    /** Creates a new instance of MapPanelDataModel */
     public MapPanelDataModel(MapData data, Map map, ProvinceData pData) {
         //this(data, null, pData);
         this.mapData = data;
@@ -122,7 +124,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public List<String> getCountries(String date) {
-        final java.util.Map<String, Object> ret = new HashMap<String, Object>();
+        final java.util.Map<String, Object> ret = new HashMap<>();
         
         for (Integer id : map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
@@ -136,7 +138,7 @@ public class MapPanelDataModel implements java.io.Serializable {
             }
         }
         
-        final List<String> list = new ArrayList<String>(ret.keySet());
+        final List<String> list = new ArrayList<>(ret.keySet());
         Collections.sort(list);
         return list;
     }
@@ -146,7 +148,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     public List<String> getTags(String date) {
-        final java.util.Map<String, Object> ret = new HashMap<String, Object>();
+        final java.util.Map<String, Object> ret = new HashMap<>();
         
         for (Integer id : map.getLandProvs()) {
             ProvinceData.Province p = provinceData.getProvByID(id);
@@ -160,7 +162,7 @@ public class MapPanelDataModel implements java.io.Serializable {
             }
         }
         
-        final List<String> list = new ArrayList<String>(ret.keySet());
+        final List<String> list = new ArrayList<>(ret.keySet());
         Collections.sort(list);
         return list;
     }
@@ -168,7 +170,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     public List<Integer[]> getLinesInProv(int provId) {
         ProvinceData.Province p = provinceData.getProvByID(provId);
         if (p == null) {
-            System.err.println("Unknown province " + provId);
+            log.log(Level.WARNING, "Unknown province {0}", provId);
             return Collections.emptyList();
         } else
             return mapData.getLinesInProv(p.getColor());

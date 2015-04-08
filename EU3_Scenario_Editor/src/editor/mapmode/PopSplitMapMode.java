@@ -45,9 +45,9 @@ public class PopSplitMapMode extends ProvincePaintingMode {
         b = (int) Math.min((slaves - MIN_PERCENT) * ratio, MAX_COLOR);
         
         try {
-        mapPanel.paintProvince(g2d, provId, new Color(r,g,b));
+            mapPanel.paintProvince(g2d, provId, new Color(r,g,b));
         } catch (IllegalArgumentException ex) {
-            System.out.println("r = " + r + ", g = " + g + ", b = " + b);
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.WARNING, "Color error", ex);
         }
     }
 

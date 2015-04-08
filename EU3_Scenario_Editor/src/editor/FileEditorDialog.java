@@ -10,6 +10,7 @@ import eug.shared.FilenameResolver;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import java.util.HashMap;
+import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
 /**
@@ -22,6 +23,7 @@ import javax.swing.JOptionPane;
  */
 public class FileEditorDialog extends EditorDialog {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(FileEditorDialog.class.getName());
     
     /**
      * The province id number or the hashcode of the country tag. Used to
@@ -196,7 +198,7 @@ public class FileEditorDialog extends EditorDialog {
                 JOptionPane.showMessageDialog(null,
                         "Error with province " + p + ": " + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                log.log(Level.WARNING, "Error with province " + p, ex);
             }
         } else {
             d.setVisible(true);
@@ -221,7 +223,7 @@ public class FileEditorDialog extends EditorDialog {
                 JOptionPane.showMessageDialog(null,
                         "Error with country " + countryTag + ": " + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                log.log(Level.WARNING, "Error with country " + countryTag, ex);
             }
         } else {
             d.setVisible(true);
@@ -238,7 +240,6 @@ public class FileEditorDialog extends EditorDialog {
                 (java.util.Map<Integer, FileEditorDialog>) ((HashMap<Integer, FileEditorDialog>)showing).clone();
         
         for (FileEditorDialog d : showingClone.values()) {
-            System.out.println("Still showing: " + d.name);
             d.close();
             if (d.isShowing())
                 d.dispose();

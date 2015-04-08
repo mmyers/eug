@@ -18,6 +18,7 @@ import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  * A place for static methods commonly used by mapmodes.
@@ -26,6 +27,8 @@ import java.util.HashMap;
  * @since 0.5pre3
  */
 public final class Utilities {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Utilities.class.getName());
     
     /** Creates a new instance of Utilities */
     private Utilities() { }
@@ -124,21 +127,21 @@ public final class Utilities {
     }
 
     private static void readTitleColors(GenericObject titles) {
-        for (GenericObject title : titles.children) {
-            if (title.isEmpty())
-                continue; // skip bishoprics and such
+        titles.children.stream()
+                .filter((title) -> !(title.isEmpty())) // skip bishoprics and such
+                .map((title) -> {
 
             GenericList color = title.getList("color");
-
             if (color == null) {
-                //System.err.println("color for " + title.name + " is null");
+                //log.log(Level.WARNING, "color for {0} is null", title.name);
                 titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
             } else {
                 titleColorCache.put(title.name, parseIntColor(color));
             }
-
+            return title;
+        }).forEach((title) -> {
             readTitleColors(title);
-        }
+        });
     }
     
     static Color getCtryColor(String country) {
@@ -161,15 +164,15 @@ public final class Utilities {
             final GenericObject countryDef = EUGFileIO.load(filename, settings);
             
             if (countryDef == null) {
-                System.err.println("No country definition file found for " + country + ".");
-                System.err.println("Expected to find it in " + countries.getString(country));
+                log.log(Level.WARNING, "No country definition file found for {0}.", country);
+                log.log(Level.WARNING, "Expected to find it in {0}", countries.getString(country));
                 return COLOR_NO_CTRY_DEF;
             }
             
             final GenericList color = countryDef.getList("color");
             
             if (color == null) {
-                System.err.println("color for " + country + " is null");
+                log.log(Level.WARNING, "color for {0} is null", country);
                 return COLOR_NO_CTRY_DEF;
             }
             
@@ -194,7 +197,7 @@ public final class Utilities {
                         // found it, which means this isn't a group at all
                         GenericList color = group.getList("color");
                         if (color == null) {
-                            System.err.println("color for " + religion + " is null");
+                            log.log(Level.WARNING, "color for {0} is null", religion);
                             return COLOR_NO_RELIGION_DEF;
                         }
                         ret = parseFloatColor(color);
@@ -206,7 +209,7 @@ public final class Utilities {
                         // found it
                         GenericList color = rel.getList("color");
                         if (color == null) {
-                            System.err.println("color for " + religion + " is null");
+                            log.log(Level.WARNING, "color for {0} is null", religion);
                             return COLOR_NO_RELIGION_DEF;
                         }
                         ret = parseFloatColor(color);

@@ -25,6 +25,7 @@ import eug.specific.eu3.EU3Scenario;
 import eug.specific.victoria2.Vic2SaveGame;
 import eug.specific.victoria2.Vic2Scenario;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -34,10 +35,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import javax.swing.*;
 
 /**
@@ -46,12 +50,12 @@ import javax.swing.*;
  */
 public final class EditorUI extends javax.swing.JFrame {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(EditorUI.class.getName());
+    
     private transient ProvinceData.Province currentProvince = null;
     
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
-    
-    private static final String VERSION = "0.8.6";
     
     private JPopupMenu bookmarkMenu = new JPopupMenu("Bookmarks");
 
@@ -65,7 +69,7 @@ public final class EditorUI extends javax.swing.JFrame {
     /**
      * Creates new form EditorUI.
      */
-    public EditorUI(String saveFile, GameVersion version, FilenameResolver resolver) {
+    public EditorUI(String saveFile, GameVersion version, FilenameResolver resolver, boolean checkUpdates) {
         this.version = version;
         this.resolver = resolver;
         this.map = new Map(resolver, version);
@@ -80,6 +84,9 @@ public final class EditorUI extends javax.swing.JFrame {
         mapPanel.centerMap();
         setDataSource(saveFile);
         addFilters();
+        
+        if (checkUpdates)
+            checkForUpdates();
     }
 
     private boolean setStartDateOld(GenericObject defines) {
@@ -132,7 +139,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void setDataSource(String saveFile) {
         if (saveFile == null) {
-            System.out.println("Loading province history...");
+            log.log(Level.INFO, "Loading province history...");
 
             ClausewitzScenario scen = null;
             if (version.getSaveType().equalsIgnoreCase("eu3"))
@@ -142,13 +149,13 @@ public final class EditorUI extends javax.swing.JFrame {
             else if (version.getSaveType().equalsIgnoreCase("ck2"))
                 scen = new CK2Scenario(resolver);
             else {
-                System.err.println("Unknown or missing scenario type specified by config.");
-                System.err.println("Defaulting to EU3");
+                log.log(Level.WARNING, "Unknown or missing scenario type specified by config.");
+                log.log(Level.WARNING, "Defaulting to EU3");
                 scen = new EU3Scenario(resolver);
             }
 
             mapPanel.setDataSource(scen);
-            System.out.println("Done.");
+            log.log(Level.INFO, "Done.");
             FileEditorDialog.setDataSource(scen);
 
             if (!setStartDateNew(version.getStartDate())) {
@@ -171,7 +178,7 @@ public final class EditorUI extends javax.swing.JFrame {
             if (version.hasBookmarks())
                 readBookmarks();
         } else {
-            System.out.println("Loading saved game...");
+            log.log(Level.INFO, "Loading saved game...");
 
             ClausewitzSaveGame save = null;
             if (version.getSaveType().equalsIgnoreCase("eu3"))
@@ -179,19 +186,19 @@ public final class EditorUI extends javax.swing.JFrame {
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
                 save = Vic2SaveGame.loadSaveGame(saveFile, resolver);
             else {
-                System.err.println("Unknown or missing save game type specified by config.");
-                System.err.println("Defaulting to EU3");
+                log.log(Level.WARNING, "Unknown or missing save game type specified by config.");
+                log.log(Level.WARNING, "Defaulting to EU3");
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             }
             
             if (version.getName().equalsIgnoreCase("EU4"))
                 save.setStyle(Style.EU4_SAVE_GAME);
 
-            System.out.println("Done.");
+            log.log(Level.INFO, "Done.");
 
-            System.out.println("Loading province history...");
+            log.log(Level.INFO, "Loading province history...");
             mapPanel.setDataSource(save);
-            System.out.println("Done.");
+            log.log(Level.INFO, "Done.");
 
             FileEditorDialog.setDataSource(save);
 
@@ -303,8 +310,9 @@ public final class EditorUI extends javax.swing.JFrame {
         javax.swing.JSeparator jSeparator7 = new javax.swing.JSeparator();
         reloadMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
-        javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+        helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
+        checkVersionMenuItem = new javax.swing.JMenuItem();
 
         FormListener formListener = new FormListener();
 
@@ -445,6 +453,10 @@ public final class EditorUI extends javax.swing.JFrame {
         aboutMenuItem.addActionListener(formListener);
         helpMenu.add(aboutMenuItem);
 
+        checkVersionMenuItem.setText("Check for newer version");
+        checkVersionMenuItem.addActionListener(formListener);
+        helpMenu.add(checkVersionMenuItem);
+
         menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
@@ -477,6 +489,9 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 EditorUI.this.aboutMenuItemActionPerformed(evt);
+            }
+            else if (evt.getSource() == checkVersionMenuItem) {
+                EditorUI.this.checkVersionMenuItemActionPerformed(evt);
             }
         }
 
@@ -616,7 +631,28 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
     
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        javax.swing.JOptionPane.showMessageDialog(this, "Clausewitz Scenario Editor\nVersion " + VERSION + "\nBy MichaelM");
+        Object[] options = { "Visit EU3 forum thread", "Visit EU4 forum thread", "Close" };
+        
+        int ret = JOptionPane.showOptionDialog(this, "Clausewitz Scenario Editor\nVersion " + Version.getCurrentVersion() + "\nBy MichaelM",
+                "About", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[options.length-1]);
+        
+        if (ret == 2)
+            return;
+        
+        String eu3Thread = "https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-save-game-and-scenario-editor-viewer.527308/";
+        String eu4Thread = "https://forum.paradoxplaza.com/forum/index.php?threads/announcing-a-scenario-editor-and-map-viewer.707474/";
+        
+        String thread = (ret == 0 ? eu3Thread : eu4Thread);
+        
+        try {
+            Desktop.getDesktop().browse(new java.net.URI(thread));
+        } catch (URISyntaxException | IOException ex) {
+            log.log(Level.SEVERE, "Could not browse to forum thread " + thread, ex);
+
+            JOptionPane.showMessageDialog(this,
+                    "Could not open browser. Please visit " + thread + " in your browser instead.",
+                    "Update failed", JOptionPane.WARNING_MESSAGE);
+        }
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
@@ -688,6 +724,55 @@ public final class EditorUI extends javax.swing.JFrame {
             dialog.setVisible(true);
         }
     }//GEN-LAST:event_scaleColorsButtonActionPerformed
+
+    private void checkVersionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkVersionMenuItemActionPerformed
+        if (Version.isNewVersionAvailable()) {
+            Object[] options = { "Download", "Close" };
+
+            int ret = JOptionPane.showOptionDialog(this,
+                    "New version " + Version.getLatestVersion() + " available!\nDo you want to download it now?",
+                    "New version!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+
+            if (ret == 0) {
+                try {
+                    Desktop.getDesktop().browse(new java.net.URI(Version.getLatestVersionLink()));
+                } catch (IOException | URISyntaxException ex) {
+                    log.log(Level.SEVERE, "Could not browse to URI " + Version.getLatestVersionLink(), ex);
+
+                    JOptionPane.showMessageDialog(this,
+                            "Could not open browser. Please visit " + Version.getProjectURL() + " in your browser to get the latest version.",
+                            "Update failed", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No new version available!");
+        }
+    }//GEN-LAST:event_checkVersionMenuItemActionPerformed
+    
+    private void checkForUpdates() {
+        SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                log.log(Level.INFO, "Checking for new versions");
+                return Version.isNewVersionAvailable();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    if (get() == true) {
+                        log.log(Level.INFO, "New version found: {0}", Version.getLatestVersion());
+                        EditorUI.this.helpMenu.setBackground(Color.ORANGE);
+                        EditorUI.this.helpMenu.setOpaque(true);
+                        EditorUI.this.checkVersionMenuItem.setBackground(Color.ORANGE);
+                    }
+                } catch (InterruptedException | ExecutionException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        worker.execute();
+    }
     
     private void doMouseClick(final ProvinceData.Province p) {
         currentProvince = p;
@@ -855,7 +940,7 @@ public final class EditorUI extends javax.swing.JFrame {
                 mapPanel.getModel().getDataSource().saveChanges();
         }
         dispose();
-        System.out.println("Exiting...");
+        log.log(Level.INFO, "Exiting...");
     }
     
     private void readObject(java.io.ObjectInputStream in)
@@ -877,8 +962,8 @@ public final class EditorUI extends javax.swing.JFrame {
 
         GenericList views = allViews.getList(version.getViewSet());
         if (views == null) {
-            System.err.println("No view set specified.");
-            System.err.println("Defaulting to EU3");
+            log.log(Level.WARNING, "No view set specified.");
+            log.log(Level.WARNING, "Defaulting to EU3");
             views = allViews.getList("eu3");
         }
 
@@ -1016,7 +1101,7 @@ public final class EditorUI extends javax.swing.JFrame {
             } else if (view.equals("wars")) {
                 viewMenu.add(new WarsAction());
             } else {
-                System.err.println("Unknown menu item: " + view);
+                log.log(Level.WARNING, "Unknown menu item: {0}", view);
             }
         }
 
@@ -1483,11 +1568,13 @@ public final class EditorUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton bookmarksButton;
+    javax.swing.JMenuItem checkVersionMenuItem;
     private javax.swing.JLabel ctryNameLabel;
     private javax.swing.JSpinner daySpinner;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JButton goToProvButton;
     private javax.swing.JMenuItem goToProvMenuItem;
+    private javax.swing.JMenu helpMenu;
     private final editor.MapPanel mapPanel = new editor.MapPanel();
     private javax.swing.JScrollPane mapScrollPane;
     private javax.swing.JSpinner monthSpinner;
@@ -1598,6 +1685,7 @@ public final class EditorUI extends javax.swing.JFrame {
             
             if (response == null || response.length() == 0)
                 return;
+            response = response.trim();
             
             Province p;
             
@@ -1636,7 +1724,7 @@ public final class EditorUI extends javax.swing.JFrame {
             String date = yearSpinner.getValue().toString() + "." +
                     monthSpinner.getValue().toString() + "." +
                     daySpinner.getValue().toString();
-            System.out.println("Setting date to " + date);
+            log.log(Level.FINE, "Setting date to {0}", date);
             mapPanel.getModel().setDate(date);
 //            ((ProvinceEditorPanel)innerProvincePanel).setDate(date);
             mapPanel.repaint();

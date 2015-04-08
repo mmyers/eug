@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -32,6 +33,7 @@ import javax.swing.Timer;
  */
 public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(MapPanel.class.getName());
     
     private transient BufferedImage mapImage;
     private transient BufferedImage scaledMapImage;
@@ -83,15 +85,15 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         isMapInverted = isInverted;
         createMapImage(map, resolver);
         
-        System.out.println("Reading map from image...");
+        log.log(Level.INFO, "Reading map from image...");
         final MapData data = new MapData(scaledMapImage, Integer.parseInt(map.getString("max_provinces")));
-        System.out.println("Done.");
+        log.log(Level.INFO, "Done.");
         model = new MapPanelDataModel(data, map, provData);
         model.setDate("1453.1.1");
         
         initComponents();
         
-        overrides = new java.util.HashMap<Integer, Color>();
+        overrides = new java.util.HashMap<>();
         
         mode = new ProvinceMode(this);
         
@@ -111,7 +113,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             javax.swing.JOptionPane.showMessageDialog(null,
                     "Error reading map: " + ex.getMessage(), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Error reading map", ex);
         }
     }
     
@@ -230,7 +232,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     @Override
     public Dimension getPreferredSize() {
         if (scaledMapImage == null) {
-//            System.err.println("scaledMap == null!");
+//            log.log(Level.WARNING, "scaledMap == null!");
             return super.getPreferredSize();
         }
         return new Dimension(scaledMapImage.getWidth(), scaledMapImage.getHeight());
@@ -254,7 +256,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     public void setScaleFactor(double factor) {
         if (factor < MIN_SCALE)
             return;
-//        System.out.println("New scale factor: " + factor);
+//        log.log(Level.FINER, "New scale factor: {0}", factor);
         scaleFactor = factor;
         rescaleMap();
 //        repaint();
@@ -353,29 +355,34 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         if (p == null) {
             java.awt.Color c = new java.awt.Color(scaledMapImage.getRGB(pt.x, pt.y));
-            System.err.println("No province registered for " + c.getRed() + "," + c.getGreen() + "," + c.getBlue());
+            log.log(Level.WARNING, "No province registered for {0},{1},{2}", new Object[]{c.getRed(), c.getGreen(), c.getBlue()});
         }
         
         return p;
     }
     
     
+    @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
     
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 5;
     }
     
+    @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 50;
     }
     
+    @Override
     public boolean getScrollableTracksViewportWidth() {
         return false;
     }
     
+    @Override
     public boolean getScrollableTracksViewportHeight() {
         return false;
     }
@@ -504,6 +511,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     public void flashProvince(final int provId, final int numFlashes) {
         final ActionListener listener = new ActionListener() {
             private boolean color = true;
+            @Override
             public void actionPerformed(final ActionEvent e) {
                 if (color) {
                     colorProvince(provId, Color.WHITE);

@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Handles both colonial regions and trade companies, since the mechanics and
@@ -20,6 +21,8 @@ import java.util.Map;
  * @since 0.8.6
  */
 public class ColonialRegionsMode extends ProvincePaintingMode {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(ColonialRegionsMode.class.getName());
     
     private final Map<Integer, ColonialRegion> regions;
 
@@ -44,7 +47,7 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
                         Integer.parseInt(colorList.get(1)),
                         Integer.parseInt(colorList.get(2)));
             } else {
-                System.out.println("No valid color found in " + region.name);
+                log.log(Level.WARNING, "No valid color found in {0}", region.name);
                 color = Color.GRAY;
             }
             
@@ -52,14 +55,15 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
             
             GenericList provinces = region.getList("provinces");
             if (provinces == null) {
-                System.out.println("No valid list of provinces found in " + region.name);
+                log.log(Level.WARNING, "No valid list of provinces found in {0}", region.name);
                 continue;
             }
             
             for (String prov : provinces) {
                 int id = Integer.parseInt(prov);
                 if (regions.get(id) != null) {
-                    System.out.println("Colonial regions/trade companies: Province " + id + " is in both " + regions.get(id).getName() + " and " + name);
+                    log.log(Level.INFO, "Colonial regions/trade companies: Province {0} is in both {1} and {2}",
+                            new Object[]{id, regions.get(id).getName(), name});
                 }
                 regions.put(id, cr);
             }

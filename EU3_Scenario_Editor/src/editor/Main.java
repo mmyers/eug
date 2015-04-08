@@ -20,10 +20,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -40,7 +41,9 @@ import javax.swing.JTextField;
  */
 public class Main {
     
-    private GenericObject config;
+    private static final Logger log = Logger.getLogger(Main.class.getName());
+    
+    private final GenericObject config;
     
     /** Creates a new instance of Main */
     private Main(GenericObject config) {
@@ -57,12 +60,27 @@ public class Main {
 //            ex.printStackTrace();
 //        }
         
+        setUpLogging();
+        
+        log.log(Level.INFO, "Java version: {0}", System.getProperty("java.version"));
+        
         File configFile = new File("config.txt");
         GenericObject config =
                 EUGFileIO.load(configFile, ParserSettings.getDefaults().setPrintTimingInfo(false));
 
         Main main = new Main(config);
         main.showDialog();
+    }
+    
+    private static void setUpLogging() {
+        java.util.logging.Handler handler;
+        try {
+            handler = new java.util.logging.FileHandler("output.log", false);
+            handler.setFormatter(new java.util.logging.SimpleFormatter());
+            Logger.getLogger("").addHandler(handler);
+        } catch (IOException | SecurityException ex) {
+            System.err.println("Failed to set up log file. Defaulting to console output.");
+        }
     }
     
     private void showDialog() {
@@ -90,6 +108,8 @@ public class Main {
                 if (choice == JFileChooser.APPROVE_OPTION) {
                     gameDirField.setText(chooser.getSelectedFile().getAbsolutePath());
                     String modPath = chooser.getSelectedFile().getAbsolutePath() + File.separator + "mod";
+                    
+                    @SuppressWarnings("UseOfObsoleteCollectionType")
                     Vector<Mod> mods = listMods(new File(modPath), true);
                     modBox.setModel(new DefaultComboBoxModel<>(mods));
                 }
@@ -134,6 +154,8 @@ public class Main {
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel gameTypePanel = new JPanel();
+        
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         final JComboBox<GameVersion> gameBox = new JComboBox<>(new Vector<>(GameVersion.getGameVersions()));
         
         gameBox.addItemListener((ItemEvent e) -> {
@@ -233,9 +255,9 @@ public class Main {
 
                 dialog.dispose();
 
-                System.out.println("Loading " + version.getDisplay() + ". Mod: " + mod.getName());
-                System.out.println("Game path: " + gameDirField.getText());
-                System.out.println("Mod path: " + (mod.getName().equals("None") ? "(none)" : mod.getModPath()));
+                log.log(Level.INFO, "Loading {0}. Mod: {1}", new Object[]{version.getDisplay(), mod.getName()});
+                log.log(Level.INFO, "Game path: {0}", gameDirField.getText());
+                log.log(Level.INFO, "Mod path: {0}", (mod.getName().equals("None") ? "(none)" : mod.getModPath()));
 
                 FilenameResolver resolver = new FilenameResolver(gameDirField.getText());
                 resolver.setClausewitz2Mod(version.isNewStyleMod());
@@ -246,7 +268,7 @@ public class Main {
                     resolver.setModName(mod.getName().equals("None") ? "" : mod.getModPath());
                 }
 
-                startEditor(saveFile, version, resolver);
+                startEditor(saveFile, version, resolver, config.getBoolean("check_for_updates"));
             }
         });
         buttonPanel.add(okButton);
@@ -280,13 +302,13 @@ public class Main {
         dialog.setVisible(true);
     }
 
-    private void startEditor(String saveFile, GameVersion version, FilenameResolver resolver) {
+    private void startEditor(String saveFile, GameVersion version, FilenameResolver resolver, boolean checkUpdates) {
         try {
             Text.initText(resolver, version);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Failed to read localization", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Failed to read localization", ex);
         } catch (OutOfMemoryError er) {
             javax.swing.JOptionPane.showMessageDialog(null,
                     "Out of memory. Please see readme.txt for information on solving this.",
@@ -298,7 +320,7 @@ public class Main {
         editor.mapmode.Utilities.init(resolver);
 
         try {
-            EditorUI ui = new EditorUI(saveFile, version, resolver);
+            EditorUI ui = new EditorUI(saveFile, version, resolver, checkUpdates);
             ui.setVisible(true);
         } catch (OutOfMemoryError er) {
             javax.swing.JOptionPane.showMessageDialog(null,
@@ -310,22 +332,21 @@ public class Main {
     }
     
     // returns a Vector to use in a combo box
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     private static Vector<Mod> listMods(File moddir, boolean includeNone) {
-        System.out.println("Checking for mods in " + moddir.getAbsolutePath());
-        File[] mods = moddir.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                if (pathname.isDirectory())
-                    return false;
-                String name = pathname.getName();
-                return name.endsWith(".mod");
-                        //&& new File(pathname.getParentFile().getPath() + File.separator + name.substring(0, name.length()-4)).exists();
-            }
+        log.log(Level.INFO, "Checking for mods in {0}", moddir.getAbsolutePath());
+        File[] mods = moddir.listFiles((File pathname) -> {
+            if (pathname.isDirectory())
+                return false;
+            String name = pathname.getName();
+            return name.endsWith(".mod");
+            //&& new File(pathname.getParentFile().getPath() + File.separator + name.substring(0, name.length()-4)).exists();
         });
 
         if (mods == null)
             mods = new File[] {};
         
-        Vector<Mod> ret = new Vector<Mod>(mods.length + 1);
+        Vector<Mod> ret = new Vector<>(mods.length + 1);
 
         if (includeNone) {
             ret.add(new Mod("None", moddir.getParent(), moddir.getParent()));
@@ -345,9 +366,9 @@ public class Main {
 
 
     private static class Mod {
-        private String name;
-        private String modFilePath;
-        private String modPath;
+        private final String name;
+        private final String modFilePath;
+        private final String modPath;
         public Mod(String name, String modFilePath, String modPath) {
             this.name = name;
             this.modFilePath = modFilePath;

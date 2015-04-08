@@ -5,8 +5,11 @@ import eug.parser.ParserSettings;
 import eug.shared.GenericObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class GameVersion {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(GameVersion.class.getName());
 
     private static List<GameVersion> gameVersions;
     
@@ -59,7 +62,7 @@ public class GameVersion {
                     newVersion.newStyleMod = old.newStyleMod;
                     newVersion.modPath = old.modPath;
                 } else {
-                    System.err.println("Invalid 'inherit' directive: '" + version.getString("inherit") + "'");
+                    log.log(Level.WARNING, "Invalid ''inherit'' directive: ''{0}''", version.getString("inherit"));
                 }
             }
 

@@ -218,7 +218,7 @@ public class ProvinceEditorPanel extends javax.swing.JPanel {
                 if (box != null) {
                     box.setSelected(true);
                 } else {
-                    System.out.println("Can't find checkbox for group " + groupOrTag);
+                    //log.log(Level.FINE, "Can't find checkbox for group {0}", groupOrTag);
                 }
             } else {
                 String text = countryDiscoveriesTextField.getText();

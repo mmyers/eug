@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
 //import java.util.regex.Pattern;
 
 /**
@@ -20,6 +21,8 @@ import java.util.HashMap;
  * @since 0.4pre1
  */
 public final class Text {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Text.class.getName());
     
     // All keys are converted to lower case before putting or getting text, to
     // standardize.
@@ -36,6 +39,11 @@ public final class Text {
      */
     public static void initText(FilenameResolver resolver, GameVersion version) throws FileNotFoundException, IOException {
         File[] files = resolver.listFiles("localisation");
+        if (files == null) {
+            log.log(Level.WARNING, "Could not find localization files");
+            return;
+        }
+        
         Arrays.sort(files);
 
         if (version.getTextFormat().equals("yaml"))
@@ -63,8 +71,8 @@ public final class Text {
 
                     int firstSemi = line.indexOf(';');
                     if (firstSemi < 0) {
-                        System.err.println("Malformed line in file " + f.getPath() + ":");
-                        System.err.println(line);
+                        log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
+                        log.log(Level.WARNING, line);
                         continue;
                     }
 
@@ -106,7 +114,7 @@ public final class Text {
                     line = line.substring(1);
 
                 if (line.startsWith("l_english")) {
-                    System.out.println("Reading " + f.getName());
+                    log.log(Level.INFO, "Reading {0}", f.getName());
                     while ((line = reader.readLine()) != null) {
                         line = line.trim();
                         if (line.length() == 0 || line.charAt(0) == '#')
@@ -123,8 +131,8 @@ public final class Text {
 
                         int firstColon = line.indexOf(':');
                         if (firstColon < 0) {
-                            System.err.println("Malformed line in file " + f.getPath() + ":");
-                            System.err.println(line);
+                            log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
+                            log.log(Level.WARNING, line);
                             continue;
                         }
 

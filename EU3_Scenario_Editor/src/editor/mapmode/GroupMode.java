@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
@@ -19,14 +20,13 @@ import java.util.List;
  */
 public class GroupMode extends ProvincePaintingMode {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(GroupMode.class.getName());
+    
     protected List<Integer> provIds;
     
     protected Color foundColor = Color.GREEN;
     protected Color notFoundColor = new Color(100, 100, 100); // darker than GRAY, lighter than DARK_GRAY
     
-    /**
-     * Creates a new instance of GroupMode
-     */
     public GroupMode(List<String> provIds) {
         this.provIds = makeIntList(provIds);
     }
@@ -43,6 +43,7 @@ public class GroupMode extends ProvincePaintingMode {
         super(panel);
     }
     
+    @Override
     protected void paintProvince(final Graphics2D g, int provId) {
         if (provIds.contains(provId)) {
             mapPanel.paintProvince(g, provId, foundColor);
@@ -51,19 +52,20 @@ public class GroupMode extends ProvincePaintingMode {
         }
     }
     
+    @Override
     protected void paintSeaZone(final Graphics2D g, int id) {
         if (provIds.contains(id)) {
             mapPanel.paintProvince(g, id, foundColor);
         }
     }
     
-    protected List<Integer> makeIntList(List<String> provIds) {
-        final List<Integer> ret = new ArrayList<Integer>(provIds.size());
+    protected final List<Integer> makeIntList(List<String> provIds) {
+        final List<Integer> ret = new ArrayList<>(provIds.size());
         for (String id : provIds) {
             try {
                 ret.add(Integer.parseInt(id));
             } catch (NumberFormatException ex) {
-                System.err.println("Expected province ID but found " + id + "; list was " + provIds);
+                log.log(Level.WARNING, "Expected province ID but found {0}; list was {1}", new Object[]{id, provIds});
             }
         }
         return ret;

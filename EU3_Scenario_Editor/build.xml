@@ -92,6 +92,8 @@
             <fileset dir="">
                 <include name="**/*.txt"/>
                 <include name="**/*.bat"/>
+                <exclude name="config.txt" />
+                <exclude name="*.log" />
             </fileset>
         </copy>
 
@@ -109,6 +111,8 @@
                 <exclude name="/build/" />
                 <exclude name="/dist/" />
                 <exclude name="**/*.zip" />
+                <exclude name="config.txt" />
+                <exclude name="*.log" />
             </zipfileset>
         </zip>
     </target>

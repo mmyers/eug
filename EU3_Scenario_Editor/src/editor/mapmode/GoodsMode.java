@@ -17,12 +17,15 @@ import eug.shared.GenericObject;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  *
  * @author Michael Myers
  */
 public class GoodsMode extends ProvincePaintingMode {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(GoodsMode.class.getName());
 
     private boolean isVictoriaStyle;
     private FilenameResolver resolver;
@@ -37,6 +40,7 @@ public class GoodsMode extends ProvincePaintingMode {
         this.resolver = resolver;
     }
     
+    @Override
     protected void paintProvince(Graphics2D g, int provId) {
         final String goods = mapPanel.getModel().getHistString(provId, "trade_goods");
         if (goods == null) {
@@ -48,9 +52,9 @@ public class GoodsMode extends ProvincePaintingMode {
         }
     }
     
+    @Override
     protected void paintSeaZone(Graphics2D g, int id) {
         // Do nothing
-        return;
     }
     
     
@@ -69,8 +73,7 @@ public class GoodsMode extends ProvincePaintingMode {
 
     private GenericObject allGoods;
 
-    private final java.util.Map<String, Color> goodsColorCache =
-            new HashMap<String, Color>();
+    private final java.util.Map<String, Color> goodsColorCache = new HashMap<>();
 
     Color getGoodsColor(String good) {
         good = good.toLowerCase();
@@ -92,7 +95,7 @@ public class GoodsMode extends ProvincePaintingMode {
                             // found it
                             GenericList color = def.getList("color");
                             if (color == null) {
-                                System.err.println("color for " + good + " is null");
+                                log.log(Level.WARNING, "color for {0} is null", good);
                                 return Utilities.COLOR_NO_GOOD_DEF;
                             }
                             ret = new Color(
@@ -121,7 +124,7 @@ public class GoodsMode extends ProvincePaintingMode {
                         // found it
                         GenericList color = def.getList("color");
                         if (color == null) {
-                            System.err.println("color for " + good + " is null");
+                            log.log(Level.WARNING, "color for {0} is null", good);
                             return Utilities.COLOR_NO_GOOD_DEF;
                         }
                         ret = new Color(
