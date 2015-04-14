@@ -2,6 +2,12 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.8 ===
+
+- Fixed crash on startup when config.txt is missing.
+- Added logging if an unexpected error happens.
+
+
 === 0.8.7 ===
 
 - Zipped saves can now be loaded. Making any changes will result in a non-zipped

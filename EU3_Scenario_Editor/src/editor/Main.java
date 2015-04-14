@@ -64,9 +64,15 @@ public class Main {
         
         log.log(Level.INFO, "Java version: {0}", System.getProperty("java.version"));
         
+        Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
+            log.log(Level.SEVERE, "Uncaught exception", e);
+        });
+        
         File configFile = new File("config.txt");
         GenericObject config =
                 EUGFileIO.load(configFile, ParserSettings.getDefaults().setPrintTimingInfo(false));
+        if (config == null)
+            config = new GenericObject(); // don't crash if no config.txt present
 
         Main main = new Main(config);
         main.showDialog();
