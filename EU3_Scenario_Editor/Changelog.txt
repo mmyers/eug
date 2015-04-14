@@ -5,6 +5,7 @@
 === 0.8.8 ===
 
 - Fixed crash on startup when config.txt is missing.
+- Auto-update checks are now turned on by default.
 - Added logging if an unexpected error happens.
 
 

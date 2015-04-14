@@ -73,7 +73,7 @@ public class Main {
                 EUGFileIO.load(configFile, ParserSettings.getDefaults().setPrintTimingInfo(false));
         if (config == null)
             config = new GenericObject(); // don't crash if no config.txt present
-
+        
         Main main = new Main(config);
         main.showDialog();
     }
@@ -274,7 +274,10 @@ public class Main {
                     resolver.setModName(mod.getName().equals("None") ? "" : mod.getModPath());
                 }
 
-                startEditor(saveFile, version, resolver, config.getBoolean("check_for_updates"));
+                boolean checkForUpdates = true;
+                if (config.hasString("check_for_updates"))
+                    checkForUpdates = config.getBoolean("check_for_updates");
+                startEditor(saveFile, version, resolver, checkForUpdates);
             }
         });
         buttonPanel.add(okButton);
