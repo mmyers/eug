@@ -124,7 +124,7 @@ public final class FilenameResolver {
         
         if (modName.length() != 0) {
             usingMod = true;
-            setModDirectory(mainDirName + modPrefix + modName);
+            setModDirectory(modName);
         } else {
             usingMod = false;
             modDirName = mainDirName;
