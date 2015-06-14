@@ -69,7 +69,7 @@ public class FileEditorDialog extends EditorDialog {
         this.tag = countryTag;
         this.name = countryName;
         readFile(countryTag, countryName);
-        String[] files = resolver.getCountryHistoryFiles(countryTag);
+        String[] files = resolver.getCountryHistoryFiles(countryTag); // TODO: Doesn't work with Vic 2
         if (files.length > 0 && files[0] != null)
             setTitle(getTitle() + " (" + files[0] + ")");
         register(this); // Register last in case exceptions occur

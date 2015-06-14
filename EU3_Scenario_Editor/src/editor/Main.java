@@ -165,6 +165,9 @@ public class Main {
         final JComboBox<GameVersion> gameBox = new JComboBox<>(new Vector<>(GameVersion.getGameVersions()));
         
         gameBox.addItemListener((ItemEvent e) -> {
+            if (e.getStateChange() == ItemEvent.DESELECTED)
+                return;
+            
             modBox.setModel(new DefaultComboBoxModel<>());
             gameDirField.setText("");
             saveGameField.setText("");
