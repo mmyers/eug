@@ -163,7 +163,10 @@ public final class EditorUI extends javax.swing.JFrame {
                         EUGFileIO.load(resolver.resolveFilename("common/defines.txt"), defaultSettings);
                 if (defines == null) {
                     defines = loadLuaFile(resolver.resolveFilename("common/defines.lua"));
-                    setStartDateLua(defines);
+                    java.io.File[] defFiles = resolver.listFiles("common/defines");
+                    GenericObject modDefines = loadAllLuaFiles(defFiles);
+                    if (!setStartDateLua(modDefines))
+                        setStartDateLua(defines);
                 } else {
                     if (!setStartDateOld(defines))
                         setStartDateNew(defines.getString("start_date"));
@@ -238,6 +241,21 @@ public final class EditorUI extends javax.swing.JFrame {
         } catch (IOException ex) {
             return null;
         }
+    }
+    
+    private GenericObject loadAllLuaFiles(java.io.File[] files) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return loadLuaFile(files[0].getAbsolutePath());
+        
+        GenericObject root = new GenericObject();
+        for (java.io.File file : files) {
+            GenericObject obj = loadLuaFile(file.getAbsolutePath());
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
     }
     
     private void readBookmarks() {
@@ -1058,6 +1076,14 @@ public final class EditorUI extends javax.swing.JFrame {
                 viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
             } else if (view.equals("base-tax")) {
                 DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1);
+                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                viewMenu.add(actn);
+            } else if (view.equals("base-production")) {
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base production", "base_production", 0, 18, 1);
+                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                viewMenu.add(actn);
+            } else if (view.equals("base-manpower")) {
+                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base manpower", "base_manpower", 0, 18, 1);
                 actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
                 viewMenu.add(actn);
             } else if (view.equals("population")) {

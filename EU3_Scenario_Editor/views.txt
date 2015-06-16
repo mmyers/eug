@@ -51,7 +51,7 @@ in_nomine = {
 	wars
 }
 
-eu4 = { # In Nomine with trade nodes swapped for COTs
+eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	provinces
 	countries
 	country-menu
@@ -72,8 +72,8 @@ eu4 = { # In Nomine with trade nodes swapped for COTs
         capitals
 	hre
 	base-tax
-	#population
-	manpower
+	base-production
+	base-manpower
 	revolt-risk
 	natives-menu
 	wars

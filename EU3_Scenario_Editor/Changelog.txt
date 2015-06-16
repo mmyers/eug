@@ -2,9 +2,15 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.8.10 ===
+
+- Added base production and base manpower views for EU4 1.12.
+- Start dates in defines.lua can now be overridden by files in common\defines.
+
+
 === 0.8.9 ===
 
-- Fixed crash when loading Clauswitz 1 (HOI3, Victoria non-AHD) mods.
+- Fixed crash when loading Clausewitz 1 (HOI3, Victoria non-AHD) mods.
 
 
 === 0.8.8 ===

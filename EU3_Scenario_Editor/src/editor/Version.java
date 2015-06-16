@@ -39,7 +39,7 @@ public class Version {
     
     private static final int MAJOR = 0;
     private static final int MINOR = 8;
-    private static final int REV = 9;
+    private static final int REV = 10;
     
     private static final String PROJECT_URL = "http://sourceforge.net/projects/eug";
     private static final String RSS_URL = "http://sourceforge.net/projects/eug/rss?path=/Clausewitz%20Scenario%20Editor";
