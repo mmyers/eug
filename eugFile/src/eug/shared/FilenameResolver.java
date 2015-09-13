@@ -37,8 +37,8 @@ public final class FilenameResolver {
     
     private String modDirName; // in the game directory
     
-    private Set<String> extended;
-    private Set<String> replaced;
+    private Set<String> extended = new HashSet<>();
+    private Set<String> replaced= new HashSet<>();
     
     private boolean usingMod;
     
@@ -166,8 +166,6 @@ public final class FilenameResolver {
     public void setModFileName(String filename) {
         final GenericObject mod = EUGFileIO.load(filename);
 
-        extended = new HashSet<>();
-        replaced = new HashSet<>();
         if (mod == null) {
             modFile = false;
         } else if (clausewitz2Mod) {
