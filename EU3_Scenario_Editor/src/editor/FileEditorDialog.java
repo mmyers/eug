@@ -42,6 +42,11 @@ public class FileEditorDialog extends EditorDialog {
      */
     private String name;
     
+    /**
+     * True if editing a province; false if editing a country.
+     */
+    private boolean isProvince;
+    
     
     /**
      * Creates new form FileEditorDialog.
@@ -53,6 +58,7 @@ public class FileEditorDialog extends EditorDialog {
     private FileEditorDialog(java.awt.Frame parent, ProvinceData.Province p, FilenameResolver resolver, ProvinceData data) {
         super(parent, p.getName(), resolver, data);
         
+        this.isProvince = true;
         this.id = p.getId();
         this.name = p.getName();
         readFile(p.getId(), p.getName());
@@ -65,6 +71,7 @@ public class FileEditorDialog extends EditorDialog {
     private FileEditorDialog(java.awt.Frame parent, String countryTag, String countryName, FilenameResolver resolver, ProvinceData data) {
         super(parent, countryName, resolver, data);
         
+        this.isProvince = false;
         this.id = countryTag.hashCode();
         this.tag = countryTag;
         this.name = countryName;
@@ -127,11 +134,8 @@ public class FileEditorDialog extends EditorDialog {
         getParent().repaint();
     }
     
-    private static final int MIN_TAG_HASH = "AAA".hashCode();
-    
     private void save() {
-        if (id < MIN_TAG_HASH) {
-            // Province
+        if (isProvince) {
             dataSource.saveProvince(id, name, getText());
             dataSource.reloadProvince(id);
         } else {
