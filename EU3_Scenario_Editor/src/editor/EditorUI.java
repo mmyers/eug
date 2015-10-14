@@ -1633,28 +1633,28 @@ public final class EditorUI extends javax.swing.JFrame {
     private static class ObjectComparator implements Comparator<GenericObject>, Serializable {
         private static final long serialVersionUID = 1L;
         public int compare(final GenericObject o1, final GenericObject o2) {
-            return Text.getText(o1.name).compareTo(Text.getText(o2.name));
+            return Text.getText(o1.name).compareToIgnoreCase(Text.getText(o2.name));
         }
     }
     
     private static class ListComparator implements Comparator<GenericList>, Serializable {
         private static final long serialVersionUID = 1L;
         public int compare(final GenericList o1, final GenericList o2) {
-            return Text.getText(o1.getName()).compareTo(Text.getText(o2.getName()));
+            return Text.getText(o1.getName()).compareToIgnoreCase(Text.getText(o2.getName()));
         }
     }
     
     private static class VariableComparator implements Comparator<ObjectVariable>, Serializable {
         private static final long serialVersionUID = 1L;
         public int compare(final ObjectVariable o1, final ObjectVariable o2) {
-            return Text.getText(o1.varname).compareTo(Text.getText(o2.varname));
+            return Text.getText(o1.varname).compareToIgnoreCase(Text.getText(o2.varname));
         }
     }
     
     private static class StringComparator implements Comparator<String>, Serializable {
         private static final long serialVersionUID = 1L;
         public int compare(final String o1, final String o2) {
-            return Text.getText(o1).compareTo(Text.getText(o2));
+            return Text.getText(o1).compareToIgnoreCase(Text.getText(o2));
         }
     }
     
