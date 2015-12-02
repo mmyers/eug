@@ -69,6 +69,10 @@ public final class Utilities {
     static final Color COLOR_NO_GOOD_DEF = Color.BLACK;
     /** Color used if a land province does not have a defined trade good. */
     static final Color COLOR_NO_GOODS = Color.RED;
+    /** Color used if the culture definition cannot be found. */
+    static final Color COLOR_NO_CULTURE_DEF = Color.BLACK;
+    /** Color used if a land province does not have a defined culture. */
+    static final Color COLOR_NO_CULTURE = Color.BLACK;
     
     /** Settings used when loading all data files in this class. */
     private static final ParserSettings settings =
@@ -86,6 +90,13 @@ public final class Utilities {
     private static GenericObject titles;
 
     private static final java.util.Map<String, Color> titleColorCache = new HashMap<>();
+    
+    private static GenericObject cultures;
+    
+    private static final java.util.Map<String, Color> cultureColorCache = new HashMap<>();
+    
+    /** Mapping of culture to its culture group */
+    private static final java.util.Map<String, String> cultureGroups = new HashMap<>();
 
     private static FilenameResolver resolver;
 
@@ -110,6 +121,51 @@ public final class Utilities {
         titles = EUGFileIO.load(resolver.resolveFilename("common/landed_titles.txt"), settings);
 
         readTitleColors(titles);
+    }
+    
+    private static void initCultures() { 
+        cultures = EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"), settings);
+        if (cultures == null)
+            cultures = EUGFileIO.loadAll(resolver.listFiles("common/cultures"), settings);
+        
+        // go ahead and set up the colors here since we need to keep track of
+        // which color each culture group is
+        
+        Color[] groupColors = {
+            Color.BLUE.darker().darker(),
+            Color.GRAY,
+            Color.RED.darker().darker(),
+            Color.CYAN.darker().darker(),
+            Color.PINK.darker(),
+            Color.GREEN.darker().darker(),
+            Color.YELLOW.darker().darker(),
+            Color.MAGENTA.darker().darker()
+        };
+        int colorIdx = 0;
+        
+        for (GenericObject group : cultures.children) {
+            Color baseColor = groupColors[colorIdx++];
+            colorIdx = colorIdx % groupColors.length;
+            
+            int colorModIdx = 0;
+            
+            for (GenericObject cul : group.children) {
+                Color modColor = baseColor;
+                if (colorModIdx % 2 == 0) {
+                    for (int i = 0; i < colorModIdx / 2; i++) {
+                        modColor = modColor.darker();
+                    }
+                } else {
+                    for (int i = 0; i < colorModIdx / 2 + 1; i++) {
+                        modColor = modColor.brighter();
+                    }
+                }
+                colorModIdx++;
+                cultureColorCache.put(cul.name, modColor);
+                
+                cultureGroups.put(cul.name, group.name);
+            }
+        }
     }
     
     private static Color parseFloatColor(GenericList color) {
@@ -232,6 +288,24 @@ public final class Utilities {
         return titleColorCache.get(title);
     }
     
+    static Color getCultureColor(String culture) {
+        if (cultures == null)
+            initCultures();
+        
+        culture = culture.toLowerCase();
+        
+        Color ret = cultureColorCache.get(culture);
+        
+        if (ret == null) {
+            return COLOR_NO_CULTURE_DEF;
+        }
+        
+        return ret;
+    }
+    
+    static String getCultureGroup(String culture) {
+        return cultureGroups.get(culture);
+    }
     
     // Our own little toUpperCase method, because every tag is converted to
     // upper case before processing. This method, unlike String.toUpperCase(),

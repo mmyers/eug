@@ -36,6 +36,7 @@ in_nomine = {
 	religions-menu
 	buildings-menu
 	new-cultures-menu  # The format of cultures.txt changed in In Nomine and was carried over to Victoria 2
+	province-cultures
 	trade-goods
 	trade-goods-menu
 	governments-menu
@@ -64,6 +65,7 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	religions-menu
 	buildings-menu
 	new-cultures-menu
+	province-cultures
 	trade-goods
 	trade-goods-menu
 	governments-menu

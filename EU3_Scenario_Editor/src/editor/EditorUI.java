@@ -1042,6 +1042,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 JMenu menu = new JMenu("Cultures");
                 addRomeCultureFilters(menu);
                 viewMenu.add(menu);
+            } else if (view.equals("province-cultures")) {
+                viewMenu.add(new ProvinceCultureFilterAction());
             } else if (view.equals("trade-goods")) {
                 viewMenu.add(new GoodsFilterAction());
             } else if (view.equals("victoria-trade-goods")) {
@@ -1867,6 +1869,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public ReligionFilterAction() {
             super("Religions", new ReligionMode(mapPanel));
             putValue(SHORT_DESCRIPTION, "Religions");
+        }
+    }
+    
+    private class ProvinceCultureFilterAction extends FilterAction {
+        public ProvinceCultureFilterAction() {
+            super("Province cultures", new ProvCultureMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Province cultures");
         }
     }
     
