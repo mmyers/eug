@@ -70,9 +70,6 @@ package eug.parser;
         return yytext().substring(lastIdxOfHash+1).trim();
     }
 
-    //private static final java.util.regex.Pattern commentPattern =
-    //        java.util.regex.Pattern.compile("#[^\r\n]*(\r|\n|\r\n)");
-
     /** Convenience method for getting an identifier from a string such as "tag =". */
     private final String getIdent() {
         // Remove comments, remove the "=", then trim whitespace.
@@ -107,7 +104,6 @@ package eug.parser;
             }
         }
         return ident.toString(); // shouldn't reach here, but if so, just dump what we've got
-        //return commentPattern.matcher(yytext()).replaceAll("").replace('=', ' ').replace('"', ' ').trim();
     }
 
     private void badChar(char c) {
@@ -343,7 +339,7 @@ package eug.parser;
 
 %standalone
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨,]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
+ALPHA                       = [[:letter:]_\[\]\-'´¨,’–]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
 DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
 
@@ -352,7 +348,6 @@ NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012\u00A0]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
 WHITE_SPACE_CHAR            = [\n\r\ \t\b\012\u00A0]
-/* NON_OPERATOR                = [^(=|{|}|#)] */
 COMMENT_CHAR                = [#;!] /* yes, really! */
 
 COMMENT                     = {COMMENT_CHAR} {NONNEWLINE}*
@@ -403,23 +398,6 @@ Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR
 
 {COMMENT}                 { if (commentsIgnored) return next(); else return TokenType.COMMENT; }
 
-//{QUOTED_STR}            { return TokenType.DLSTRING; }
-
-//{UNQUOTED_STR}          { return TokenType.ULSTRING; }
-
-//{Ident}                 { return TokenType.IDENT; }
-
-//{LIST}                  { return TokenType.LIST; }
-
-
-//"="                     { return TokenType.EQUALS; }
-//"{"                     { return TokenType.LBRACE; }
-//"}"                     { return TokenType.RBRACE; }
-
-
-///* Catch-all: Print error message and try again. */
-//.                       { badChar(yycharat(0)); return next(); }
-
 /***** End Globals *****/
 
 <YYINITIAL> {
@@ -436,7 +414,7 @@ Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR
      */
     "{" {NONNEWLINE_WHITE_SPACE_CHAR}* { return TokenType.LBRACE; }
     "}" {NONNEWLINE_WHITE_SPACE_CHAR}* { return TokenType.RBRACE; }
-    .                       { System.err.print("YYINITIAL: "); badChar(yycharat(0)); return next(); }
+    .   { System.err.print("YYINITIAL: "); badChar(yycharat(0)); return next(); }
 }
 
 
@@ -444,7 +422,6 @@ Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR
     "{" {NONNEWLINE_WHITE_SPACE_CHAR}* { yybegin(YYINITIAL); return TokenType.LBRACE; }
     {QUOTED_STR}            { yybegin(YYINITIAL); return TokenType.DLSTRING; }
     {UNQUOTED_STR}          { yybegin(YYINITIAL); return TokenType.ULSTRING; }
-    //{LIST}                  { yybegin(YYINITIAL); return TokenType.LIST; }
     .                       { System.err.print("HAS_IDENT: "); badChar(yycharat(0)); return next(); }
 }
 

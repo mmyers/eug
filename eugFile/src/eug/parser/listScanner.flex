@@ -123,11 +123,10 @@ import java.util.ArrayList;
 /* %switch */
 %table
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨,]
+ALPHA                       = [[:letter:]_\[\]\-'´¨,’–]
 DIGIT                       = [0-9\.\-/]
 
 WHITE_SPACE_CHAR            = [\r\n\ \t\b\012\u00A0]
-//NEWLINE                     = [\r\n]
 NONNEWLINE                  = [^\r\n]
 COMMENT_CHAR                = [#;!]
 
