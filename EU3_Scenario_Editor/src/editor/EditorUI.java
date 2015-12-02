@@ -805,7 +805,7 @@ public final class EditorUI extends javax.swing.JFrame {
             return;
         }
         
-        provNameLabel.setText(p.getName());
+        provNameLabel.setText(p.getName() + " #" + p.getId());
         
         if (p.getId() != 0) {
             showProvHistButton.setEnabled(true);
