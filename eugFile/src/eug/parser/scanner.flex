@@ -335,7 +335,7 @@ package eug.parser;
 
 
 /* %switch */
-%table
+/* %table */ /* option removed in JFlex 1.6 */
 
 %standalone
 

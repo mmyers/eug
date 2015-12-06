@@ -121,7 +121,7 @@ import java.util.ArrayList;
 %unicode
 
 /* %switch */
-%table
+/* %table */ /* option removed in JFlex 1.6 */
 
 ALPHA                       = [[:letter:]_\[\]\-'´¨,’–]
 DIGIT                       = [0-9\.\-/]

@@ -201,7 +201,7 @@ package eug.parser;
 /* This scanner simply breaks the input into tokens. No extra states are needed. */
 
 /* %switch */
-%table
+/* %table */ /* option removed in JFlex 1.6 */
 
 %standalone
 

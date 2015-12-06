@@ -10,6 +10,7 @@ import eug.parser.TokenScanner;
 import eug.parser.TokenType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -103,7 +104,7 @@ public class EUGDocument extends PlainDocument {
         private int p0;
         
         Scanner() {
-            scanner = new TokenScanner(new DocumentInputStream(0, getLength()));
+            scanner = new TokenScanner(new InputStreamReader(new DocumentInputStream(0, getLength())));
         }
         
         public void setRange(int start, int end) {
@@ -149,6 +150,7 @@ public class EUGDocument extends PlainDocument {
             loadSegment();
         }
         
+        @Override
         public int read() throws IOException {
             if (index >= text.offset + text.count) {
                 // finished this segment

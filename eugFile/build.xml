@@ -66,7 +66,7 @@
     nbproject/build-impl.xml file. 
 
     -->
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" />
+    <taskdef classname="jflex.anttask.JFlexTask" name="jflex" />
     
     <target name="-pre-compile">
         <jflex file="src/eug/parser/scanner.flex" verbose="on" />
