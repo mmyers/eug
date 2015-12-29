@@ -52,7 +52,7 @@ public class AdvancedCustomCountryMode extends CustomCountryMode {
             return "";
         
         final String tag = mapPanel.getModel().getHistString(id, "owner");
-        if (tag.length() == 0)
+        if (tag == null || tag.length() == 0)
             return "";
         final String owner = Text.getText(tag);
         final StringBuilder ret = new StringBuilder("Owned by: ").append(owner).append("<br />");

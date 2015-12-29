@@ -55,7 +55,9 @@ public final class ReligionMode extends ProvincePaintingMode {
     protected void paintProvince(final Graphics2D g, int provId) {
         final String religion = mapPanel.getModel().getHistString(provId, "religion");
         
-        if (religion == null) {
+        if (getMap().isWasteland(provId))
+            mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
+        else if (religion == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
         } else if (religion.length() == 0 || religion.equalsIgnoreCase("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_RELIGION);

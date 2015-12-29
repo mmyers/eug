@@ -23,7 +23,10 @@ public class CountryMode extends ProvincePaintingMode {
     
     protected void paintProvince(final Graphics2D g, int provId) {
         final String owner = mapPanel.getModel().getHistString(provId, "owner");
-        mapPanel.paintProvince(g, provId, (owner == null ? Utilities.COLOR_NO_HIST : getCtryColor(owner)));
+        if (getMap().isWasteland(provId))
+            mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
+        else 
+            mapPanel.paintProvince(g, provId, (owner == null ? Utilities.COLOR_NO_HIST : getCtryColor(owner)));
     }
     
     protected void paintSeaZone(final Graphics2D g, int id) {

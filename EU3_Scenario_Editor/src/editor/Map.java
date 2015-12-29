@@ -231,6 +231,11 @@ public final class Map {
         return getClimateOfProv(Integer.toString(provId));
     }
     
+    public boolean isWasteland(int provId) {
+        List<String> wasteland = getClimates().get("impassable");
+        return wasteland != null && wasteland.contains(Integer.toString(provId));
+    }
+    
     public java.util.Map<String, List<String>> getAreas() {
         if (areaList == null) {
             areaList = new HashMap<>(areas.size());

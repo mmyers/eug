@@ -40,7 +40,9 @@ public class CustomMode extends ProvincePaintingMode {
     protected void paintProvince(final Graphics2D g, int provId) {
         final String prop = mapPanel.getModel().getHistString(provId, name);
         
-        if (prop == null || !value.equals(prop.toLowerCase())) {
+        if (getMap().isWasteland(provId))
+            mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
+        else if (prop == null || !value.equals(prop.toLowerCase())) {
             mapPanel.paintProvince(g, provId, notFoundColor);
         } else {
             mapPanel.paintProvince(g, provId, foundColor);

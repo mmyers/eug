@@ -43,7 +43,9 @@ public class GoodsMode extends ProvincePaintingMode {
     @Override
     protected void paintProvince(Graphics2D g, int provId) {
         final String goods = mapPanel.getModel().getHistString(provId, "trade_goods");
-        if (goods == null) {
+        if (getMap().isWasteland(provId))
+            mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
+        else if (goods == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
         } else if (goods.length() == 0 || goods.equalsIgnoreCase("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_GOODS);
