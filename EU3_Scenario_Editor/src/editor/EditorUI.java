@@ -122,6 +122,9 @@ public final class EditorUI extends javax.swing.JFrame {
     }
 
     private boolean setStartDateLua(GenericObject definesLua) {
+        if (definesLua == null)
+            return false;
+        
         if (definesLua.containsChild("NDefines"))
             definesLua = definesLua.getChild("NDefines");
 
@@ -654,7 +657,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int ret = JOptionPane.showOptionDialog(this, "Clausewitz Scenario Editor\nVersion " + Version.getCurrentVersion() + "\nBy MichaelM",
                 "About", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[options.length-1]);
         
-        if (ret == 2)
+        if (ret == 2 || ret < 0)
             return;
         
         String eu3Thread = "https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-save-game-and-scenario-editor-viewer.527308/";
@@ -875,11 +878,32 @@ public final class EditorUI extends javax.swing.JFrame {
                         viewModeLabel.setText("Provinces in " + cont);
                         mapPanel.repaint();
                     }
+                } else if (mode instanceof AreaMode) {
+                    String area = map.getAreasOfProv(lastProv.getId()).get(0);
+                    if (!area.equals("(none)")) {
+                        mapPanel.setMode(new AreaMode(mapPanel, area));
+                        viewModeLabel.setText("Provinces in " + area);
+                        mapPanel.repaint();
+                    }
                 } else if (mode instanceof RegionsMode) {
                     String reg = map.getRegionsOfProv(lastProv.getId()).get(0);
                     if (!reg.equals("(none)")) {
                         mapPanel.setMode(new RegionsMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
+                        mapPanel.repaint();
+                    }
+                } else if (mode instanceof SuperRegionMode) {
+                    String reg = map.getSuperRegionsOfProv(lastProv.getId()).get(0);
+                    if (!reg.equals("(none)")) {
+                        mapPanel.setMode(new SuperRegionMode(mapPanel, reg));
+                        viewModeLabel.setText("Provinces in " + reg);
+                        mapPanel.repaint();
+                    }
+                } else if (mode instanceof ProvinceGroupMode) {
+                    String group = map.getGroupsOfProv(lastProv.getId()).get(0);
+                    if (!group.equals("(none)")) {
+                        mapPanel.setMode(new ProvinceGroupMode(mapPanel, group));
+                        viewModeLabel.setText("Provinces in " + group);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof ClimateMode) {
@@ -1005,6 +1029,18 @@ public final class EditorUI extends javax.swing.JFrame {
             } else if (view.equals("regions-menu") && version.hasRegions()) {
                 JMenu menu = new JMenu("Regions");
                 addRegionFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("areas-menu") && version.hasRegions()) {
+                JMenu menu = new JMenu("Areas");
+                addAreaFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("superregions-menu") && version.hasRegions()) {
+                JMenu menu = new JMenu("Super regions");
+                addSuperRegionFilters(menu);
+                viewMenu.add(menu);
+            } else if (view.equals("provincegroups-menu") && version.hasRegions()) {
+                JMenu menu = new JMenu("Province groups");
+                addProvinceGroupFilters(menu);
                 viewMenu.add(menu);
             } else if (view.equals("colonial-regions")) {
                 viewMenu.add(new ColonialRegionFilterAction());
@@ -1557,6 +1593,21 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private void addAreaFilters(JMenu rootMenu) {
+        java.util.Map<String, List<String>> areas = map.getAreas();
+        List<String> areaNames = new ArrayList<>(areas.keySet());
+        Collections.sort(areaNames, new StringComparator());
+        
+        int counter = 0;
+        for (String area : areaNames) {
+            rootMenu.add(new AreaFilterAction(Text.getText(area), area));
+            if (counter++ > 25) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
+        }
+    }
+    
     private void addRegionFilters(JMenu rootMenu) {
         java.util.Map<String, List<String>> regions = map.getRegions();
         List<String> regionNames = new ArrayList<>(regions.keySet());
@@ -1565,6 +1616,35 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (String region : regionNames) {
             rootMenu.add(new RegionFilterAction(Text.getText(region), region));
+            if (counter++ > 25) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
+        }
+    }
+    private void addSuperRegionFilters(JMenu rootMenu) {
+        java.util.Map<String, List<String>> superRegions = map.getSuperRegions();
+        List<String> superRegionNames = new ArrayList<>(superRegions.keySet());
+        Collections.sort(superRegionNames, new StringComparator());
+        
+        int counter = 0;
+        for (String region : superRegionNames) {
+            rootMenu.add(new SuperRegionFilterAction(Text.getText(region), region));
+            if (counter++ > 25) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
+        }
+    }
+    
+    private void addProvinceGroupFilters(JMenu rootMenu) {
+        java.util.Map<String, List<String>> groups = map.getProvinceGroups();
+        List<String> groupNames = new ArrayList<>(groups.keySet());
+        Collections.sort(groupNames, new StringComparator());
+        
+        int counter = 0;
+        for (String group : groupNames) {
+            rootMenu.add(new ProvinceGroupFilterAction(Text.getText(group), group));
             if (counter++ > 25) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
@@ -2001,10 +2081,31 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private class AreaFilterAction extends FilterAction {
+        public AreaFilterAction(String name, String areaName) {
+            super(name, new AreaMode(mapPanel, areaName));
+            putValue(SHORT_DESCRIPTION, "Provinces in " + areaName);
+        }
+    }
+    
     private class RegionFilterAction extends FilterAction {
         public RegionFilterAction(String name, String regName) {
             super(name, new RegionsMode(mapPanel, regName));
             putValue(SHORT_DESCRIPTION, "Provinces in " + regName);
+        }
+    }
+    
+    private class SuperRegionFilterAction extends FilterAction {
+        public SuperRegionFilterAction(String name, String regName) {
+            super(name, new SuperRegionMode(mapPanel, regName));
+            putValue(SHORT_DESCRIPTION, "Provinces in " + regName);
+        }
+    }
+    
+    private class ProvinceGroupFilterAction extends FilterAction {
+        public ProvinceGroupFilterAction(String name, String groupName) {
+            super(name, new ProvinceGroupMode(mapPanel, groupName));
+            putValue(SHORT_DESCRIPTION, "Provinces in " + groupName);
         }
     }
     

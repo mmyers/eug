@@ -57,7 +57,10 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	countries
 	country-menu
 	continents-menu
+	superregions-menu    # EU4 1.14
 	regions-menu
+	areas-menu           # EU4 1.14
+	provincegroups-menu  # EU4 1.14
 	colonial-regions
 	climates-menu
 	province-religions

@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -40,8 +42,17 @@ public final class Map {
     private GenericObject natives;
     private java.util.Map<String, List<String>> nativeList = null;
     
+    private GenericObject areas;
+    private java.util.Map<String, List<String>> areaList = null;
+    
     private GenericObject regions;
     private java.util.Map<String, List<String>> regionList = null;
+    
+    private GenericObject superRegions;
+    private java.util.Map<String, List<String>> superRegionList = null;
+    
+    private GenericObject provinceGroups;
+    private java.util.Map<String, List<String>> provinceGroupList = null;
     
     private boolean[] isLand = null;   // for In Nomine mainly
 
@@ -71,42 +82,54 @@ public final class Map {
             throw new RuntimeException("Failed to load map file " + mapFilename);
         }
         
+        final ParserSettings fastSettings = ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
+        
         String contFilename = mapData.getString("continent").replace('\\', '/');
         if (!contFilename.contains("/"))
             contFilename = MAP_DIR_NAME + '/' + contFilename;
         
-        continents = EUGFileIO.load(
-                resolver.resolveFilename(contFilename),
-                ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                );
+        continents = EUGFileIO.load(resolver.resolveFilename(contFilename), fastSettings);
         
         if (version.hasClimateTxt()) {
             String climateFilename = mapData.getString("climate").replace('\\', '/');
             if (!climateFilename.contains("/"))
                 climateFilename = MAP_DIR_NAME + '/' + climateFilename;
 
-            climates = EUGFileIO.load(
-                    resolver.resolveFilename(climateFilename),
-                    ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                    );
+            climates = EUGFileIO.load(resolver.resolveFilename(climateFilename), fastSettings);
         }
         
         String nativesFilename = "common/natives.txt";
         
-        natives = EUGFileIO.load(
-                resolver.resolveFilename(nativesFilename),
-                ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                );
+        natives = EUGFileIO.load(resolver.resolveFilename(nativesFilename), fastSettings);
         
         if (version.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
             if (!regFilename.contains("/"))
                 regFilename = MAP_DIR_NAME + '/' + regFilename;
 
-            regions = EUGFileIO.load(
-                    resolver.resolveFilename(regFilename),
-                    ParserSettings.getNoCommentSettings().setPrintTimingInfo(false)
-                    );
+            regions = EUGFileIO.load(resolver.resolveFilename(regFilename), fastSettings);
+            
+            if (mapData.hasString("area")) {
+                String areaFilename = mapData.getString("area").replace('\\', '/');
+                if (!areaFilename.contains("/"))
+                    areaFilename = MAP_DIR_NAME + '/' + areaFilename;
+                
+                areas = EUGFileIO.load(resolver.resolveFilename(areaFilename), fastSettings);
+            }
+            if (mapData.hasString("superregion")) {
+                String srFilename = mapData.getString("superregion").replace('\\', '/');
+                if (!srFilename.contains("/"))
+                    srFilename = MAP_DIR_NAME + '/' + srFilename;
+                
+                superRegions = EUGFileIO.load(resolver.resolveFilename(srFilename), fastSettings);
+            }
+            if (mapData.hasString("provincegroup")) {
+                String pgFilename = mapData.getString("provincegroup").replace('\\', '/');
+                if (!pgFilename.contains("/"))
+                    pgFilename = MAP_DIR_NAME + '/' + pgFilename;
+                
+                provinceGroups = EUGFileIO.load(resolver.resolveFilename(pgFilename), fastSettings);
+            }
         }
         
         if (version.hasLandList()) {
@@ -208,18 +231,44 @@ public final class Map {
         return getClimateOfProv(Integer.toString(provId));
     }
     
-    public boolean hasRegions() {
-        return regions != null;
+    public java.util.Map<String, List<String>> getAreas() {
+        if (areaList == null) {
+            areaList = new HashMap<>(areas.size());
+            if (!areas.lists.isEmpty()) {
+                for (GenericList area : areas.lists) {
+                    areaList.put(area.getName(), area.getList());
+                }
+            }
+        }
+        return areaList;
     }
     
     public java.util.Map<String, List<String>> getRegions() {
         if (regionList == null) {
             regionList = new HashMap<>(regions.size());
+            
+            // regions could be:
+            // france = { 0 1 2 }
+            // or:
+            // france = { provinces = { 0 1 2 } }
+            // or:
+            // france = { brittany_area normandy_area provence_area }
+            // either way, it's easier to deal with later if we just flatten it all out now
             if (!regions.lists.isEmpty()) {
                 for (GenericList cont : regions.lists) {
-                    regionList.put(cont.getName(), cont.getList());
+                    if (areas != null) {
+                        // areas.txt exists, so assume regions are lists of areas
+                        List<String> aggregate = cont.getList().stream()
+                                .flatMap(area -> getAreas().get(area).stream()) // list all provinces in each area of the region
+                                .collect(Collectors.toList());
+                        regionList.put(cont.getName(), aggregate);
+                    } else {
+                        // france = { 0 1 2 }
+                        regionList.put(cont.getName(), cont.getList());
+                    }
                 }
             } else {
+                // france = { province = { 0 1 2 }
                 for (GenericObject reg : regions.children) {
                     if (reg.containsList("provinces"))
                         regionList.put(reg.name, reg.getList("provinces").getList());
@@ -229,17 +278,72 @@ public final class Map {
         return regionList;
     }
     
+    public java.util.Map<String, List<String>> getSuperRegions() {
+        if (superRegionList == null) {
+            superRegionList = new HashMap<>(superRegions.size());
+            if (!superRegions.lists.isEmpty()) {
+                for (GenericList sr : superRegions.lists) {
+                    // at this point, if superregions.txt exists, just assume areas.txt also exists
+                    List<String> aggregate = sr.getList().stream()
+                            .flatMap(region -> getRegions().get(region).stream()) // list all provinces in each area of each region of the superregion
+                            .collect(Collectors.toList());
+                    superRegionList.put(sr.getName(), aggregate);
+                }
+            }
+        }
+        return superRegionList;
+    }
+    
+    public java.util.Map<String, List<String>> getProvinceGroups() {
+        // exactly like areas.txt
+        if (provinceGroupList == null) {
+            provinceGroupList = new HashMap<>(provinceGroups.size());
+            if (!provinceGroups.lists.isEmpty()) {
+                for (GenericList group : provinceGroups.lists) {
+                    provinceGroupList.put(group.getName(), group.getList());
+                }
+            }
+        }
+        return provinceGroupList;
+    }
+    
+    public List<String> getArea(String name) {
+        return getAreas().get(name);
+    }
+    
     public List<String> getRegion(String name) {
         return getRegions().get(name);
     }
     
+    public List<String> getSuperRegion(String name) {
+        return getSuperRegions().get(name);
+    }
+    
+    public List<String> getProvinceGroup(String name) {
+        return getProvinceGroups().get(name);
+    }
+    
+    public List<String> getAreasOfProv(String provId) {
+        List<String> ret = getAreas().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(provId))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
+    }
+    
+    public List<String> getAreasOfProv(int provId) {
+        return getAreasOfProv(Integer.toString(provId));
+    }
+    
     public List<String> getRegionsOfProv(String provId) {
-        List<String> ret = new ArrayList<>();
-        getRegions().entrySet().stream()
+        List<String> ret = getRegions().entrySet().stream()
                 .filter((entry) -> (entry.getValue().contains(provId)))
-                .forEach((entry) -> {
-            ret.add(entry.getKey());
-        });
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
         
         if (ret.isEmpty())
             ret.add("(none)");
@@ -249,6 +353,40 @@ public final class Map {
     
     public List<String> getRegionsOfProv(int provId) {
         return getRegionsOfProv(Integer.toString(provId));
+    }
+    
+    public List<String> getSuperRegionsOfProv(String provId) {
+        List<String> ret = getSuperRegions().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(provId))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
+    }
+    
+    public List<String> getSuperRegionsOfProv(int provId) {
+        return getSuperRegionsOfProv(Integer.toString(provId));
+    }
+    
+    /** Returns all province groups (from provincegroup.txt) that this province is in. */
+    public List<String> getGroupsOfProv(String provId) {
+        List<String> ret = getProvinceGroups().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(provId))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
+    }
+    
+    /** Returns all province groups (from provincegroup.txt) that this province is in. */
+    public List<String> getGroupsOfProv(int provId) {
+        return getGroupsOfProv(Integer.toString(provId));
     }
 
     public void setNatives(GenericObject natives) {

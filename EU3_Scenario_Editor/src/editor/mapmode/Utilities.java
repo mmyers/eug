@@ -105,7 +105,7 @@ public final class Utilities {
         Utilities.resolver = resolver;
     }
     
-    public static void initCountries() {
+    private static void initCountries() {
         countries = EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
         if (countries == null)
             countries = EUGFileIO.loadAll(resolver.listFiles("common/country_tags"), settings);

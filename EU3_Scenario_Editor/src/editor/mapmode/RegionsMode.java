@@ -42,12 +42,7 @@ public class RegionsMode extends GroupMode {
         
         StringBuilder ret = new StringBuilder("Regions: ");
         List<String> regions = getMap().getRegionsOfProv(current.getId());
-        java.util.Iterator<String> itr = regions.iterator();
-        while (itr.hasNext()) {
-            ret.append(itr.next());
-            if (itr.hasNext())
-                ret.append(", ");
-        }
+        ret.append(String.join(", ", regions));
         
         return ret.toString();
     }
