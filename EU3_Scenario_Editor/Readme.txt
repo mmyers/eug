@@ -141,7 +141,6 @@ pause
 === To do ===
 
     * Add a view mode for discoveries.
-    * Add a color-coded culture map.
     * Implement an export-to-image function.
     * Improve saved game capabilites to allow viewing variables which are not
         in the history (e.g. country national ideas).

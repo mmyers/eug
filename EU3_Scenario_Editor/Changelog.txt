@@ -2,6 +2,23 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.9 ===
+
+- Added province culture mapmode for EU4 and EU3.
+- Added area, super-region, and province group mapmodes for EU4 1.14.
+- Fixed region mapmode for EU4 1.14.
+- Fixed a potential crash on startup.
+- Fixed crash when loading a game that has neither common\defines.txt nor a
+  common\defines directory.
+- Fixed a bug when editing a country with a tag that comes alphabetically
+  before "AAA" (e.g. "A00").
+- Menus which are sorted alphabetically no longer sort uncapitalized entries to
+  the end.
+- Wasteland provinces no longer appear red in many mapmodes.
+- ’ (right single quote) and – (en dash) are now parsed as valid word characters,
+  making hmong–mien a valid culture group tag.
+
+
 === 0.8.10 ===
 
 - Added base production and base manpower views for EU4 1.12.
