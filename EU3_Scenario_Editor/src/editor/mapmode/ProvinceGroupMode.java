@@ -11,9 +11,9 @@ import java.util.List;
  */
 public class ProvinceGroupMode extends GroupMode {
     
-    public ProvinceGroupMode(MapPanel panel, String area) {
+    public ProvinceGroupMode(MapPanel panel, String group) {
         super(panel);
-        provIds = makeIntList(getMap().getArea(area));
+        provIds = makeIntList(getMap().getProvinceGroup(group));
     }
     
     @Override

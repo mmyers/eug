@@ -17,6 +17,8 @@
 - Wasteland provinces no longer appear red in many mapmodes.
 - ’ (right single quote) and – (en dash) are now parsed as valid word characters,
   making hmong–mien a valid culture group tag.
+- The Single Country menu no longer runs outside the screen when too many
+  countries start with the same letter.
 
 
 === 0.8.10 ===

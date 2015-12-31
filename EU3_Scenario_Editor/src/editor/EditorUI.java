@@ -1338,24 +1338,34 @@ public final class EditorUI extends javax.swing.JFrame {
         
         for (int i = 0; i < menus.length; i++) {
             JMenu menu = new JMenu("  " + (char)('A' + i) + "  ");
+            rootMenu.add(menu);
             if (menus[i].isEmpty()) {
                 JMenuItem dummy = new JMenuItem("(none)");
                 dummy.setEnabled(false);
                 menu.add(dummy);
             } else {
+                int counter = 0;
                 for (Object m : menus[i]) {
                     menu.add((JMenu)m);
+                    if (counter++ > 23) {
+                        menu = (JMenu) menu.add(new JMenu("More..."));
+                        counter = 0;
+                    }
                 }
             }
-            rootMenu.add(menu);
         }
         
         if (!otherMenu.isEmpty()) {
             JMenu menu = new JMenu("Other");
+            rootMenu.add(menu);
+            int counter = 0;
             for (JMenu m : otherMenu) {
                 menu.add(m);
+                if (counter++ > 23) {
+                    menu = (JMenu) menu.add(new JMenu("More..."));
+                    counter = 0;
+                }
             }
-            rootMenu.add(menu);
         }
     }
     
