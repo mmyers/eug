@@ -93,8 +93,8 @@ victoria2 = {
 	country-religions
 	religions-menu
 	#victoria-buildings-menu
-	new-cultures-menu
-	#trade-goods           #
+	#new-cultures-menu     # would have to read pop history, not prov history
+	victoria-trade-goods
 	#victoria-goods-menu   # Not for saves, only scenarios (both disabled for now)
 	governments-menu
         capitals
@@ -144,6 +144,7 @@ ck2 = {
 	titles
 	regions-menu
 	new-cultures-menu
+	province-cultures
 	province-religions
 	#religions
 	religions-menu

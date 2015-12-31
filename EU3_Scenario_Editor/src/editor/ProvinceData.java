@@ -53,7 +53,11 @@ public final class ProvinceData {
         try {
             return Integer.valueOf(s);
         } catch (NumberFormatException ex) {
-            return null;
+            try {
+                return Double.valueOf(s).intValue();
+            } catch (NumberFormatException e2) {
+                return null;
+            }
         }
     }
     

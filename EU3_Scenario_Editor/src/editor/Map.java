@@ -166,8 +166,16 @@ public final class Map {
     public java.util.Map<String, List<String>> getContinents() {
         if (contList == null) {
             contList = new HashMap<>(continents.size());
-            for (GenericList cont : continents.lists) {
-                contList.put(cont.getName(), cont.getList());
+            if (!continents.lists.isEmpty()) {
+                for (GenericList cont : continents.lists) {
+                    contList.put(cont.getName(), cont.getList());
+                }
+            } else {
+                // should have continent = { provinces = { 1 2 3 } }
+                for (GenericObject cont : continents.children) {
+                    if (cont.containsList("provinces"))
+                        contList.put(cont.name, cont.getList("provinces").getList());
+                }
             }
         }
         return contList;
@@ -192,6 +200,11 @@ public final class Map {
     
     public java.util.Map<String, List<String>> getClimates() {
         if (climateList == null) {
+            if (climates == null) {
+                climateList = new HashMap<>();
+                return climateList;
+            }
+            
             climateList = new HashMap<>(climates.size()+1);
             final List<String> usedIds = new ArrayList<>(1000);
             for (GenericList climate : climates.lists) {
