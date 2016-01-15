@@ -12,11 +12,15 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Style;
 import eug.shared.WritableObject;
+import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
@@ -38,6 +42,8 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     private File positionsFile;
     GenericObject positions;
     private GameVersion gameVersion;
+
+    private java.util.Map<Point, String> validationErrors;
     
     private boolean hasUnsavedChanges;
     
@@ -49,6 +55,8 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         
         setLocationRelativeTo(null);
         jSplitPane1.setDividerLocation(0.8);
+
+        validationErrors = new java.util.HashMap<Point, String>();
     }
     
     private void load(String mapFileName, GameVersion gameVersion, boolean useLocalization) {
@@ -100,6 +108,8 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         goToProvButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        checkMapMenuItem = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator3 = new javax.swing.JPopupMenu.Separator();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         javax.swing.JSeparator jSeparator1 = new javax.swing.JSeparator();
@@ -154,6 +164,11 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         getContentPane().add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
+
+        checkMapMenuItem.setText("Check map");
+        checkMapMenuItem.addActionListener(formListener);
+        fileMenu.add(checkMapMenuItem);
+        fileMenu.add(jSeparator3);
 
         saveMenuItem.setText("Save");
         saveMenuItem.addActionListener(formListener);
@@ -232,6 +247,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 PositionsEditorUI.this.aboutMenuItemActionPerformed(evt);
+            }
+            else if (evt.getSource() == checkMapMenuItem) {
+                PositionsEditorUI.this.checkMapMenuItemActionPerformed(evt);
             }
         }
 
@@ -383,6 +401,109 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         positionTextArea.setCaretPosition(0);
     }//GEN-LAST:event_provinceListValueChanged
 
+    private static String getColorString(Color c) {
+        return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
+    }
+    
+    private void checkMapMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkMapMenuItemActionPerformed
+        List<String> output = new ArrayList<String>();
+        
+        final int width = mapPanel.getMapImage().getWidth();
+        int[] rgbData = new int[width];
+        for (int y = 0; y < mapPanel.getMapImage().getHeight(); y++) {
+            mapPanel.getMapImage().getRGB(0, y, width, 1, rgbData, 0, y);
+            for (int x = 0; x < width; x++) {
+                int rgb = rgbData[x];
+                if (mapPanel.getMap().getProvinceData().getProv(rgb) == null) {
+                    Color c = new Color(rgb);
+                    String msg = "Pixel at "  + x + "," + y + ": no province for rgb " + getColorString(c);
+
+                    List<String> neighbors = new ArrayList<String>();
+                    for (int tempy = y-1; tempy <= y+1; tempy++) {
+                        if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
+                            continue;
+                        for (int tempx = x-1; tempx <= x+1; tempx++) {
+                            if (tempx < 0)
+                                tempx = mapPanel.getMapImage().getWidth() - 1;
+                            else if (tempx == mapPanel.getMapImage().getWidth())
+                                tempx = 0;
+                            int temprgb = mapPanel.getMapImage().getRGB(tempx, tempy);
+                            ProvinceData.Province p = mapPanel.getMap().getProvinceData().getProv(temprgb);
+                            if (p != null && !neighbors.contains(p.getName() + "(" + getColorString(new Color(temprgb)) + ")"))
+                                neighbors.add(p.getName() + "(" + getColorString(new Color(temprgb)) + ")");
+                        }
+                    }
+                    msg += "; neighbors are " + neighbors.toString();
+                    output.add(msg);
+                    validationErrors.put(new Point(x, y), "Invalid province");
+                } else {
+                    int neighborPixelCount = 0;
+                    boolean hasNonCornerNeighbor = false;
+                    List<Integer> neighbors = new ArrayList<Integer>();
+                    for (int tempy = y-1; tempy <= y+1; tempy++) {
+                        if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
+                            continue;
+                        for (int tempx = x-1; tempx <= x+1; tempx++) {
+                            if (tempx < 0 || tempx >= mapPanel.getMapImage().getWidth())
+                                continue;
+                            else if (tempx == x && tempy == y)
+                                continue;
+                            
+                            int temprgb = mapPanel.getMapImage().getRGB(tempx, tempy);
+                            if (temprgb == rgb) {
+                                neighborPixelCount++;
+                                if (tempy == y || tempx == x)
+                                    hasNonCornerNeighbor = true;
+                            }
+                            if (!neighbors.contains(temprgb))
+                                neighbors.add(temprgb);
+                        }
+                    }
+                    if (neighborPixelCount == 0) {
+                        if (neighbors.size() == 1 && mapPanel.getMap().isRGBLand(rgb) == mapPanel.getMap().isRGBLand(neighbors.get(0))) {
+                            //String terra = mapPanel.getMap().isRGBLand(rgb) ? "land" : "sea";
+                            StringBuilder builder = new StringBuilder("Pixel at ").append(x).append(",").append(y);
+                            builder.append(" (").append(mapPanel.getMap().getProvinceData().getProv(rgb).getName()).append(") has no neighboring pixels of the same color; neighbors are ");
+                            for (int temprgb : neighbors) {
+                                ProvinceData.Province p = mapPanel.getMap().getProvinceData().getProv(temprgb);
+                                if (p != null)
+                                    builder.append(p.getName()).append("(").append(getColorString(new Color(temprgb))).append(") ");
+                            }
+                            validationErrors.put(new Point(x, y), "Warning: No neighboring pixels of the same color");
+                            output.add(builder.toString());
+                        }
+                    } else if (neighborPixelCount == 1 && hasNonCornerNeighbor == false) {
+                        // if the pixel is surrounded on 7 sides by another province
+                        // and both provinces are sea or both are land, that's suspicious
+                        if (neighbors.size() == 2
+                                && mapPanel.getMap().isRGBLand(neighbors.get(0)) == mapPanel.getMap().isRGBLand(neighbors.get(1))) {
+                            String terra = mapPanel.getMap().isRGBLand(neighbors.get(0)) ? "land" : "sea";
+                            validationErrors.put(new Point(x, y), "Warning: Pixel mostly surrounded by another province and both are " + terra);
+                            output.add("Pixel at " + x + "," + y + " ("
+                                    + mapPanel.getMap().getProvinceData().getProv(rgb).getName()
+                                    + ") mostly surrounded by " +
+                                    mapPanel.getMap().getProvinceData().getProv(neighbors.get(neighbors.get(0) == rgb ? 1 : 0)).getName()
+                                    + " and both are " + terra);
+                        }
+                    }
+                }
+            }
+        }
+
+//        for (ProvinceData.Province p : mapPanel.getMap().getProvinceData().getAllProvs()) {
+//            GenericObject pos = positions.getChild(Integer.toString(p.getId()));
+//            if (pos != null) {
+//                GenericObject unit = pos.getChild("unit");
+//            }
+//        }
+
+        for (String s : output)
+            System.out.println(s);
+
+        System.out.println(output.size() + " errors");
+        //mapPanel
+    }//GEN-LAST:event_checkMapMenuItemActionPerformed
+
     private static final GenericObject xy = EUGFileIO.loadFromString("x = double y = double");
     private void validateFile() {
         for (GenericObject obj : positions.children) {
@@ -446,6 +567,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JMenuItem aboutMenuItem;
+    javax.swing.JMenuItem checkMapMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     javax.swing.JButton goToProvButton;
     javax.swing.JSplitPane jSplitPane1;
@@ -499,6 +621,14 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
         public boolean newLineAfterObject() {
             return Style.DEFAULT.newLineAfterObject();
+        }
+
+        public void printOpeningBrace(BufferedWriter bw, int depth) throws IOException {
+            bw.write("{");
+        }
+
+        public boolean isInline(GenericList list) {
+            return true;
         }
     };
 

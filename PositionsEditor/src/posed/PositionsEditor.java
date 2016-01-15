@@ -60,7 +60,7 @@ public class PositionsEditor {
 //            }
 //        }
         
-        PositionsEditorUI ui = null;
+        //PositionsEditorUI ui = null;
         
         File configFile = new File("config.txt");
         GenericObject config =
@@ -193,7 +193,7 @@ public class PositionsEditor {
 
         @Override
         public String getDescription() {
-            return "Map files";
+            return "Map files (*.map)";
         }
     }
 }

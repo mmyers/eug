@@ -60,7 +60,7 @@ dw = {
 		text_scale = scale
 
 		port = xy
-		port_rotation = reverserotation
+		port_rotation = rotation
 
 		city = xy
 		city_rotation = rotation
@@ -222,4 +222,4 @@ hoi3 = {
 	}
 
 }
-		
+

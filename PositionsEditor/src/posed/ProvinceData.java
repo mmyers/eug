@@ -31,7 +31,7 @@ public final class ProvinceData {
      * @param numProvs the number of provinces in the map.
      * @param defFileName the filename of the province color definitions.
      */
-    public ProvinceData(int numProvs, String defFileName, boolean useLocalization) {
+    public ProvinceData(int numProvs, String defFileName, boolean useLocalization, String provinceLocFmt) {
 //        final int numProvs = Integer.parseInt(map.getString("max_provinces"));
         
         rgbMap = new HashMap<Integer, Province>(numProvs);
@@ -42,7 +42,7 @@ public final class ProvinceData {
             defFileName = "map/" + defFileName;
         
         try {
-            parseDefs(defFileName, numProvs, useLocalization);
+            parseDefs(defFileName, numProvs, useLocalization, provinceLocFmt);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -50,7 +50,7 @@ public final class ProvinceData {
         }
     }
     
-    private void parseDefs(String fileName, int numProvs, boolean useLocalization)
+    private void parseDefs(String fileName, int numProvs, boolean useLocalization, String provinceLocFmt)
             throws FileNotFoundException, IOException {
         final BufferedReader reader = new BufferedReader(new FileReader(fileName));
 
@@ -62,6 +62,8 @@ public final class ProvinceData {
                 if ((line = reader.readLine()) == null) {
                     break;
                 }
+                if (line.isEmpty())
+                    continue;
 
                 String[] arr = SEMICOLON.split(line);
 
@@ -80,7 +82,14 @@ public final class ProvinceData {
                 color += (g & 0xFF) << 8;
                 color += (b & 0xFF);
 
-                String provName = useLocalization ? Text.getText("PROV" + arr[0]) : arr[4];
+                String provName = "";
+                if (useLocalization)
+                    provName = Text.getText(String.format(provinceLocFmt, Integer.parseInt(arr[0])));
+                else if (arr.length > 4)
+                    provName = arr[4];
+                else
+                    provName = "NO NAME GIVEN #" + id;
+
                 final Province p = new Province(id, provName, color);
 
                 rgbMap.put(color, p);

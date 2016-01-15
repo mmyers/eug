@@ -41,7 +41,8 @@ public final class Map {
         //System.out.println("default.map:");
         //System.out.println(mapData);
         provinceData = new ProvinceData(Integer.parseInt(getString("max_provinces")),
-                new File(filename).getParent() + "/definition.csv", useLocalization);
+                new File(filename).getParent() + "/definition.csv",
+                useLocalization, gameVersion.getProvinceLocFormat());
 
         if (gameVersion.hasSeaList()) {
             // Initialize boolean array
@@ -57,6 +58,16 @@ public final class Map {
                 for (String provId : seaProvs) {
                     int id = Integer.parseInt(provId);
                     isLand[id] = false;
+                }
+            }
+
+            if (gameVersion.hasLakes()) {
+                GenericList lakes = mapData.getList("lakes");
+                if (lakes != null) {
+                    for (String provId : lakes) {
+                        int id = Integer.parseInt(provId);
+                        isLand[id] = false;
+                    }
                 }
             }
         }
@@ -77,5 +88,12 @@ public final class Map {
         if (gameVersion.hasSeaList())
             return isLand[provId];
         return provId < mapData.getInt("sea_starts");
+    }
+    
+    public boolean isRGBLand(int rgb) {
+        ProvinceData.Province p = provinceData.getProv(rgb);
+        if (p == null)
+            return false;
+        return isLand(p.getId());
     }
 }

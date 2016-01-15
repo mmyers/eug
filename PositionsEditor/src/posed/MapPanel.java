@@ -99,26 +99,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         addMouseMotionListener(new TooltipMouseListener());
     }
     
-//    private void createMapImage(String mapFileName) {
-//        createMapImage(new File(mapFileName).getParentFile());
-////        try {
-////            String provFileName = map.getString("provinces").replace('\\', '/');
-//////            if (!provFileName.contains("/"))
-//////                provFileName = "map/" + provFileName;
-////            
-////            String filename = new File(mapFileName).getParent() + "/" + provFileName;
-////            System.out.println("Reading map from " + filename);
-////            mapImage = ImageIO.read(new File(filename));
-////            rescaleMap();
-////            
-////        } catch (IOException ex) {
-////            javax.swing.JOptionPane.showMessageDialog(null,
-////                    "Error reading map: " + ex.getMessage(), "Error",
-////                    javax.swing.JOptionPane.ERROR_MESSAGE);
-////            ex.printStackTrace();
-////        }
-//    }
-    
     private void createMapImage(File mapDir) {
         try {
             String provFileName = map.getString("provinces").replace('\\', '/');
@@ -182,7 +162,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /**
      * This is the actual method used to paint a province.
      */
-    private final void paintLines(final Graphics2D g, final List<Integer[]> lines, final Paint paint) {
+    private void paintLines(final Graphics2D g, final List<Integer[]> lines, final Paint paint) {
         // Quick sanity check
         if (lines == null)
             return;
@@ -190,31 +170,26 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         if (g.getPaint() != paint) {
             g.setPaint(paint);
         }
-        
-        final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
-        final int maxY = getHeight();
-        
-        int x1,  x2,  y1,  y2;
-        double y;
-        
         for(Integer[] line : lines) {
-            x1 = (int) Math.floor(((double) line[1]) * scale);
-            x2 = (int) (((double) line[2]) * scale);
-            y = ((double) line[0]) * scale;
-            y1 = Math.max((int) Math.floor(y - scale), 0);
-            y2 = Math.min((int) Math.ceil(y + scale), maxY);
-//                for (y = y1; y < y2; y++)
-//                    g2D.drawLine(x1, y, x2, y);
-            g.fillRect(x1, y1, x2-x1, y2-y1);
+            paintPixelRect(g, line[1], line[0], line[2], line[0]);
         }
     }
     
-    private static final String[] positionStrings = {
-        "city",
-        "unit",
-        "trade",
-        "manufactory",
-    };
+    private void paintPixelRect(Graphics2D g, int x1, int y1, int x2, int y2) {
+            final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
+            final int maxY = getHeight();
+
+            //int x1,  x2,  y1,  y2;
+            double y;
+        
+            x1 = (int) Math.floor(((double) x1) * scale);
+            x2 = (int) (((double) x2) * scale);
+            y1 = Math.max((int) Math.floor(((double)y1) * scale - scale), 0);
+            y2 = Math.min((int) Math.ceil(((double)y2) * scale + scale), maxY);
+//                for (y = y1; y < y2; y++)
+//                    g2D.drawLine(x1, y, x2, y);
+            g.fillRect(x1, y1, x2-x1, y2-y1);
+    }
     
     private void paintPositions(final Graphics2D g) {
         g.setColor(Color.BLACK);
@@ -242,15 +217,15 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         return mapData.getLinesInProv(provinceData.getProvByID(provId).getColor());
     }
     
-    private void drawLocationIfPossible(final String name, final Graphics2D g, final GenericObject positionData) {
-        if (positionData == null)
-            return;
-        
-        GenericObject temp = positionData.getChild(name);
-        if (temp != null) {
-            g.drawString(name, translateX(temp.getDouble("x"), null), translateY(temp.getDouble("y"), null));
-        }
-    }
+//    private void drawLocationIfPossible(final String name, final Graphics2D g, final GenericObject positionData) {
+//        if (positionData == null)
+//            return;
+//        
+//        GenericObject temp = positionData.getChild(name);
+//        if (temp != null) {
+//            g.drawString(name, translateX(temp.getDouble("x"), null), translateY(temp.getDouble("y"), null));
+//        }
+//    }
     
     private void drawText(final Graphics2D g, final GenericObject positionData, final int provId) {
         GenericObject text = positionData != null ? positionData.getChild("text_position") : null;
@@ -343,7 +318,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         }
     }
     
-    private final float translateX(double coordinate, final Rectangle bounds) {
+    private float translateX(double coordinate, final Rectangle bounds) {
         // scale and add
         // x_new = (x*scale - xPos)*ourScale + imageOrigin
         coordinate *= scaleFactor;
@@ -355,7 +330,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         return (float) coordinate;
     }
     
-    private final float translateY(double coordinate, final Rectangle bounds) {
+    private float translateY(double coordinate, final Rectangle bounds) {
         // flip, scale, and add
         // y_new = (mapHeight - (y*scale + yPos))*ourScale
         coordinate *= scaleFactor;
@@ -607,6 +582,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             t.setRepeats(false);
             t.start();
         }
+    }
+
+    public BufferedImage getMapImage() {
+        return mapImage;
     }
 
     public Map getMap() {

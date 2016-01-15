@@ -18,21 +18,14 @@ public class GameVersion {
     private String display;
     private boolean isMapInverted;
     private boolean hasSeaList;
+    private boolean hasLakes;
+    private String provinceLocFmt;
     private GenericObject land;
     private GenericObject sea;
 
     private GameVersion() {
         land = new GenericObject();
         sea = new GenericObject();
-    }
-
-    private GameVersion(String name, String display, boolean isMapInverted, boolean hasSeaList, GenericObject land, GenericObject sea) {
-        this.name = name;
-        this.display = display;
-        this.isMapInverted = isMapInverted;
-        this.hasSeaList = hasSeaList;
-        this.land = land;
-        this.sea = sea;
     }
 
     private static void readVersions() {
@@ -44,10 +37,16 @@ public class GameVersion {
             GameVersion newVersion = new GameVersion();
             if (version.hasString("inherit")) {
                 GameVersion old = getByName(version.getString("inherit"));
-                newVersion.isMapInverted = old.isMapInverted;
-                newVersion.hasSeaList = old.hasSeaList;
-                newVersion.land = old.land.clone();
-                newVersion.sea = old.sea.clone();
+                if (old != null) {
+                    newVersion.isMapInverted = old.isMapInverted;
+                    newVersion.hasSeaList = old.hasSeaList;
+                    newVersion.hasLakes = old.hasLakes;
+                    newVersion.provinceLocFmt = old.provinceLocFmt;
+                    newVersion.land = old.land.clone();
+                    newVersion.sea = old.sea.clone();
+                } else {
+                    System.err.println("Invalid 'inherit' directive: '" + version.getString("inherit") + "'");
+                }
             }
 
             newVersion.name = version.name;
@@ -57,6 +56,13 @@ public class GameVersion {
                 newVersion.isMapInverted = version.getBoolean("map_inverted");
             if (version.hasString("has_sea_list"))
                 newVersion.hasSeaList = version.getBoolean("has_sea_list");
+            if (version.hasString("has_lakes"))
+                newVersion.hasLakes = version.getBoolean("has_lakes");
+
+            if (version.hasString("province_loc"))
+                newVersion.provinceLocFmt = version.getString("province_loc");
+            else
+                newVersion.provinceLocFmt = "PROV%d";
 
             if (version.getChild("land") != null)
                 newVersion.land = version.getChild("land");
@@ -103,6 +109,14 @@ public class GameVersion {
 
     public boolean hasSeaList() {
         return hasSeaList;
+    }
+
+    public boolean hasLakes() {
+        return hasLakes;
+    }
+
+    public String getProvinceLocFormat() {
+        return provinceLocFmt;
     }
 
     public GenericObject getLand() {
