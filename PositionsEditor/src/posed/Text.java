@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  *
@@ -18,32 +19,26 @@ import java.util.HashMap;
  */
 public final class Text {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Text.class.getName());
+    
     // All keys are normalized to lower case
-    private static final java.util.Map<String, String> text =
-            new HashMap<String, String>();
+    private static final java.util.Map<String, String> text = new HashMap<>();
     
     /** Creates a new instance of Text */
     private Text() { }
-    
-//    static {
-//        try {
-//            initText();
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace();
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
-//    }
 
     public static void initText(File mainDir) {
         try {
-            if (mainDir.getAbsolutePath().contains(File.separator + "mod" + File.separator))
-                initTextFromFolder(new File(mainDir.getParentFile().getParentFile().getAbsolutePath() + File.separator + "localisation"));
-            initTextFromFolder(new File(mainDir.getAbsolutePath() + File.separator + "localisation"));
+            if (mainDir.getAbsolutePath().contains(File.separator + "mod" + File.separator)) {
+                String modPath = mainDir.getParentFile().getParentFile().getAbsolutePath() + File.separator + "localisation";
+                initTextFromFolder(new File(modPath));
+            }
+            String path = mainDir.getAbsolutePath() + File.separator + "localisation";
+            initTextFromFolder(new File(path));
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Could not load localization", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Could not load localization", ex);
         }
     }
     
@@ -69,8 +64,7 @@ public final class Text {
                     int firstSemi = line.indexOf(';');
                     int secondSemi = line.indexOf(';', firstSemi + 1);
                     if (firstSemi < 0 || secondSemi < 0) {
-                        System.err.println("Malformed line in file " + f.getPath() + ":");
-                        System.err.println(line);
+                        log.log(Level.WARNING, "Malformed line in file {0}:\n{1}", new Object[]{f.getPath(), line});
                     }
                     String key = line.substring(0, firstSemi).toLowerCase();
                     if (!text.containsKey(key))

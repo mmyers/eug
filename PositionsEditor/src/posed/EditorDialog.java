@@ -33,6 +33,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.logging.Level;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -49,13 +50,15 @@ import javax.swing.border.LineBorder;
  */
 public class EditorDialog extends javax.swing.JDialog implements ActionListener, MouseListener, MouseMotionListener, WindowListener {
     
-    private MapPanel.ProvinceImage image;
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(EditorDialog.class.getName());
+    
+    private final MapPanel.ProvinceImage image;
     private GenericObject originalPositions;
     private final GenericObject positionTypes;
 
     private GenericObject positions;
 
-    private java.util.Map<String, Object> allFields = new LinkedHashMap<String, Object>();
+    private final java.util.Map<String, Object> allFields = new LinkedHashMap<>();
     
     private boolean saveChanges = false;
     
@@ -71,7 +74,6 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
     }
     
     
-    /** Creates new form EditorDialog */
     public EditorDialog(java.awt.Frame parent, MapPanel.ProvinceImage image,
             GenericObject positions, GenericObject positionTypes) {
         super(parent, true);
@@ -151,7 +153,7 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
 
                 positionsPane.add(container, toReadableLabel(obj.name));
 
-                java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<String, Object>();
+                java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<>();
                 registry.put(obj.name, tmpMap);
                 initFields(subContainer, positions.getChild(obj.name), obj, tmpMap);
             }
@@ -180,35 +182,32 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         JPanel rightPanel = new JPanel();
         JButton editButton = new JButton("Edit...");
 
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                double oldRotation = 0.0;
-                try {
-                    oldRotation = Double.parseDouble(rotationField.getText());
-                    if (reversed) {
-                        oldRotation = -oldRotation;
-                        if (oldRotation < 0.0)
-                            oldRotation += 2.0*Math.PI;
-                    }
-                } catch (NumberFormatException ex) {
-                }
-
-                RotationDialog dialog = new RotationDialog(EditorDialog.this, oldRotation, var.varname);
-                dialog.setVisible(true);
-
-                double rotation = dialog.getRotation();
-
+        editButton.addActionListener((ActionEvent e) -> {
+            double oldRotation = 0.0;
+            try {
+                oldRotation = Double.parseDouble(rotationField.getText());
                 if (reversed) {
-                    rotation = -rotation;
-                    if (rotation < 0.0)
-                        rotation += 2.0*Math.PI;
+                    oldRotation = -oldRotation;
+                    if (oldRotation < 0.0)
+                        oldRotation += 2.0*Math.PI;
                 }
-
-                rotationField.setText(rotation != 0.0 ? sixDigitFormat.format(rotation) : "");
-
-                update();
+            } catch (NumberFormatException ex) {
             }
+            
+            RotationDialog dialog = new RotationDialog(EditorDialog.this, oldRotation, var.varname);
+            dialog.setVisible(true);
+            
+            double rotation = dialog.getRotation();
+            
+            if (reversed) {
+                rotation = -rotation;
+                if (rotation < 0.0)
+                    rotation += 2.0*Math.PI;
+            }
+            
+            rotationField.setText(rotation != 0.0 ? sixDigitFormat.format(rotation) : "");
+            
+            update();
         });
 
         rightPanel.add(editButton);
@@ -239,17 +238,13 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         parent.add(middlePanel);
         JPanel rightPanel = new JPanel();
         JButton editButton = new JButton("Edit...");
-        editButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSetPosition(xField, yField);
-            }
+        editButton.addActionListener((ActionEvent e) -> {
+            doSetPosition(xField, yField);
         });
         rightPanel.add(editButton);
         parent.add(rightPanel);
 
-        java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<String, Object>();
+        java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<>();
         tmpMap.put("x", xField);
         tmpMap.put("y", yField);
         registry.put(var.varname, tmpMap);
@@ -416,13 +411,15 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
                 if (jtf.getText().length() > 0)
                     positions.addString(entry.getKey(), jtf.getText());
             } else if (entry.getValue() instanceof java.util.Map) {
+                @SuppressWarnings("unchecked")
                 java.util.Map<String, Object> tmpMap = (java.util.Map<String, Object>) entry.getValue();
                 GenericObject tmpPos = positions.createChild(entry.getKey());
                 doUpdate(tmpPos, tmpMap);
                 if (tmpPos.isEmpty())
                     positions.removeChild(tmpPos);
             } else {
-                System.err.println("Internal error: Unknown positions value");
+                log.log(Level.WARNING, "Internal error: Unknown positions value {0}, {1}",
+                        new Object[] { entry.getKey(), entry.getValue() });
             }
         }
     }
@@ -523,22 +520,6 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         }
         dispose();
     }
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                EditorDialog dialog = new EditorDialog(new javax.swing.JFrame(), true);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-//                    public void windowClosing(java.awt.event.WindowEvent e) {
-//                        System.exit(0);
-//                    }
-//                });
-//                dialog.setVisible(true);
-//            }
-//        });
-//    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton cancelButton;
@@ -574,11 +555,11 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
             drawingHints.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         }
         
-        private Point first;
+        private final Point first;
         private Point second;
         
         private double rotation;
-        private String provName;
+        private final String provName;
         
         private JTextField radianField;
         private JTextField degreeField;
@@ -598,7 +579,8 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         private void initComponents() {
             setLayout(new BorderLayout());
             
-            JPanel mainPanel = new JPanel() {
+            JPanel mainPanel;
+            mainPanel = new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
                     g.setColor(Color.WHITE);
@@ -617,12 +599,9 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
                     
                     Rectangle2D rect = g.getFontMetrics().getStringBounds(provName, g);
 
-                    AffineTransform at = null;
-                    AffineTransform oldTx = null;
-
-                    at = AffineTransform.getTranslateInstance(first.x, first.y);
+                    AffineTransform at = AffineTransform.getTranslateInstance(first.x, first.y);
                     at.rotate(-rotation);
-                    oldTx = ((Graphics2D)g).getTransform();
+                    AffineTransform oldTx = ((Graphics2D)g).getTransform();
                     ((Graphics2D)g).transform(at);
 
                     g.drawString(provName, -(int) (rect.getWidth()/2), 0);

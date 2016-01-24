@@ -5,12 +5,15 @@ import eug.parser.EUGFileIO;
 import eug.shared.GenericObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
  * @author Michael
  */
 public class GameVersion {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(GameVersion.class.getName());
 
     private static List<GameVersion> gameVersions;
 
@@ -29,7 +32,7 @@ public class GameVersion {
     }
 
     private static void readVersions() {
-        gameVersions = new ArrayList<GameVersion>();
+        gameVersions = new ArrayList<>();
 
         GenericObject allVersions = EUGFileIO.load("position_types.txt");
 
@@ -45,7 +48,7 @@ public class GameVersion {
                     newVersion.land = old.land.clone();
                     newVersion.sea = old.sea.clone();
                 } else {
-                    System.err.println("Invalid 'inherit' directive: '" + version.getString("inherit") + "'");
+                    log.log(Level.WARNING, "Invalid ''inherit'' directive: ''{0}''", version.getString("inherit"));
                 }
             }
 
@@ -93,6 +96,14 @@ public class GameVersion {
         if (gameVersions == null)
             readVersions();
         return gameVersions;
+    }
+    
+    public static GameVersion[] getGameVersionArray() {
+        if (gameVersions == null)
+            readVersions();
+        
+        GameVersion[] versions = new GameVersion[gameVersions.size()];
+        return gameVersions.toArray(versions);
     }
 
     public String getName() {

@@ -71,7 +71,6 @@
     <target name="-post-jar">
         <property name="dirname" value="Clausewitz Positions Editor" />
         <property name="releasename" value="Positions_Editor.zip" />
-        <property name="sourcename" value="Positions_Editor_Code.zip" />
 
         <!-- First the release build -->
         <mkdir dir="${dirname}" />
@@ -96,15 +95,5 @@
         </zip>
         <!-- clean up temp files -->
         <delete dir="${dirname}" />
-
-        <!-- And now the sources -->
-        <delete file="${sourcename}" />
-        <zip destfile="${sourcename}">
-            <zipfileset dir="" prefix="${dirname}">
-                <exclude name="/build/" />
-                <exclude name="/dist/" />
-                <exclude name="**/*.zip" />
-            </zipfileset>
-        </zip>
     </target>
 </project>

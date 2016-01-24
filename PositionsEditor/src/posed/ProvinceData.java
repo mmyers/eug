@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -19,6 +20,8 @@ import java.util.regex.Pattern;
  * @author Michael Myers
  */
 public final class ProvinceData {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(ProvinceData.class.getName());
     
     private java.util.Map<Integer, Province> rgbMap;
     private Province[] allProvs;
@@ -30,11 +33,14 @@ public final class ProvinceData {
      * Creates a new instance of ProvinceData.
      * @param numProvs the number of provinces in the map.
      * @param defFileName the filename of the province color definitions.
+     * @param useLocalization whether to use localized province names or the names found in definition.csv
+     * @param provinceLocFmt if useLocalization is true, the localization format is used
+     *        to turn the province ID into a key for use in looking up localization
      */
     public ProvinceData(int numProvs, String defFileName, boolean useLocalization, String provinceLocFmt) {
 //        final int numProvs = Integer.parseInt(map.getString("max_provinces"));
         
-        rgbMap = new HashMap<Integer, Province>(numProvs);
+        rgbMap = new HashMap<>(numProvs);
         allProvs = new Province[numProvs];
         
         defFileName = defFileName.replace('\\', '/');
@@ -44,17 +50,16 @@ public final class ProvinceData {
         try {
             parseDefs(defFileName, numProvs, useLocalization, provinceLocFmt);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Could not load province definitions", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Could not load province definitions", ex);
         }
     }
     
     private void parseDefs(String fileName, int numProvs, boolean useLocalization, String provinceLocFmt)
             throws FileNotFoundException, IOException {
-        final BufferedReader reader = new BufferedReader(new FileReader(fileName));
-
-        try {
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             reader.readLine();  // eat first line
 
             for (int i = 1; i < numProvs; i++) {
@@ -68,7 +73,7 @@ public final class ProvinceData {
                 String[] arr = SEMICOLON.split(line);
 
                 if (arr == null) {
-                    System.err.println("Badly formatted province definition: " + line);
+                    log.log(Level.WARNING, "Badly formatted province definition: {0}", line);
                     continue;
                 }
 
@@ -82,7 +87,7 @@ public final class ProvinceData {
                 color += (g & 0xFF) << 8;
                 color += (b & 0xFF);
 
-                String provName = "";
+                String provName;
                 if (useLocalization)
                     provName = Text.getText(String.format(provinceLocFmt, Integer.parseInt(arr[0])));
                 else if (arr.length > 4)
@@ -95,8 +100,6 @@ public final class ProvinceData {
                 rgbMap.put(color, p);
                 allProvs[id] = p;
             }
-        } finally {
-            reader.close();
         }
         
         final Province ti = new Province(0, "Terra Incognita", ALPHA);
@@ -158,9 +161,9 @@ public final class ProvinceData {
      */
     public static final class Province {
         
-        private int id;
-        private String name;
-        private int color;
+        private final int id;
+        private final String name;
+        private final int color;
         
         Province(int id, String name, int color) {
             this.id = id;

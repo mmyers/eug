@@ -21,6 +21,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.util.logging.Level;
 
 /**
  *
@@ -28,10 +29,12 @@ import java.awt.image.BufferedImageOp;
  */
 public class ProvincePanel extends javax.swing.JPanel {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(ProvincePanel.class.getName());
+    
     private MapPanel.ProvinceImage image;
     private BufferedImage scaledImage;
     
-    private GenericObject positionTypes; // from position_types.txt
+    private final GenericObject positionTypes; // from position_types.txt
     
     private GenericObject positionData;
     
@@ -47,13 +50,11 @@ public class ProvincePanel extends javax.swing.JPanel {
     private double ourScale;
     
     // where in the panel the image will be drawn (hopefully so that it's centered)
-    private int imageOrigin;
+    //private int imageOrigin;
     
     private static final Color TEXT_DOT_COLOR = Color.BLUE;
-    private static final Color LOCATION_DOT_COLOR = Color.GREEN;
-    private static final Color PORT_DOT_COLOR = Color.RED;
 
-    private static Color[] DOT_COLORS = {
+    private static final Color[] DOT_COLORS = {
         Color.CYAN, Color.DARK_GRAY, Color.GREEN, Color.LIGHT_GRAY, Color.MAGENTA,
         Color.ORANGE, Color.PINK, Color.RED, Color.WHITE, Color.YELLOW
     };
@@ -62,7 +63,6 @@ public class ProvincePanel extends javax.swing.JPanel {
 
     private Color textColor;
     
-    /** Creates new form ProvincePanel */
     public ProvincePanel(GenericObject positionTypes) {
         this.positionTypes = positionTypes;
         initComponents();
@@ -111,9 +111,6 @@ public class ProvincePanel extends javax.swing.JPanel {
             
             // draw icons
             drawIcons(g2d, positionData, positionTypes);
-            
-            //drawPort(g2d);
-            //drawText(g2d);
             
             g2d.setPaint(oldPaint);
             g2d.setFont(oldFont);
@@ -196,8 +193,7 @@ public class ProvincePanel extends javax.swing.JPanel {
     private void drawText(Graphics2D g) {
         GenericObject text = positionData != null ? positionData.getChild("text_position") : null;
         
-        float x = -1f;
-        float y = -1f;
+        float x, y;
         
         if (text != null) {
             x = translateX(text.getDouble("x"));
@@ -275,12 +271,10 @@ public class ProvincePanel extends javax.swing.JPanel {
     
     public float translateY(double coordinate) {
         // flip, scale, and add
-        // y_new = (mapHeight - (y*scale + yPos))*ourScale
         coordinate *= scale;
         coordinate += yPos;
         coordinate = image.getMapHeight() - coordinate;
         coordinate *= ourScale;
-//        System.out.println("y: " + coordinate);
         return (float) coordinate;
     }
     
@@ -312,12 +306,10 @@ public class ProvincePanel extends javax.swing.JPanel {
         this.scale = image.getScale();
         
         this.ourScale = Math.min(20.0, 600 / image.getImageBounds().getHeight()); // try to get a height of 500
-        System.out.println(ourScale);
+        log.log(Level.INFO, "Province image scale: {0}", ourScale);
         this.scaledImage = createScaledImage(image.getImage(), ourScale);
         
-        this.imageOrigin = (getWidth() - scaledImage.getWidth())/2;
-        
-//        System.out.println("Image size: " + scaledImage.getWidth() + "x" + scaledImage.getHeight());
+        //this.imageOrigin = (getWidth() - scaledImage.getWidth())/2;
     }
     
     private static final RenderingHints scalingHints = new RenderingHints(null);

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -33,6 +34,8 @@ import javax.swing.filechooser.FileFilter;
  */
 public class PositionsEditorUI extends javax.swing.JFrame {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(PositionsEditorUI.class.getName());
+    
     private static final String APP_NAME    = "EU3 Positions Editor";
     private static final String APP_VERSION = "Beta";
     
@@ -41,9 +44,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     private File mapDir;
     private File positionsFile;
     GenericObject positions;
-    private GameVersion gameVersion;
+    private final GameVersion gameVersion;
 
-    private java.util.Map<Point, String> validationErrors;
+    private final java.util.Map<Point, String> validationErrors;
     
     private boolean hasUnsavedChanges;
     
@@ -56,7 +59,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         jSplitPane1.setDividerLocation(0.8);
 
-        validationErrors = new java.util.HashMap<Point, String>();
+        validationErrors = new java.util.HashMap<>();
     }
     
     private void load(String mapFileName, GameVersion gameVersion, boolean useLocalization) {
@@ -104,7 +107,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         mapScrollPane = new javax.swing.JScrollPane();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
-        provinceList = new javax.swing.JList();
+        provinceList = new javax.swing.JList<String>();
         goToProvButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
@@ -227,6 +230,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             if (evt.getSource() == goToProvButton) {
                 PositionsEditorUI.this.goToProvButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == checkMapMenuItem) {
+                PositionsEditorUI.this.checkMapMenuItemActionPerformed(evt);
+            }
             else if (evt.getSource() == saveMenuItem) {
                 PositionsEditorUI.this.saveMenuItemActionPerformed(evt);
             }
@@ -247,9 +253,6 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == aboutMenuItem) {
                 PositionsEditorUI.this.aboutMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == checkMapMenuItem) {
-                PositionsEditorUI.this.checkMapMenuItemActionPerformed(evt);
             }
         }
 
@@ -312,11 +315,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     mapPanel.getMap().isLand(prov) ? gameVersion.getLand() : gameVersion.getSea());
             dialog.setVisible(true);
             if (dialog.isSaveChanges()) {
-                System.out.println("Province " + prov + ":");
-                System.out.println("Old entry:");
-                System.out.println(position);
-                System.out.println("New entry:");
-                System.out.println(dialog.getPositions());
+                log.log(Level.INFO, "Province {0}:", prov);
+                log.log(Level.INFO, "Old entry:\n{0}", position);
+                log.log(Level.INFO, "New entry:\n{0}", dialog.getPositions());
                 if (position != null) {
                     position.clear();
                     if (dialog.getPositions() != null)
@@ -406,7 +407,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     }
     
     private void checkMapMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkMapMenuItemActionPerformed
-        List<String> output = new ArrayList<String>();
+        List<String> output = new ArrayList<>();
         
         final int width = mapPanel.getMapImage().getWidth();
         int[] rgbData = new int[width];
@@ -418,7 +419,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     Color c = new Color(rgb);
                     String msg = "Pixel at "  + x + "," + y + ": no province for rgb " + getColorString(c);
 
-                    List<String> neighbors = new ArrayList<String>();
+                    List<String> neighbors = new ArrayList<>();
                     for (int tempy = y-1; tempy <= y+1; tempy++) {
                         if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
                             continue;
@@ -439,7 +440,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                 } else {
                     int neighborPixelCount = 0;
                     boolean hasNonCornerNeighbor = false;
-                    List<Integer> neighbors = new ArrayList<Integer>();
+                    List<Integer> neighbors = new ArrayList<>();
                     for (int tempy = y-1; tempy <= y+1; tempy++) {
                         if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
                             continue;
@@ -498,10 +499,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 //        }
 
         for (String s : output)
-            System.out.println(s);
+            log.info(s);
 
-        System.out.println(output.size() + " errors");
-        //mapPanel
+        log.log(Level.INFO, "{0} errors", output.size());
     }//GEN-LAST:event_checkMapMenuItemActionPerformed
 
     private static final GenericObject xy = EUGFileIO.loadFromString("x = double y = double");
@@ -528,17 +528,17 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     // special case: xy is really an object
                     validateObject(name, obj, xy);
                 } else {
-                    System.err.println("Unknown object name in " + name + " (" + validation.name + "): " + obj.name);
+                    log.log(Level.WARNING, "Unknown object name in {0} ({1}): {2}", new Object[]{name, validation.name, obj.name});
                 }
             } else if (wo instanceof ObjectVariable) {
                 String varname = ((ObjectVariable) wo).varname;
                 String subv = validation.getString(varname);
 
                 if (subv.equals("")) {
-                    System.err.println("Unknown variable name in " + name + ": " + varname);
+                    log.log(Level.WARNING, "Unknown variable name in {0}: {1}", new Object[]{name, varname});
                 }
             } else if (wo instanceof GenericList) {
-                System.err.println("Did not expect list: " + ((GenericList)wo).getName());
+                log.log(Level.WARNING, "Did not expect list: {0}", ((GenericList)wo).getName());
             }
         }
     }
@@ -573,7 +573,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     javax.swing.JSplitPane jSplitPane1;
     javax.swing.JScrollPane mapScrollPane;
     javax.swing.JEditorPane positionTextArea;
-    javax.swing.JList provinceList;
+    javax.swing.JList<String> provinceList;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     javax.swing.JCheckBoxMenuItem showPositionsMenuItem;
@@ -583,56 +583,68 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
     private static final Style POSITIONS_STYLE = new Style() {
 
+        @Override
         public String getTab(int depth) {
             return Style.DEFAULT.getTab(depth);
         }
 
+        @Override
         public String getEqualsSign(int depth) {
             return Style.DEFAULT.getEqualsSign(depth);
         }
 
+        @Override
         public String getCommentStart() {
             return Style.DEFAULT.getCommentStart();
         }
 
+        @Override
         public void printTab(BufferedWriter bw, int depth) throws IOException {
             Style.DEFAULT.printTab(bw, depth);
         }
 
+        @Override
         public void printEqualsSign(BufferedWriter bw, int depth) throws IOException {
             Style.DEFAULT.printEqualsSign(bw, depth);
         }
 
+        @Override
         public void printCommentStart(BufferedWriter bw, int depth) throws IOException {
             Style.DEFAULT.printCommentStart(bw, depth);
         }
 
+        @Override
         public void printHeaderCommentStart(BufferedWriter bw, int depth) throws IOException {
             // Do nothing
         }
 
+        @Override
         public void printHeaderCommentEnd(BufferedWriter bw, int depth) throws IOException {
             // Do nothing
         }
 
+        @Override
         public boolean isInline(GenericObject obj) {
             return obj.isEmpty();
         }
 
+        @Override
         public boolean newLineAfterObject() {
             return Style.DEFAULT.newLineAfterObject();
         }
 
+        @Override
         public void printOpeningBrace(BufferedWriter bw, int depth) throws IOException {
             bw.write("{");
         }
 
+        @Override
         public boolean isInline(GenericList list) {
             return true;
         }
     };
 
-    private final class ProvListModel extends AbstractListModel {
+    private final class ProvListModel extends AbstractListModel<String> {
 
         public ProvListModel() {
         }
@@ -643,7 +655,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             return Integer.toString(index) + " - " + mapPanel.getProvinceData().getProvByID(index).getName();
         }
     }

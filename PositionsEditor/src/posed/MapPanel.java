@@ -32,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -42,6 +43,8 @@ import javax.swing.Timer;
  * @author  Michael Myers
  */
 public class MapPanel extends javax.swing.JPanel implements Scrollable {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(MapPanel.class.getName());
     
     private BufferedImage mapImage;
     private BufferedImage scaledMapImage;
@@ -77,6 +80,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
      * @param mapFileName The name of the file where the map definitions are.
      * The other map files are assumed to be in the same directory.
      * @param positions The contents of the positions.txt file.
+     * @param gameVersion The game version to create a map panel for.
+     * @param useLocalization Whether to use localized province names or just whatever is in definition.csv.
      */
     public MapPanel(String mapFileName, GenericObject positions, GameVersion gameVersion, boolean useLocalization) {
         this(new Map(mapFileName, gameVersion, useLocalization), new File(mapFileName).getParentFile(), positions, gameVersion);
@@ -94,7 +99,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         initComponents();
         
-        overrides = new HashMap<Integer, Color>();
+        overrides = new HashMap<>();
         
         addMouseMotionListener(new TooltipMouseListener());
     }
@@ -106,7 +111,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
 //                provFileName = "map/" + provFileName;
             
             String filename = mapDir.getAbsolutePath() + "/" + provFileName;
-            System.out.println("Reading map from " + filename);
+            log.log(Level.INFO, "Reading map from {0}", filename);
             mapImage = ImageIO.read(new File(filename));
             rescaleMap();
             
@@ -114,7 +119,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             javax.swing.JOptionPane.showMessageDialog(null,
                     "Error reading map: " + ex.getMessage(), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Error reading map", ex);
         }
     }
     
@@ -178,16 +183,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     private void paintPixelRect(Graphics2D g, int x1, int y1, int x2, int y2) {
             final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
             final int maxY = getHeight();
-
-            //int x1,  x2,  y1,  y2;
-            double y;
         
             x1 = (int) Math.floor(((double) x1) * scale);
             x2 = (int) (((double) x2) * scale);
             y1 = Math.max((int) Math.floor(((double)y1) * scale - scale), 0);
             y2 = Math.min((int) Math.ceil(((double)y2) * scale + scale), maxY);
-//                for (y = y1; y < y2; y++)
-//                    g2D.drawLine(x1, y, x2, y);
+            
             g.fillRect(x1, y1, x2-x1, y2-y1);
     }
     
@@ -230,16 +231,15 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     private void drawText(final Graphics2D g, final GenericObject positionData, final int provId) {
         GenericObject text = positionData != null ? positionData.getChild("text_position") : null;
         
-        float x = -1f;
-        float y = -1f;
+        float x, y;
         
         if (text != null) {
             x = translateX(text.getDouble("x"), null);
             y = translateY(text.getDouble("y"), null);
         } else {
             Rectangle bounds = calculateBounds(getLinesInProv(provId));
-            x = (float) (((bounds.getWidth() / 2.0) + bounds.getX()) * scaleFactor); //(float) (image.getImageBounds().getWidth() / 2.0) * (float) ourScale;
-            y = (float) ((mapImage.getHeight()-((bounds.getHeight() / 2.0) + bounds.getY())) * scaleFactor); //(float) (image.getImageBounds().getHeight() / 2.0) * (float) ourScale;
+            x = (float) (((bounds.getWidth() / 2.0) + bounds.getX()) * scaleFactor);
+            y = (float) ((mapImage.getHeight()-((bounds.getHeight() / 2.0) + bounds.getY())) * scaleFactor);
         }
 
         double textScale = positionData != null ? positionData.getDouble("text_scale") : 1.0;
@@ -268,12 +268,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         if (at != null) {
             g.drawString(provName, (int) (rect.getWidth()/2), (int) (rect.getHeight()/2));
             g.drawString(provName + " not centered", 0, 0);
-//            System.out.println("string bounds = " + rect);
         } else {
             g.drawString(provName, x - (int) (rect.getWidth()/2), y - (int) (rect.getHeight()/2));
-//            g.drawString(image.getProvName(), x, y);
             g.drawString(provName + " not centered", x, y);
-//            System.out.println("string bounds = " + rect);
         }
 
         if (textRotation > 0.0) {
@@ -332,13 +329,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     private float translateY(double coordinate, final Rectangle bounds) {
         // flip, scale, and add
-        // y_new = (mapHeight - (y*scale + yPos))*ourScale
         coordinate *= scaleFactor;
         if (bounds != null)
             coordinate += (double)bounds.y;
         coordinate = scaledMapImage.getHeight() - coordinate;
-//        coordinate *= ourScale;
-//        System.out.println("y: " + coordinate);
         return (float) coordinate;
     }
     
@@ -346,7 +340,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     @Override
     public Dimension getPreferredSize() {
         if (scaledMapImage == null) {
-            System.out.println("scaledMap == null!");
+            log.warning("scaledMap == null!");
             return super.getPreferredSize();
         }
         return new Dimension(scaledMapImage.getWidth(), scaledMapImage.getHeight());
@@ -359,20 +353,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             ((DecimalFormat)rounder).setDecimalSeparatorAlwaysShown(true);
             ((DecimalFormat)rounder).setMaximumFractionDigits(2);
         }
-    }
-    
-    /**
-     * @deprecated Use {@link zoomIn()}, {@link zoomIn(double)},
-     * {@link zoomOut}, or {@link zoomOut(double)} instead.
-     */
-    @Deprecated
-    public void setScaleFactor(double factor) {
-        if (factor < 0.05)
-            return;
-        System.out.println("New scale factor: " + factor);
-        scaleFactor = factor;
-        rescaleMap();
-//        repaint();
     }
     
     public double getScaleFactor() {
@@ -452,7 +432,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         if (p == null) {
             java.awt.Color c = new java.awt.Color(scaledMapImage.getRGB(pt.x, pt.y));
-            System.err.println("No province registered for " + c.getRed() + "," + c.getGreen() + "," + c.getBlue());
+            log.log(Level.WARNING, "No province registered for {0},{1},{2}", new Object[]{c.getRed(), c.getGreen(), c.getBlue()});
         }
         
         return p;
@@ -566,6 +546,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     public void flashProvince(final int provId, final int numFlashes) {
         final ActionListener listener = new ActionListener() {
             private boolean color = true;
+            @Override
             public void actionPerformed(final ActionEvent e) {
                 if (color) {
                     colorProvince(provId, Color.WHITE);
@@ -648,24 +629,26 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             BufferedImage img = scaledMapImage.getSubimage(imgBounds.x, imgBounds.y, imgBounds.width, imgBounds.height);
             return new ProvinceImage(img, provBounds, imgBounds, provId, p.getName(), scaleFactor, scaledMapImage.getHeight());
         } catch (java.awt.image.RasterFormatException ex) {
-            System.err.println("rectangle is " + imgBounds);
-            System.err.println("scaled image's size is " + scaledMapImage.getWidth() + " x " + scaledMapImage.getHeight());
-            System.err.println("lines are: ");
+            log.log(Level.WARNING, "rectangle is {0}", imgBounds);
+            log.log(Level.WARNING, "scaled image''s size is {0} x {1}",
+                    new Object[] { scaledMapImage.getWidth(), scaledMapImage.getHeight() });
+            log.warning("lines are: ");
             for (Integer[] line : mapData.getLinesInProv(p.getColor())) {
-                System.err.println(java.util.Arrays.toString(line));
+                log.warning(java.util.Arrays.toString(line));
             }
+            log.throwing("posed.MapPanel", "createImage", ex);
             throw ex;
         }
     }
     
     public static final class ProvinceImage {
-        private BufferedImage image;
-        private Rectangle provBounds;
-        private Rectangle imgBounds;
-        private int provId;
-        private String provName;
-        private double scale;
-        private double mapHeight;
+        private final BufferedImage image;
+        private final Rectangle provBounds;
+        private final Rectangle imgBounds;
+        private final int provId;
+        private final String provName;
+        private final double scale;
+        private final double mapHeight;
 
         public ProvinceImage(BufferedImage image, Rectangle provBounds, Rectangle imgBounds, int provId, String provName, double scale, int mapHeight) {
             this.image = image;

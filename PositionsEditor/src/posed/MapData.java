@@ -28,9 +28,8 @@ public final class MapData {
     private static final int BLACK = 0xFF000000; // java.awt.Color.BLACK.getRGB();
     
     public MapData(final BufferedImage img, final int numProvs) {
-        provLines = new HashMap<Integer, List<Integer[]>>(numProvs);
-        final java.util.Map<Integer[], Object> tmpBorders =
-                new HashMap<Integer[], Object>(numProvs*32);
+        provLines = new HashMap<>(numProvs);
+        final java.util.Map<Integer[], Object> tmpBorders = new HashMap<>(numProvs*32);
         
         int rgb;
         
@@ -44,7 +43,7 @@ public final class MapData {
                 rgb = rgbLine[x];
                 
                 if (provLines.get(rgb) == null)
-                    provLines.put(rgb, new ArrayList<Integer[]>(100));
+                    provLines.put(rgb, new ArrayList<>(100));
                 
                 Integer[] points = new Integer[3];
                 
@@ -84,7 +83,7 @@ public final class MapData {
             }
         }
         
-        borders = new ArrayList<Integer[]>(tmpBorders.keySet());
+        borders = new ArrayList<>(tmpBorders.keySet());
     }
     
     public List<Integer[]> getLinesInProv(int rgb) {

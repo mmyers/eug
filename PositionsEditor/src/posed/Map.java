@@ -11,12 +11,15 @@ import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.logging.Level;
 
 /**
  *
  * @author Michael Myers
  */
 public final class Map {
+    
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Map.class.getName());
     
 //    private static final String MAP_DIR_NAME = "/map";
     private GenericObject mapData;
@@ -31,15 +34,16 @@ public final class Map {
         try {
             loadData(mapFileName, useLocalization);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            log.log(Level.SEVERE, "Could not load .map file", ex);
         }
     }
 
     private void loadData(String filename, boolean useLocalization) throws FileNotFoundException {
-        System.out.println("Map file is " + filename);
+        log.log(Level.INFO, "Map file is {0}", filename);
         mapData = EUGFileIO.load(filename);
-        //System.out.println("default.map:");
-        //System.out.println(mapData);
+        
+        log.config(String.valueOf(mapData));
+        
         provinceData = new ProvinceData(Integer.parseInt(getString("max_provinces")),
                 new File(filename).getParent() + "/definition.csv",
                 useLocalization, gameVersion.getProvinceLocFormat());
@@ -53,7 +57,7 @@ public final class Map {
 
             GenericList seaProvs = mapData.getList("sea_starts");
             if (seaProvs == null) {
-                System.err.println("No sea_starts found; weird things might start happening now");
+                log.warning("No sea_starts found; weird things might start happening now");
             } else {
                 for (String provId : seaProvs) {
                     int id = Integer.parseInt(provId);
