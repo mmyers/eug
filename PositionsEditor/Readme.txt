@@ -17,7 +17,7 @@ found in positions.txt in any Clausewitz game.
 === System Requirements ===
 ===========================
 
-Java 1.5 or later (tested on Java 1.6)
+Java 8 or later
 
 
 ====================

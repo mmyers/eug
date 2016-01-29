@@ -3,6 +3,17 @@
 \=================/
 
 
+=== Beta 5 ===
+
+- Implemented a basic map error checker.
+- Improved handling of lakes.
+- Province name localization format can now be specified with the province_loc
+  command in position_types.txt. Previously "PROV000000" was hardcoded.
+- Implemented logging instead of printing everything to the console.
+- Reversed port rotation in Divine Wind.
+- Made a few user interface tweaks.
+
+
 === Beta 4 ===
 
 - Added an option to use game localization files or rely on the names in

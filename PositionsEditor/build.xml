@@ -86,6 +86,8 @@
             <fileset dir="">
                 <include name="**/*.txt"/>
                 <include name="**/*.bat"/>
+                <exclude name="config.txt"/>
+                <exclude name="*.log"/>
             </fileset>
         </copy>
 

@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -386,7 +387,25 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        JOptionPane.showMessageDialog(this, APP_NAME + " " + APP_VERSION + "\nBy MichaelM");
+        Object[] options = { "Visit EU3 forum thread", "Close" };
+        
+        int ret = JOptionPane.showOptionDialog(this, APP_NAME + " " + APP_VERSION + "\nBy MichaelM",
+                "About", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[options.length-1]);
+        
+        if (ret == 1 || ret < 0)
+            return;
+        
+        String thread = "https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-positions-editor.535767/";
+        
+        try {
+            Desktop.getDesktop().browse(new java.net.URI(thread));
+        } catch (URISyntaxException | IOException ex) {
+            log.log(Level.SEVERE, "Could not browse to forum thread " + thread, ex);
+
+            JOptionPane.showMessageDialog(this,
+                    "Could not open browser. Please visit " + thread + " in your browser instead.",
+                    "Update failed", JOptionPane.WARNING_MESSAGE);
+        }
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     private void goToProvButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToProvButtonActionPerformed
