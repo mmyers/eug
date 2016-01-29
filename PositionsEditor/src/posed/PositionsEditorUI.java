@@ -13,12 +13,15 @@ import eug.shared.ObjectVariable;
 import eug.shared.Style;
 import eug.shared.WritableObject;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -168,7 +171,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
-        checkMapMenuItem.setText("Check map");
+        checkMapMenuItem.setText("Check map pixels");
         checkMapMenuItem.addActionListener(formListener);
         fileMenu.add(checkMapMenuItem);
         fileMenu.add(jSeparator3);
@@ -407,12 +410,24 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     }
     
     private void checkMapMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkMapMenuItemActionPerformed
+        int ret = JOptionPane.showConfirmDialog(
+                this,
+                "This operation will check every pixel in the map for possible"
+                        + " errors (missing provinces and misplaced pixels)."
+                        + " This may take several minutes.\n\nDo you want to continue?",
+                "Confirm operation", JOptionPane.YES_NO_OPTION);
+        
+        if (ret == JOptionPane.NO_OPTION)
+            return;
+        
         List<String> output = new ArrayList<>();
         
         final int width = mapPanel.getMapImage().getWidth();
         int[] rgbData = new int[width];
+        
         for (int y = 0; y < mapPanel.getMapImage().getHeight(); y++) {
             mapPanel.getMapImage().getRGB(0, y, width, 1, rgbData, 0, y);
+            
             for (int x = 0; x < width; x++) {
                 int rgb = rgbData[x];
                 if (mapPanel.getMap().getProvinceData().getProv(rgb) == null) {
@@ -420,18 +435,21 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     String msg = "Pixel at "  + x + "," + y + ": no province for rgb " + getColorString(c);
 
                     List<String> neighbors = new ArrayList<>();
+                    
                     for (int tempy = y-1; tempy <= y+1; tempy++) {
                         if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
                             continue;
+                        
                         for (int tempx = x-1; tempx <= x+1; tempx++) {
                             if (tempx < 0)
                                 tempx = mapPanel.getMapImage().getWidth() - 1;
                             else if (tempx == mapPanel.getMapImage().getWidth())
-                                tempx = 0;
+                                break;
+                            
                             int temprgb = mapPanel.getMapImage().getRGB(tempx, tempy);
                             ProvinceData.Province p = mapPanel.getMap().getProvinceData().getProv(temprgb);
                             if (p != null && !neighbors.contains(p.getName() + "(" + getColorString(new Color(temprgb)) + ")"))
-                                neighbors.add(p.getName() + "(" + getColorString(new Color(temprgb)) + ")");
+                                neighbors.add(p.getName() + " (" + getColorString(new Color(temprgb)) + ")");
                         }
                     }
                     msg += "; neighbors are " + neighbors.toString();
@@ -441,9 +459,11 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     int neighborPixelCount = 0;
                     boolean hasNonCornerNeighbor = false;
                     List<Integer> neighbors = new ArrayList<>();
+                    
                     for (int tempy = y-1; tempy <= y+1; tempy++) {
                         if (tempy < 0 || tempy >= mapPanel.getMapImage().getHeight())
                             continue;
+                        
                         for (int tempx = x-1; tempx <= x+1; tempx++) {
                             if (tempx < 0 || tempx >= mapPanel.getMapImage().getWidth())
                                 continue;
@@ -468,7 +488,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                             for (int temprgb : neighbors) {
                                 ProvinceData.Province p = mapPanel.getMap().getProvinceData().getProv(temprgb);
                                 if (p != null)
-                                    builder.append(p.getName()).append("(").append(getColorString(new Color(temprgb))).append(") ");
+                                    builder.append(p.getName()).append(" (").append(getColorString(new Color(temprgb))).append(") ");
                             }
                             validationErrors.put(new Point(x, y), "Warning: No neighboring pixels of the same color");
                             output.add(builder.toString());
@@ -491,15 +511,16 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             }
         }
 
-//        for (ProvinceData.Province p : mapPanel.getMap().getProvinceData().getAllProvs()) {
-//            GenericObject pos = positions.getChild(Integer.toString(p.getId()));
-//            if (pos != null) {
-//                GenericObject unit = pos.getChild("unit");
-//            }
-//        }
-
-        for (String s : output)
-            log.info(s);
+        if (output.size() > 0) {
+            try {
+                Files.write(Paths.get("mapcheck.txt"), output);
+                Desktop.getDesktop().open(new File("mapcheck.txt"));
+            } catch (IOException ex) {
+                log.log(Level.SEVERE, "Could not write map check log file", ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No map issues detected.");
+        }
 
         log.log(Level.INFO, "{0} errors", output.size());
     }//GEN-LAST:event_checkMapMenuItemActionPerformed

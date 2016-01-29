@@ -101,7 +101,7 @@ public class PositionsEditor {
         JButton browseButton = new JButton("Browse...");
         browseButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(fileField.getText());
-            chooser.setDialogTitle("Select map file");
+            chooser.setDialogTitle("Select .map file");
             chooser.setFileFilter(new MapFileFilter());
             
             int choice = chooser.showOpenDialog(dialog);

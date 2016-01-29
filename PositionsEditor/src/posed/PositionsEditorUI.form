@@ -11,7 +11,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="checkMapMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Check map"/>
+                <Property name="text" type="java.lang.String" value="Check map pixels"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkMapMenuItemActionPerformed"/>
