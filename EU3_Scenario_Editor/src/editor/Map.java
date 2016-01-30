@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -252,11 +251,14 @@ public final class Map {
     public java.util.Map<String, List<String>> getAreas() {
         if (areaList == null) {
             areaList = new HashMap<>(areas.size());
-            if (!areas.lists.isEmpty()) {
-                for (GenericList area : areas.lists) {
-                    areaList.put(area.getName(), area.getList());
-                }
-            }
+            
+            areas.lists.stream()
+                    .forEach((area) -> areaList.put(area.getName(), area.getList()));
+
+            // empty lists are parsed as objects, so convert them
+            areas.children.stream()
+                    .filter(obj -> obj.isEmpty())
+                    .forEach(obj -> areaList.put(obj.name, areas.getList(obj.name).getList()));
         }
         return areaList;
     }
@@ -270,12 +272,12 @@ public final class Map {
             // or:
             // france = { provinces = { 0 1 2 } }
             // or:
-            // france = { brittany_area normandy_area provence_area }
+            // france = { areas = { brittany_area normandy_area provence_area } }
             // either way, it's easier to deal with later if we just flatten it all out now
             if (!regions.lists.isEmpty()) {
                 for (GenericList cont : regions.lists) {
                     if (areas != null) {
-                        // areas.txt exists, so assume regions are lists of areas
+                        // areas.txt exists, so assume regions are lists of areas (EU4 1.14)
                         List<String> aggregate = cont.getList().stream()
                                 .flatMap(area -> getAreas().get(area).stream()) // list all provinces in each area of the region
                                 .collect(Collectors.toList());
@@ -286,10 +288,17 @@ public final class Map {
                     }
                 }
             } else {
-                // france = { province = { 0 1 2 }
+                // france = { provinces = { 0 1 2 } }
+                // or france = { areas = { brittany_area normandy_area provence_area } }
                 for (GenericObject reg : regions.children) {
-                    if (reg.containsList("provinces"))
+                    if (reg.containsList("areas")) {
+                        List<String> aggregate = reg.getList("areas").getList().stream()
+                                .flatMap(area -> getAreas().get(area).stream()) // list all provinces in each area of the region
+                                .collect(Collectors.toList());
+                        regionList.put(reg.name, aggregate);
+                    } else if (reg.containsList("provinces")) {
                         regionList.put(reg.name, reg.getList("provinces").getList());
+                    }
                 }
             }
         }
