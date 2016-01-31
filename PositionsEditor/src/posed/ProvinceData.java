@@ -56,6 +56,18 @@ public final class ProvinceData {
         }
     }
     
+    private Integer tryParseInt(String s) {
+        try {
+            return Integer.valueOf(s);
+        } catch (NumberFormatException ex) {
+            try {
+                return Double.valueOf(s).intValue();
+            } catch (NumberFormatException e2) {
+                return null;
+            }
+        }
+    }
+    
     private void parseDefs(String fileName, int numProvs, boolean useLocalization, String provinceLocFmt)
             throws FileNotFoundException, IOException {
         
@@ -76,11 +88,28 @@ public final class ProvinceData {
                     log.log(Level.WARNING, "Badly formatted province definition: {0}", line);
                     continue;
                 }
-
-                final int id = Integer.parseInt(arr[0]);
-                final int r = (int) Double.parseDouble(arr[1]);
-                final int g = (int) Double.parseDouble(arr[2]);
-                final int b = (int) Double.parseDouble(arr[3]);
+                
+                Integer id = tryParseInt(arr[0]);
+                Integer r = tryParseInt(arr[1]);
+                Integer g = tryParseInt(arr[2]);
+                Integer b = tryParseInt(arr[3]);
+                
+                if (id == null) {
+                    log.log(Level.WARNING, "Failed to read province id in definition line: {0}", line);
+                    continue;
+                }
+                if (r == null) {
+                    log.log(Level.WARNING, "Failed to read province red in definition line: {0}", line);
+                    continue;
+                }
+                if (g == null) {
+                    log.log(Level.WARNING, "Failed to read province green in definition line: {0}", line);
+                    continue;
+                }
+                if (b == null) {
+                    log.log(Level.WARNING, "Failed to read province blue in definition line: {0}", line);
+                    continue;
+                }
 
                 int color = ALPHA;
                 color += (r & 0xFF) << 16;

@@ -3,6 +3,11 @@
 \=================/
 
 
+=== Beta 6 ===
+
+- Fixed crash when loading malformed province definitions.
+
+
 === Beta 5 ===
 
 - Implemented a basic map error checker.
