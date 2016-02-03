@@ -2,6 +2,13 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.9.1 ===
+
+- Updated region parsing code for the changes in EU4 1.15.
+- Empty areas are now loaded correctly and will appear in the area menu.
+- Country tag parsing code will no longer crash when reading "dynamic_tags = yes".
+
+
 === 0.9 ===
 
 - Added province culture mapmode for EU4 and EU3.

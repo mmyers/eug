@@ -23,7 +23,7 @@ public class Version {
     
     private static final int MAJOR = 0;
     private static final int MINOR = 9;
-    private static final int REV = 0;
+    private static final int REV = 1;
     
     private static final String PROJECT_URL = "http://sourceforge.net/projects/eug";
     private static final String UPDATE_URL = "http://eug.sourceforge.net/version.xml";
