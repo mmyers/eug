@@ -95,7 +95,6 @@ public final class Text {
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
         java.io.BufferedReader reader;
-        String line;
         for (File f : files) {
             if (!f.getName().endsWith(".yml"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -108,7 +107,7 @@ public final class Text {
                     new java.io.InputStreamReader(new java.io.FileInputStream(f), "UTF-8")
                     , Math.min(102400, (int)f.length()));
             try {
-                line = reader.readLine();
+                String line = reader.readLine();
 
                 if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
                     line = line.substring(1);
@@ -122,8 +121,13 @@ public final class Text {
                         if (line.charAt(0) == '\uFEFF')
                             line = line.substring(1);
 
-                        while (line.endsWith("\\n"))
-                            line = line + "\n" + reader.readLine();
+                        if (line.endsWith("\\n")) {
+                            StringBuilder lineBuilder = new StringBuilder(line).append("\n").append(line = reader.readLine());
+                            while (line.endsWith("\\n")) {
+                                lineBuilder.append("\n").append(line = reader.readLine());
+                            }
+                            line = lineBuilder.toString();
+                        }
 
                         int comment = line.indexOf('#');
                         if (comment > 0)

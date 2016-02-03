@@ -521,6 +521,8 @@ public final class Map {
 
         @Override
         public Integer next() {
+            if (index >= numProvs || !isLand[index])
+                throw new java.util.NoSuchElementException();
             return index++;
         }
 
@@ -555,6 +557,8 @@ public final class Map {
 
         @Override
         public Integer next() {
+            if (index >= seaStarts)
+                throw new java.util.NoSuchElementException();
             return index++;
         }
 

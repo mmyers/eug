@@ -144,7 +144,7 @@ public final class EditorUI extends javax.swing.JFrame {
         if (saveFile == null) {
             log.log(Level.INFO, "Loading province history...");
 
-            ClausewitzScenario scen = null;
+            ClausewitzScenario scen;
             if (version.getSaveType().equalsIgnoreCase("eu3"))
                 scen = new EU3Scenario(resolver);
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
@@ -152,8 +152,7 @@ public final class EditorUI extends javax.swing.JFrame {
             else if (version.getSaveType().equalsIgnoreCase("ck2"))
                 scen = new CK2Scenario(resolver);
             else {
-                log.log(Level.WARNING, "Unknown or missing scenario type specified by config.");
-                log.log(Level.WARNING, "Defaulting to EU3");
+                log.log(Level.WARNING, "Unknown or missing scenario type specified by config. Defaulting to EU3.");
                 scen = new EU3Scenario(resolver);
             }
 
@@ -186,14 +185,13 @@ public final class EditorUI extends javax.swing.JFrame {
         } else {
             log.log(Level.INFO, "Loading saved game...");
 
-            ClausewitzSaveGame save = null;
+            ClausewitzSaveGame save;
             if (version.getSaveType().equalsIgnoreCase("eu3"))
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
                 save = Vic2SaveGame.loadSaveGame(saveFile, resolver);
             else {
-                log.log(Level.WARNING, "Unknown or missing save game type specified by config.");
-                log.log(Level.WARNING, "Defaulting to EU3");
+                log.log(Level.WARNING, "Unknown or missing save game type specified by config. Defaulting to EU3.");
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             }
             
@@ -225,10 +223,8 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private GenericObject loadLuaFile(String filename) {
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(filename));
-            String line = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
             StringBuilder stringBuilder = new StringBuilder();
 
             while((line = reader.readLine()) != null) {
@@ -1320,7 +1316,14 @@ public final class EditorUI extends javax.swing.JFrame {
         List<JMenu> otherMenu = new ArrayList<>();
         
         for (ObjectVariable var : countries.values) {
+            if (var.varname.equals("dynamic_tags"))
+                continue;
+            
             String cname = Text.getText(var.varname);
+            if (cname == null || cname.isEmpty()) {
+                log.log(Level.WARNING, "No localization found for country tag {0}", var.varname);
+                cname = var.varname;
+            }
             char start = Character.toUpperCase(cname.charAt(0));
             
             JMenu menu = new JMenu(cname);
@@ -1724,6 +1727,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private static class ObjectComparator implements Comparator<GenericObject>, Serializable {
         private static final long serialVersionUID = 1L;
+        @Override
         public int compare(final GenericObject o1, final GenericObject o2) {
             return Text.getText(o1.name).compareToIgnoreCase(Text.getText(o2.name));
         }
@@ -1731,6 +1735,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private static class ListComparator implements Comparator<GenericList>, Serializable {
         private static final long serialVersionUID = 1L;
+        @Override
         public int compare(final GenericList o1, final GenericList o2) {
             return Text.getText(o1.getName()).compareToIgnoreCase(Text.getText(o2.getName()));
         }
@@ -1738,6 +1743,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private static class VariableComparator implements Comparator<ObjectVariable>, Serializable {
         private static final long serialVersionUID = 1L;
+        @Override
         public int compare(final ObjectVariable o1, final ObjectVariable o2) {
             return Text.getText(o1.varname).compareToIgnoreCase(Text.getText(o2.varname));
         }
@@ -1745,6 +1751,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private static class StringComparator implements Comparator<String>, Serializable {
         private static final long serialVersionUID = 1L;
+        @Override
         public int compare(final String o1, final String o2) {
             return Text.getText(o1).compareToIgnoreCase(Text.getText(o2));
         }
@@ -1759,6 +1766,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('=', InputEvent.CTRL_DOWN_MASK));
             putValue(MNEMONIC_KEY, KeyEvent.VK_I);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             mapPanel.zoomIn();
             resetScrollPane();
@@ -1776,6 +1784,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('-', InputEvent.CTRL_DOWN_MASK));
             putValue(MNEMONIC_KEY, KeyEvent.VK_O);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             mapPanel.zoomOut();
             resetScrollPane();
@@ -1793,6 +1802,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('F', InputEvent.CTRL_DOWN_MASK));
             putValue(MNEMONIC_KEY, KeyEvent.VK_G);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             final int maxProv = Integer.parseInt(map.getString("max_provinces")) - 1;
             String response =
@@ -1838,6 +1848,7 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('D', InputEvent.CTRL_DOWN_MASK));
             putValue(MNEMONIC_KEY, KeyEvent.VK_D);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             String date = yearSpinner.getValue().toString() + "." +
                     monthSpinner.getValue().toString() + "." +
@@ -1858,6 +1869,7 @@ public final class EditorUI extends javax.swing.JFrame {
             this.name = name;
             putValue(SHORT_DESCRIPTION, "Edit " + name + "'s country history file");
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             FileEditorDialog.showDialog(EditorUI.this, tag, name, resolver, provinceData);
         }
@@ -1870,6 +1882,7 @@ public final class EditorUI extends javax.swing.JFrame {
             this.mode = mode;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             mapPanel.setMode(mode);
             viewModeLabel.setText((String) getValue(SHORT_DESCRIPTION));
@@ -2152,6 +2165,7 @@ public final class EditorUI extends javax.swing.JFrame {
             super("Wars...");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             WarsDialog dlg = new WarsDialog(EditorUI.this, mapPanel.getDataSource(), resolver, provinceData);
             dlg.setVisible(true);
@@ -2163,6 +2177,7 @@ public final class EditorUI extends javax.swing.JFrame {
             super("Custom map mode");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             final MapMode mode = CustomModeDialog.showDialog(EditorUI.this);
             if (mode != null) {
@@ -2179,6 +2194,7 @@ public final class EditorUI extends javax.swing.JFrame {
             super("Toggle borders");
             putValue(AbstractAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke('B', InputEvent.CTRL_DOWN_MASK));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             mapPanel.setPaintBorders(!mapPanel.isPaintBorders());
             mapPanel.repaint();
@@ -2211,6 +2227,7 @@ public final class EditorUI extends javax.swing.JFrame {
             sb.append("<br>Date: ").append(date).append("</html>");
             putValue(SHORT_DESCRIPTION, sb.toString());
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             String[] splitDate = date.split("\\.");
             ((SpinnerNumberModel)yearSpinner.getModel()).setValue(Integer.parseInt(splitDate[0]));
