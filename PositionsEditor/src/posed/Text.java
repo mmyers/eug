@@ -6,8 +6,10 @@
 
 package posed;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,9 +45,12 @@ public final class Text {
     }
     
     private static void initTextFromFolder(File locFolder) throws FileNotFoundException, IOException {
-        java.io.BufferedReader reader;
-        String line;
         File[] files = locFolder.listFiles();
+        if (files == null) {
+            log.log(Level.WARNING, "Could not find localization files in {0}", locFolder.getAbsolutePath());
+            return;
+        }
+        
         Arrays.sort(files);
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
@@ -55,8 +60,9 @@ public final class Text {
                 continue;
             }
             
-            reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(1024000, (int)f.length()));
-            try {
+            int bufferSize = Math.min(1024000, (int)f.length());
+            try (BufferedReader reader = new BufferedReader(new FileReader(f), bufferSize)) {
+                String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.length() == 0 || line.charAt(0) == '#')
                         continue;
@@ -70,8 +76,6 @@ public final class Text {
                     if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));
                 }
-            } finally {
-                reader.close();
             }
         }
     }

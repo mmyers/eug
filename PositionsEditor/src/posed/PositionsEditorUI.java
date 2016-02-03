@@ -7,6 +7,7 @@
 package posed;
 
 import eug.parser.EUGFileIO;
+import eug.parser.ParserSettings;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
@@ -77,8 +78,9 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         Map map = new Map(mapFile.getAbsolutePath(), gameVersion, useLocalization);
 
         positionsFile = new File(mapFile.getParent() + "/" + map.getString("positions"));
+        log.log(Level.INFO, "Loading positions from {0}", positionsFile.getAbsolutePath());
 
-        positions = EUGFileIO.load(positionsFile);
+        positions = EUGFileIO.load(positionsFile, ParserSettings.getQuietSettings());
         mapPanel = new MapPanel(map, mapDir, positions, gameVersion);
         mapScrollPane.setViewportView(mapPanel);
 
@@ -685,18 +687,26 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     };
 
     private final class ProvListModel extends AbstractListModel<String> {
+        private final int max;
 
         public ProvListModel() {
+            max = Integer.parseInt(mapPanel.getMap().getString("max_provinces"));
         }
 
         @Override
         public int getSize() {
-            return Integer.parseInt(mapPanel.getMap().getString("max_provinces"));
+            return max;
         }
 
         @Override
         public String getElementAt(int index) {
-            return Integer.toString(index) + " - " + mapPanel.getProvinceData().getProvByID(index).getName();
+            ProvinceData.Province prov = mapPanel.getProvinceData().getProvByID(index);
+            if (prov != null) {
+                return Integer.toString(index) + " - " + prov.getName();
+            } else {
+                log.log(Level.WARNING, "No province for id {0}", index);
+                return "Unknown province #" + index;
+            }
         }
     }
 
