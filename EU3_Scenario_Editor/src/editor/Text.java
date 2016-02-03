@@ -7,13 +7,16 @@
 package editor;
 
 import eug.shared.FilenameResolver;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
-//import java.util.regex.Pattern;
 
 /**
  *
@@ -27,8 +30,6 @@ public final class Text {
     // All keys are converted to lower case before putting or getting text, to
     // standardize.
     private static final java.util.Map<String, String> text = new HashMap<>();
-    
-    //private static final Pattern semicolon = Pattern.compile(";");
     
     /**
      * Must be called before {@link getText} is used.
@@ -53,8 +54,6 @@ public final class Text {
     }
     
     private static void processFilesCsv(File[] files) throws FileNotFoundException, IOException {
-        java.io.BufferedReader reader;
-        String line;
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -63,8 +62,9 @@ public final class Text {
                 continue;
             }
             
-            reader = new java.io.BufferedReader(new java.io.FileReader(f), Math.min(1024000, (int)f.length()));
-            try {
+            int bufferSize = Math.min(1024000, (int)f.length());
+            try (BufferedReader reader = new BufferedReader(new FileReader(f), bufferSize)) {
+                String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.length() == 0 || line.charAt(0) == '#')
                         continue;
@@ -84,8 +84,6 @@ public final class Text {
                     //if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));
                 }
-            } finally {
-                reader.close();
             }
         }
     }
@@ -94,7 +92,6 @@ public final class Text {
         // very naive implementation
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
-        java.io.BufferedReader reader;
         for (File f : files) {
             if (!f.getName().endsWith(".yml"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -103,56 +100,54 @@ public final class Text {
                 continue;
             }
 
-            reader = new java.io.BufferedReader(
-                    new java.io.InputStreamReader(new java.io.FileInputStream(f), "UTF-8")
-                    , Math.min(102400, (int)f.length()));
-            try {
+            int bufferSize = Math.min(102400, (int)f.length());
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"), bufferSize)) {
                 String line = reader.readLine();
 
                 if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
                     line = line.substring(1);
 
-                if (line.startsWith("l_english")) {
-                    log.log(Level.INFO, "Reading {0}", f.getName());
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim();
-                        if (line.length() == 0 || line.charAt(0) == '#')
-                            continue;
-                        if (line.charAt(0) == '\uFEFF')
-                            line = line.substring(1);
+                if (!line.startsWith("l_english")) // only read English localizations
+                    continue;
+                
+                log.log(Level.INFO, "Reading {0}", f.getName());
+                
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.length() == 0 || line.charAt(0) == '#')
+                        continue;
+                    if (line.charAt(0) == '\uFEFF')
+                        line = line.substring(1);
 
-                        if (line.endsWith("\\n")) {
-                            StringBuilder lineBuilder = new StringBuilder(line).append("\n").append(line = reader.readLine());
-                            while (line.endsWith("\\n")) {
-                                lineBuilder.append("\n").append(line = reader.readLine());
-                            }
-                            line = lineBuilder.toString();
+                    if (line.endsWith("\\n")) {
+                        StringBuilder lineBuilder = new StringBuilder(line).append("\n").append(line = reader.readLine());
+                        while (line.endsWith("\\n")) {
+                            lineBuilder.append("\n").append(line = reader.readLine());
                         }
-
-                        int comment = line.indexOf('#');
-                        if (comment > 0)
-                            line = line.substring(0, comment);
-
-                        int firstColon = line.indexOf(':');
-                        if (firstColon < 0) {
-                            log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
-                            log.log(Level.WARNING, line);
-                            continue;
-                        }
-
-                        String key = line.substring(0, firstColon).trim(); //.toLowerCase();
-                        //if (!text.containsKey(key)) {
-                            String value = line.substring(firstColon + 1).trim();
-                            if (value.startsWith("\""))
-                                value = value.substring(1);
-                            if (value.endsWith("\""))
-                                value = value.substring(0, value.length() - 1);
-                            text.put(key, value);
-                        //}
+                        line = lineBuilder.toString();
                     }
+
+                    int comment = line.indexOf('#');
+                    if (comment > 0)
+                        line = line.substring(0, comment);
+
+                    int firstColon = line.indexOf(':');
+                    if (firstColon < 0) {
+                        log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
+                        log.log(Level.WARNING, line);
+                        continue;
+                    }
+
+                    String key = line.substring(0, firstColon).trim(); //.toLowerCase();
+                    //if (!text.containsKey(key)) {
+                        String value = line.substring(firstColon + 1).trim();
+                        if (value.startsWith("\""))
+                            value = value.substring(1);
+                        if (value.endsWith("\""))
+                            value = value.substring(0, value.length() - 1);
+                        text.put(key, value);
+                    //}
                 }
-            } finally {
-                reader.close();
             }
         }
     }
