@@ -258,7 +258,7 @@ public final class Map {
             // empty lists are parsed as objects, so convert them
             areas.children.stream()
                     .filter(obj -> obj.isEmpty())
-                    .forEach(obj -> areaList.put(obj.name, areas.getList(obj.name).getList()));
+                    .forEach(obj -> areaList.put(obj.name, new ArrayList<>()));
         }
         return areaList;
     }
