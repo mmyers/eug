@@ -62,6 +62,9 @@ public class GroupMode extends ProvincePaintingMode {
     protected final List<Integer> makeIntList(List<String> provIds) {
         final List<Integer> ret = new ArrayList<>(provIds.size());
         for (String id : provIds) {
+            if (id.equals("peace") || id.equals("ai_prio"))
+                continue;
+            
             try {
                 ret.add(Integer.parseInt(id));
             } catch (NumberFormatException ex) {

@@ -1524,6 +1524,10 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addGovernmentFilters(JMenu rootMenu) {
         final GenericObject governments = loadFileOrFolder("common/governments", "common/governments.txt");
+        if (governments == null) {
+            log.warning("Could not find any governments to load");
+            return;
+        }
         
 //        Collections.sort(governments.children, new ObjectComparator());
         final StringBuilder allGovernments = new StringBuilder("(");
