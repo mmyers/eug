@@ -511,9 +511,10 @@ public final class Map {
 
         @Override
         public boolean hasNext() {
-            while (++index < numProvs) {
+            while (index < numProvs) {
                 if (isLand[index])
                     return true;
+                index++;
             }
             
             return false;
