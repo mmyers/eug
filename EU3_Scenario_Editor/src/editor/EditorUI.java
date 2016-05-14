@@ -152,7 +152,7 @@ public final class EditorUI extends javax.swing.JFrame {
             else if (version.getSaveType().equalsIgnoreCase("ck2"))
                 scen = new CK2Scenario(resolver);
             else {
-                log.log(Level.WARNING, "Unknown or missing scenario type specified by config. Defaulting to EU3.");
+                log.log(Level.WARNING, "Unknown or missing scenario type specified by config (\"{0}\"). Defaulting to EU3/EU4.", version.getSaveType());
                 scen = new EU3Scenario(resolver);
             }
 
@@ -191,7 +191,7 @@ public final class EditorUI extends javax.swing.JFrame {
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
                 save = Vic2SaveGame.loadSaveGame(saveFile, resolver);
             else {
-                log.log(Level.WARNING, "Unknown or missing save game type specified by config. Defaulting to EU3.");
+                log.log(Level.WARNING, "Unknown or missing save game type specified by config (\"{0}\"). Defaulting to EU3/EU4.", version.getSaveType());
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             }
             
