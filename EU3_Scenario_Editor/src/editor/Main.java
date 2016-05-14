@@ -176,11 +176,11 @@ public class Main {
                 GameVersion version = (GameVersion) e.getItem();
                 GenericObject saved = config.getChild("paths").getChild(version.getName());
                 if (saved != null && saved.size() > 0) {
-                    String recent = saved.getString("main");
-                    gameDirField.setText(recent);
+                    String mainDir = saved.getString("main");
+                    gameDirField.setText(mainDir);
                     
-                    if (!recent.isEmpty()) {
-                        String modPath = new File(recent).getAbsolutePath() + File.separator + "mod";
+                    if (!mainDir.isEmpty()) {
+                        String modPath = new File(mainDir).getAbsolutePath() + File.separator + "mod";
                         Vector<Mod> mods = listMods(new File(modPath), true);
                         if (version.getModPath() != null) {
                             File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
@@ -196,6 +196,8 @@ public class Main {
                                 }
                             }
                         }
+                        
+                        saveGameField.setText(saved.getString("recent"));
                     }
                 }
             }
