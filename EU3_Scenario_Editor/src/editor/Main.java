@@ -259,6 +259,8 @@ public class Main {
                 game.setString("main", gameDirField.getText(), true);
                 if (saveFile != null)
                     game.setString("recent", saveFile, true);
+                else
+                    game.setString("recent", "", true);
                 Mod mod = (Mod) modBox.getSelectedItem();
                 game.setString("lastmod", mod.getName().equals("None") ? "" : mod.getName(), true);
 
