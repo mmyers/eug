@@ -9,8 +9,11 @@ package eug.shared;
 import eug.parser.EUGFileIO;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Resolves filenames, given a main directory name and a mod name.
@@ -37,8 +40,8 @@ public final class FilenameResolver {
     
     private String modDirName; // in the game directory
     
-    private Set<String> extended = new HashSet<>();
-    private Set<String> replaced= new HashSet<>();
+    private final Set<String> extended = new HashSet<>();
+    private final Set<String> replaced= new HashSet<>();
     
     private boolean usingMod;
     
@@ -225,8 +228,11 @@ public final class FilenameResolver {
     /**
      * Lists all files in the given directory. If a mod is being used and the
      * directory is set to extend, files in both the original and the mod
-     * directory are returned.
+     * directory are returned (excluding duplicates).
      * @param dirName the name of the directory to list files in.
+     * @return an array containing the results of {@code File.listFiles()}
+     *         on the given directory in both the main and mod folders.
+     * @see java.io.File#listFiles()
      */
     public File[] listFiles(String dirName) {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
@@ -241,7 +247,7 @@ public final class FilenameResolver {
             if (isFolderReplaced(dirName)) {
                 return new File(modDirName + dirName).listFiles();
             } else if (isExtended(splitPath[0])) {
-                final java.util.Map<String, File> ret = new java.util.HashMap<String, File>();
+                final Map<String, File> ret = new HashMap<>();
 
                 final File[] files = new File(mainDirName + dirName).listFiles();
                 if (files != null) {
@@ -337,6 +343,7 @@ public final class FilenameResolver {
     
     /**
      * Clausewitz 2 (EU4 and later, I think)
+     * @param provId the ID of the province to locate history files for
      * @return the names of all active province history files for the province
      * @since EUGFile 1.10.00
      */
@@ -344,16 +351,16 @@ public final class FilenameResolver {
         if (usingMod && clausewitz2Mod) {
             String id = Integer.toString(provId);
             File vanillaFile = getFile(mainDirName + "history/provinces", id, true);
-            File modFile = getFile(modDirName + "history/provinces", id, true);
+            File moddedFile = getFile(modDirName + "history/provinces", id, true);
 
-            if (modFile == null)
+            if (moddedFile == null)
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
             else if (vanillaFile == null
-                    || vanillaFile.getName().equals(modFile.getName())
+                    || vanillaFile.getName().equals(moddedFile.getName())
                     || isFileReplaced("history/provinces", vanillaFile.getName()))
-                return new String[] { modFile.getAbsolutePath() };
+                return new String[] { moddedFile.getAbsolutePath() };
             else
-                return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
+                return new String[] { vanillaFile.getAbsolutePath(), moddedFile.getAbsolutePath() };
         } else {
             return new String[] { getProvinceHistoryFile(provId) };
         }
@@ -361,22 +368,23 @@ public final class FilenameResolver {
 
     /**
      * Clausewitz 2 (EU4 and later, I think)
+     * @param tag the tag of the country to locate history files for
      * @return the names of all active province history files for the country
      * @since EUGFile 1.10.00
      */
     public String[] getCountryHistoryFiles(final String tag) {
         if (usingMod && clausewitz2Mod) {
             File vanillaFile = getFile(mainDirName + "history/countries", tag, true);
-            File modFile = getFile(modDirName + "history/countries", tag, true);
+            File moddedFile = getFile(modDirName + "history/countries", tag, true);
 
-            if (modFile == null)
+            if (moddedFile == null)
                 return new String[] { vanillaFile == null ? null : vanillaFile.getAbsolutePath() };
             else if (vanillaFile == null
-                    || vanillaFile.getName().equals(modFile.getName())
+                    || vanillaFile.getName().equals(moddedFile.getName())
                     || isFileReplaced("history/countries", vanillaFile.getName()))
-                return new String[] { modFile.getAbsolutePath() };
+                return new String[] { moddedFile.getAbsolutePath() };
             else
-                return new String[] { vanillaFile.getAbsolutePath(), modFile.getAbsolutePath() };
+                return new String[] { vanillaFile.getAbsolutePath(), moddedFile.getAbsolutePath() };
         } else {
             return new String[] { getCountryHistoryFile(tag) };
         }
@@ -384,9 +392,9 @@ public final class FilenameResolver {
     
     /**
      * Clausewitz 1 method to find the province history file for the given
-     * province.<p>
-     * Originally package-private, but became public upon moving to eug.shared.
-     * @return the name of the province history file, or <code>null</code> if
+     * province.
+     * @param provId the ID of the province to locate the history file for
+     * @return the name of the province history file, or {@code null} if
      * the file could not be found.
      */
     public String getProvinceHistoryFile(final int provId) {
@@ -431,7 +439,8 @@ public final class FilenameResolver {
     /**
      * Victoria 2-specific method to find the province history file for the
      * given province.
-     * @return the name of the province history file, or <code>null</code> if
+     * @param provId the ID of the province to locate the history file for
+     * @return the name of the province history file, or {@code null} if
      * the file could not be found.
      * @since EUGFile 1.07.00
      */
@@ -492,6 +501,9 @@ public final class FilenameResolver {
     /**
      * Clausewitz 1 method to find the country history file for the given
      * country.
+     * @param tag the tag of the country to locate history files for
+     * @return the name of the country history file, or {@code null} if
+     * the file could not be found.
      * @since EUGFile 1.04.00pre1
      */
     public String getCountryHistoryFile(final String tag) {
@@ -517,8 +529,8 @@ public final class FilenameResolver {
         return getFilePath(mainDirName + "history/countries", tag, false);
     }
     
-    private final java.util.Map<String, String[]> directories =
-            new java.util.HashMap<String, String[]>();
+    // Cache of directory contents for faster enumeration when required. Sorted by file name.
+    private final Map<String, String[]> directories = new HashMap<>();
     
     private File getFile(String dirname, String start, boolean exactMatch) {
         String[] array = enumerateFiles(dirname);
@@ -633,10 +645,24 @@ public final class FilenameResolver {
         setModName(modName);
     }
     
+    /**
+     * If true, this FilenameResolver is using a Clausewitz 2 (V2:AHD, EU4, and
+     * later) mod: all folders are extended and files or folders can be marked "replace_path".
+     * <p>
+     * See: <a href="http://forum.paradoxplaza.com/forum/showthread.php?587405-HOW-TO-make-a-modfile-with-the-new-mod-folder">HOW TO: make a modfile with the new mod folder.</a>
+     * @return whether this resolver uses Clausewitz 2 resolution rules.
+     */
     public boolean isClausewitz2Mod() {
         return clausewitz2Mod;
     }
 
+    /**
+     * Toggles this resolver between Clausewitz 1 and Clausewitz 2 (V2:AHD, EU4,
+     * and later) modes. In Clausewitz 1 mode, a folder is extended only if
+     * explicitly marked "extend" in the .mod file. In Clausewitz 2 mode, all
+     * folders are extended unless marked "replace_path".
+     * @param value whether the resolver should use Clausewitz 2 resolution rules.
+     */
     public void setClausewitz2Mod(boolean value) {
         this.clausewitz2Mod = value;
     }
@@ -644,6 +670,7 @@ public final class FilenameResolver {
     /**
      * @return <code>true</code> if the given directory is extended.
      * @since EUGFile 1.04.00pre1
+     * @see #isClausewitz2Mod()
      */
     public boolean isExtended(String directory) {
         if (usingMod) {
@@ -673,7 +700,7 @@ public final class FilenameResolver {
         return replaced.contains(directory.toLowerCase() + "/" + filename.toLowerCase());
     }
     
-    private java.util.regex.Pattern SLASH = java.util.regex.Pattern.compile("[//\\\\]");
+    private final Pattern SLASH = Pattern.compile("[//\\\\]");
 
     /**
      * Returns true if the given directory or any parent directory is replaced.
