@@ -141,15 +141,34 @@ public final class Text {
                     String key = line.substring(0, firstColon).trim(); //.toLowerCase();
                     //if (!text.containsKey(key)) {
                         String value = line.substring(firstColon + 1).trim();
-                        if (value.startsWith("\""))
-                            value = value.substring(1);
-                        if (value.endsWith("\""))
-                            value = value.substring(0, value.length() - 1);
+                        value = extractQuote(value);
+                        //if (value.startsWith("\""))
+                        //    value = value.substring(1);
+                        //if (value.endsWith("\""))
+                        //    value = value.substring(0, value.length() - 1);
                         text.put(key, value);
                     //}
                 }
             }
         }
+    }
+    
+    private static String extractQuote(String value) {
+        int quoteIdx = -1;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '"') {
+                if (quoteIdx < 0) {
+                    // mark the opening quote for later
+                    quoteIdx = i;
+                } else {
+                    // already had an opening quote, so close it and get out
+                    return value.substring(quoteIdx+1, i);
+                }
+            }
+        }
+        // no quote or only a single quote found - keep original string
+        return value;
     }
     
     public static String getText(final String key) {
