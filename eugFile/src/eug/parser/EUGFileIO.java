@@ -205,6 +205,9 @@ public final class EUGFileIO {
                 if (filename.endsWith(".eu4")) {
                     w.write("EU4txt"); // magic EU4 string
                     w.newLine();
+                } else if (filename.endsWith(".ck2")) {
+                    w.write("CK2txt");
+                    w.newLine();
                 }
                 obj.toFileString(w, (NO_COMMENT.equals(comment) ? "" : comment), style);
             }

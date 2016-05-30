@@ -6,10 +6,12 @@ import eug.parser.EUGFileIO;
 import eug.shared.GenericObject;
 import eug.shared.Scenario;
 import eug.shared.Style;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -28,6 +30,8 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     protected boolean hasUnsavedChanges = false;
     
+    protected boolean saveBackups = true;
+    
     /**
      * Creates a new instance of ClausewitzSaveGame
      */
@@ -41,10 +45,14 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     public static ClausewitzSaveGame loadSaveGame(String filename, String mainPath, String modName) {
         return new ClausewitzSaveGame(EUGFileIO.load(filename), filename, mainPath, modName);
     }
-    
+
+    @Override
+    public void setBackups(boolean useBackup) {
+        this.saveBackups = useBackup;
+    }
     
     protected void initProvs() {
-        provinces = new HashMap<Integer, GenericObject>(1500);
+        provinces = new HashMap<>(1500);
         for (int i = 1; /* loop until broken */; i++) {
             final GenericObject prov = root.getChild(Integer.toString(i));
             if (prov == null) {
@@ -69,10 +77,9 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         }
     }
     
-    protected static final java.util.regex.Pattern tagPattern =
-            java.util.regex.Pattern.compile("[A-Z][A-Z0-9]{2}");
+    protected static final Pattern tagPattern = Pattern.compile("[A-Z][A-Z0-9]{2}");
     protected void initCountries() {
-        countryMap = new HashMap<String, GenericObject>(100);
+        countryMap = new HashMap<>(100);
         GenericObject countryRoot = root.getChild("countries");
         if (countryRoot == null)
             countryRoot = root;
@@ -101,28 +108,32 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     
     public List<String> getCountryTags() {
-        return new ArrayList<String>(getCountryMap().keySet());
+        return new ArrayList<>(getCountryMap().keySet());
     }
     
     public List<GenericObject> getCountries() {
-        return new ArrayList<GenericObject>(getCountryMap().values());
+        return new ArrayList<>(getCountryMap().values());
     }
     
     
+    @Override
     public GenericObject getCountry(String tag) {
         return getCountryMap().get(tag.substring(0,3).toUpperCase());
     }
     
+    @Override
     public GenericObject getCountryHistory(String tag) {
         return getCountryMap().get(tag.substring(0,3).toUpperCase()).getChild("history");
     }
     
+    @Override
     public GenericObject getProvince(int id) {
         if (id > lastProvId)
             return tryLoadProvince(id);
         return getProvinces().get(id);
     }
     
+    @Override
     public GenericObject getProvinceHistory(int id) {
         if (id > lastProvId) {
             GenericObject obj = tryLoadProvince(id);
@@ -146,14 +157,16 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return prov;
     }
     
+    @Override
     public List<GenericObject> getWars() {
         final List<GenericObject> ret = root.getChildren("active_war");
         ret.addAll(root.getChildren("previous_war"));
         return ret;
     }
     
+    @Override
     public List<GenericObject> getWars(String date) {
-        final List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<>();
         
         // Only check wars if the date is in the past
         if (ClausewitzHistory.DATE_COMPARATOR.isBefore(date, getDate())) {
@@ -177,6 +190,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return ret;
     }
 
+    @Override
     public void removeWar(String name) {
         GenericObject toRemove = null;
         for (GenericObject war : getWars()) {
@@ -192,6 +206,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     }
     
     
+    @Override
     public String getCountryAsStr(String tag) {
         GenericObject obj = getCountryMap().get(tag.substring(0,3).toUpperCase());
         if (obj == null)
@@ -199,6 +214,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return obj.toString(saveStyle);
     }
     
+    @Override
     public String getCountryHistoryAsStr(String tag) {
         GenericObject obj = getCountryMap().get(tag.substring(0,3).toUpperCase());
         if (obj == null)
@@ -209,6 +225,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return obj.toString(saveStyle);
     }
     
+    @Override
     public String getProvinceAsStr(int id) {
         GenericObject obj = getProvinces().get(id);
         if (obj == null)
@@ -216,6 +233,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return obj.toString(saveStyle);
     }
     
+    @Override
     public String getProvinceHistoryAsStr(int id) {
         GenericObject obj = getProvinces().get(id);
         if (obj == null)
@@ -226,6 +244,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return obj.toString(saveStyle);
     }
     
+    @Override
     public void saveCountry(String tag, String cname, final String data) {
         final GenericObject country = getCountryMap().get(tag);
         final GenericObject newCountry = EUGFileIO.loadFromString(data);
@@ -238,6 +257,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         hasUnsavedChanges = true;
     }
     
+    @Override
     public void saveProvince(int id, String pname, final String data) {
         final GenericObject province = getProvinces().get(id);
         final GenericObject newProvince = EUGFileIO.loadFromString(data);
@@ -250,6 +270,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         hasUnsavedChanges = true;
     }
 
+    @Override
     public void saveWar(String name, String data) {
         final GenericObject newWar = EUGFileIO.loadFromString(data);
         for (GenericObject war : getWars()) {
@@ -262,46 +283,66 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         }
     }
     
+    @Override
     public void saveChanges() {
         if (hasUnsavedChanges) {
+            if (saveBackups) {
+                final File file = new File(savePath);
+                if (!file.renameTo(new File(getBackupFilename(savePath))))
+                    System.err.println("Backup of " + file.getName() + " failed");
+            }
+                
             EUGFileIO.save(root, savePath, EUGFileIO.NO_COMMENT, true, saveStyle);
             hasUnsavedChanges = false;
         }
     }
     
+    protected static String getBackupFilename(String filename) {
+        final File f = new File(filename);
+        return f.getParent() + File.separatorChar + "~" + f.getName();
+    }
+    
+    @Override
     public boolean hasUnsavedChanges() {
         return hasUnsavedChanges;
     }
     
     
+    @Override
     public void reloadCountry(String tag) {
         // This method should never be needed, since any modifications would be
         // working directly on the GenericObject.
     }
     
+    @Override
     public void reloadCountryHistory(String tag) {
         // This method should never be needed, since any modifications would be
         // working directly on the GenericObject.
     }
 
+    @Override
     public void reloadCountries() {
         initCountries();
     }
     
+    @Override
     public void reloadProvince(int id) {
         // This method should never be needed, since any modifications would be
         // working directly on the GenericObject.
     }
     
+    @Override
     public void reloadProvinceHistory(int id) {
         // This method should never be needed, since any modifications would be
         // working directly on the GenericObject.
     }
 
+    @Override
     public void reloadProvinces() {
         initProvs();
     }
     
+    @Override
     public void preloadProvinces(int last) {
         // ignore parameter, since it's so quick anyway
         preloadProvinces();
@@ -312,6 +353,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
             initProvs();
     }
     
+    @Override
     public void preloadCountries() {
         if (countries == null)
             initCountries();

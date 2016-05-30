@@ -35,13 +35,28 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     
     protected static final ParserSettings settings = ParserSettings.getQuietSettings();
     
-    /** Creates a new instance of ClausewitzScenario */
+    protected boolean saveBackups = true;
+    
+    /**
+     * Creates a ClausewitzScenario which will use the given
+     * {@link eug.shared.FilenameResolver} to locate history files.
+     * @param resolver a {@code FilenameResolver} with mod information
+     */
     public ClausewitzScenario(FilenameResolver resolver) {
         this.resolver = resolver;
         ctryHistoryCache = new HashMap<>();
         provHistoryCache = new HashMap<>();
     }
     
+    /**
+     * Creates a ClausewitzScenario which will use the given main game directory
+     * and mod directory to locate history files. This is essentially the same
+     * as using the {@link ClausewitzScenario(FilenameResolver)} constructor
+     * with a {@link FilenameResolver} that is set to Clausewitz 1 mode.
+     * @param mainDir the main game directory.
+     * @param modDir the mod directory (or null if no mod is used).
+     * @see FilenameResolver#isClausewitz2Mod() 
+     */
     public ClausewitzScenario(String mainDir, String modDir) {
         resolver = new FilenameResolver(mainDir, modDir);
         ctryHistoryCache = new HashMap<>();
@@ -57,24 +72,29 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         this.resolver = resolver;
     }
     
+    @Override
     public GenericObject getCountry(String tag) {
         return getCtryHistory(tag);
     }
     
+    @Override
     public GenericObject getCountryHistory(String tag) {
         return getCtryHistory(tag);
     }
     
+    @Override
     public GenericObject getProvince(int id) {
         return getProvHistory(id);
     }
     
+    @Override
     public GenericObject getProvinceHistory(int id) {
         return getProvHistory(id);
     }
     
+    @Override
     public List<GenericObject> getWars() {
-        final List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<>();
         
         for (File file : resolver.listFiles("history/wars")) {
             final GenericObject obj = EUGFileIO.load(file, settings);
@@ -85,8 +105,9 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return ret;
     }
     
+    @Override
     public List<GenericObject> getWars(final String date) {
-        final List<GenericObject> ret = new ArrayList<GenericObject>();
+        final List<GenericObject> ret = new ArrayList<>();
         
         for (File file : resolver.listFiles("history/wars")) {
             final GenericObject obj = EUGFileIO.load(file, settings);
@@ -102,6 +123,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return ret;
     }
 
+    @Override
     public void removeWar(String name) {
         final String filename =
                 resolver.resolveFilename("history/wars/" + name + ".txt");
@@ -116,23 +138,28 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     }
     
     
+    @Override
     public String getCountryAsStr(String tag) {
         return loadFile(resolveCountryHistoryFile(tag));
     }
     
+    @Override
     public String getCountryHistoryAsStr(String tag) {
         return loadFile(resolveCountryHistoryFile(tag));
     }
     
+    @Override
     public String getProvinceAsStr(int id) {
         return loadFile(resolveProvinceHistoryFile(id));
     }
     
+    @Override
     public String getProvinceHistoryAsStr(int id) {
         return loadFile(resolveProvinceHistoryFile(id));
     }
     
     
+    @Override
     public void saveCountry(String tag, String cname, final String data) {
         String filename = resolveCountryHistoryFile(tag);
         if (filename == null) {
@@ -144,8 +171,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         }
         
         final File file = new File(filename);
-        final String backupFilename = getBackupFilename(filename);
-        if (file.exists()) {
+        if (file.exists() && saveBackups) {
+            final String backupFilename = getBackupFilename(filename);
             if (!file.renameTo(new File(backupFilename)))
                 System.err.println("Backup of " + file.getName() + " failed");
         }
@@ -153,6 +180,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         saveFile(filename, data);
     }
     
+    @Override
     public void saveProvince(int id, String pname, final String data) {
         String filename = resolveProvinceHistoryFile(id);
         if (filename == null) {
@@ -164,7 +192,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         }
         
         final File file = new File(filename);
-        if (file.exists()) {
+        if (file.exists() && saveBackups) {
             final String backupFilename = getBackupFilename(filename);
             if (!file.renameTo(new File(backupFilename)))
                 System.err.println("Backup of " + file.getName() + " failed");
@@ -173,6 +201,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         saveFile(filename, data);
     }
 
+    @Override
     public void saveWar(String name, String data) {
         String filename =
                 resolver.resolveFilename("history/wars/" + name + ".txt");
@@ -194,7 +223,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             // new file
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
             filename = resolver.resolveDirectory("history") + "wars/" + filename;
-        } else {
+        } else if (saveBackups) {
             if (!file.renameTo(new File(getBackupFilename(filename))))
                 System.err.println("Backup of " + file.getName() + " failed");
         }
@@ -206,51 +235,66 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return f.getParent() + File.separatorChar + "~" + f.getName();
     }
     
+    @Override
+    public void setBackups(boolean useBackups) {
+        this.saveBackups = useBackups;
+    }
+    
+    @Override
     public void saveChanges() {
         // do nothing
     }
     
+    @Override
     public boolean hasUnsavedChanges() {
         return false;
     }
     
     
+    @Override
     public void reloadCountry(String tag) {
         ctryHistoryCache.remove(tag);
         resolver.reset();
     }
     
+    @Override
     public void reloadCountryHistory(String tag) {
         ctryHistoryCache.remove(tag);
         resolver.reset();
     }
 
+    @Override
     public void reloadCountries() {
         ctryHistoryCache.clear();
         resolver.reset();
         preloadCountries();
     }
     
+    @Override
     public void reloadProvince(int id) {
         provHistoryCache.remove(id);
         resolver.reset();
     }
     
+    @Override
     public void reloadProvinceHistory(int id) {
         provHistoryCache.remove(id);
         resolver.reset();
     }
 
+    @Override
     public void reloadProvinces() {
         provHistoryCache.clear();
         resolver.reset();
         preloadProvinces(2000); // no way to know what a sensible number is here, and it won't matter much.
     }
     
+    @Override
     public void preloadProvinces(int last) {
         preloadProvHistory(1, last);
     }
     
+    @Override
     public void preloadCountries() {
         preloadCountryHistory();
     }
@@ -370,9 +414,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         
         final File file = new File(filename);
         final char[] data = new char[(int)file.length()];
-        FileReader reader = null;
-        try {
-            reader = new FileReader(file);
+        try (FileReader reader = new FileReader(file)) {
             if (reader.read(data) != data.length)
                 System.err.println("???");
             return String.valueOf(data);
@@ -380,31 +422,17 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {}
-            }
         }
         return null;
     }
     
     protected final void saveFile(final String filename, final String data) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(filename);
+        try (FileWriter writer = new FileWriter(filename)) {
             writer.write(data);
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException ex) {}
-            }
         }
     }
 }

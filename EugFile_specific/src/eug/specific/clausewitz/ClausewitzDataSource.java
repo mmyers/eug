@@ -25,6 +25,13 @@ public interface ClausewitzDataSource {
      * @param style the new {@code Style} to use.
      */
     public void setStyle(Style style);
+    
+    /**
+     * Sets whether or not to back up files when saving changes. This would
+     * include history files or save games. The default is {@code true}.
+     * @param useBackup true if existing files should be renamed to something else before new changes are saved.
+     */
+    public void setBackups(boolean useBackup);
 
     /**
      * Returns the country data for the country with the given tag.

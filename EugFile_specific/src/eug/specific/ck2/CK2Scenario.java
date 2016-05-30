@@ -20,12 +20,12 @@ public class CK2Scenario extends ClausewitzScenario implements CK2DataSource {
 
     public CK2Scenario(String mainDir, String modDir) {
         super(mainDir, modDir);
-        titleHistoryCache = new HashMap<String, GenericObject>();
+        titleHistoryCache = new HashMap<>();
     }
 
     public CK2Scenario(FilenameResolver resolver) {
         super(resolver);
-        titleHistoryCache = new HashMap<String, GenericObject>();
+        titleHistoryCache = new HashMap<>();
     }
 
     /** Gets the country history for the given tag, using the cache. */
@@ -54,33 +54,40 @@ public class CK2Scenario extends ClausewitzScenario implements CK2DataSource {
         return resolver.resolveFilename("history/titles/" + title + ".txt");
     }
 
+    @Override
     public GenericObject getTitle(String title) {
         return _getTitleHistory(title);
     }
 
+    @Override
     public GenericObject getTitleHistory(String title) {
         return _getTitleHistory(title);
     }
 
+    @Override
     public String getTitleAsStr(String title) {
         return loadFile(resolveTitleHistoryFile(title));
     }
 
+    @Override
     public String getTitleHistoryAsStr(String title) {
         return loadFile(resolveTitleHistoryFile(title));
     }
 
 
+    @Override
     public void reloadTitle(String title) {
         titleHistoryCache.remove(title);
         resolver.reset();
     }
 
+    @Override
     public void reloadTitleHistory(String title) {
         titleHistoryCache.remove(title);
         resolver.reset();
     }
 
+    @Override
     public void reloadTitles() {
         titleHistoryCache.clear();
         resolver.reset();
@@ -88,6 +95,7 @@ public class CK2Scenario extends ClausewitzScenario implements CK2DataSource {
     }
 
 
+    @Override
     public void saveTitle(String title, String data) {
         String filename = resolveTitleHistoryFile(title);
         if (filename == null) {
@@ -99,8 +107,8 @@ public class CK2Scenario extends ClausewitzScenario implements CK2DataSource {
         }
 
         final File file = new File(filename);
-        final String backupFilename = getBackupFilename(filename);
-        if (file.exists()) {
+        if (file.exists() && saveBackups) {
+            final String backupFilename = getBackupFilename(filename);
             if (!file.renameTo(new File(backupFilename)))
                 System.err.println("Backup of " + file.getName() + " failed");
         }
