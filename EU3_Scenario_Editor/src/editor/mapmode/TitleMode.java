@@ -3,6 +3,7 @@ package editor.mapmode;
 import editor.MapPanel;
 import editor.ProvinceData.Province;
 import editor.Text;
+import eug.shared.GenericObject;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
 import java.awt.Color;
@@ -21,13 +22,13 @@ public class TitleMode extends ProvincePaintingMode {
     protected TitleType type;
 
     public enum TitleType {
-        BARONY("Barony"),
+        //BARONY("Barony"),
         COUNTY("County"),
         DUCHY("Duchy"),
         KINGDOM("Kingdom"),
         EMPIRE("Empire");
         
-        private String name;
+        private final String name;
         private TitleType(String name) {
             this.name = name;
         }
@@ -45,15 +46,29 @@ public class TitleMode extends ProvincePaintingMode {
         this.type = level;
     }
 
+    @Override
     protected void paintProvince(final Graphics2D g, int provId) {
+        // In history: a province has a single "title" string defined. Follow that title up the chain as far as necessary.
+        // In saved games: a province has multiple barony-level titles defined. Each of them *should* be subject to the same count???
         String owner = mapPanel.getModel().getHistString(provId, "title");
+        if (owner == null || owner.isEmpty()) {
+            GenericObject history = dataSource.getProvinceHistory(provId);
+            if (history != null) {
+                for (GenericObject obj : history.children) {
+                    if (obj.name.startsWith("b_")) {
+                        owner = getLiege(obj.name);
+                        break;
+                    }
+                }
+            }
+        }
         owner = getLiege(owner);
         mapPanel.paintProvince(g, provId, (owner == null ? Utilities.COLOR_NO_CTRY_DEF : getTitleColor(owner)));
     }
 
+    @Override
     protected void paintSeaZone(final Graphics2D g, int id) {
         // Don't paint sea zones.
-        return;
     }
 
     protected Color getTitleColor(String title) {
@@ -75,8 +90,8 @@ public class TitleMode extends ProvincePaintingMode {
 
         String liege = "";
         switch (level) {
-            case BARONY:
-                return title;
+            //case BARONY:
+            //    return title;
             case COUNTY:
                 if (title.startsWith("b_"))
                     liege = getTitleHistString(title, "liege");
@@ -123,6 +138,19 @@ public class TitleMode extends ProvincePaintingMode {
             return "";
 
         String lowestTitle = mapPanel.getModel().getHistString(id, "title");
+        
+        if (lowestTitle == null || lowestTitle.isEmpty()) {
+            GenericObject history = dataSource.getProvinceHistory(id);
+            if (history != null) {
+                for (GenericObject obj : history.children) {
+                    if (obj.name.startsWith("b_")) {
+                        lowestTitle = obj.name;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if (lowestTitle == null)
             return "";
 

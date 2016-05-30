@@ -279,7 +279,7 @@ public final class Map {
                     if (areas != null) {
                         // areas.txt exists, so assume regions are lists of areas (EU4 1.14)
                         List<String> aggregate = cont.getList().stream()
-                                .flatMap(area -> getAreas().get(area).stream()) // list all provinces in each area of the region
+                                .flatMap(area -> getArea(area).stream()) // list all provinces in each area of the region
                                 .collect(Collectors.toList());
                         regionList.put(cont.getName(), aggregate);
                     } else {
@@ -293,7 +293,7 @@ public final class Map {
                 for (GenericObject reg : regions.children) {
                     if (reg.containsList("areas")) {
                         List<String> aggregate = reg.getList("areas").getList().stream()
-                                .flatMap(area -> getAreas().get(area).stream()) // list all provinces in each area of the region
+                                .flatMap(area -> getArea(area).stream()) // list all provinces in each area of the region
                                 .collect(Collectors.toList());
                         regionList.put(reg.name, aggregate);
                     } else if (reg.containsList("provinces")) {
@@ -312,7 +312,7 @@ public final class Map {
                 for (GenericList sr : superRegions.lists) {
                     // at this point, if superregions.txt exists, just assume areas.txt also exists
                     List<String> aggregate = sr.getList().stream()
-                            .flatMap(region -> getRegions().get(region).stream()) // list all provinces in each area of each region of the superregion
+                            .flatMap(region -> getRegion(region).stream()) // list all provinces in each area of each region of the superregion
                             .collect(Collectors.toList());
                     superRegionList.put(sr.getName(), aggregate);
                 }
@@ -335,19 +335,43 @@ public final class Map {
     }
     
     public List<String> getArea(String name) {
-        return getAreas().get(name);
+        List<String> ret = getAreas().get(name);
+        if (ret == null) {
+            log.log(Level.WARNING, "Area {0} is not defined in the map files", name);
+            ret = new ArrayList<>();
+            areaList.put(name, ret);
+        }
+        return ret;
     }
     
     public List<String> getRegion(String name) {
-        return getRegions().get(name);
+        List<String> ret = getRegions().get(name);
+        if (ret == null) {
+            log.log(Level.WARNING, "Region {0} is not defined in the map files", name);
+            ret = new ArrayList<>();
+            regionList.put(name, ret);
+        }
+        return ret;
     }
     
     public List<String> getSuperRegion(String name) {
-        return getSuperRegions().get(name);
+        List<String> ret = getSuperRegions().get(name);
+        if (ret == null) {
+            log.log(Level.WARNING, "Super region {0} is not defined in the map files", name);
+            ret = new ArrayList<>();
+            superRegionList.put(name, ret);
+        }
+        return ret;
     }
     
     public List<String> getProvinceGroup(String name) {
-        return getProvinceGroups().get(name);
+        List<String> ret = getProvinceGroups().get(name);
+        if (ret == null) {
+            log.log(Level.WARNING, "Province group {0} is not defined in the map files", name);
+            ret = new ArrayList<>();
+            provinceGroupList.put(name, ret);
+        }
+        return ret;
     }
     
     public List<String> getAreasOfProv(String provId) {

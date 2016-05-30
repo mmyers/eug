@@ -16,6 +16,7 @@ import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.Style;
 import eug.specific.ck2.CK2DataSource;
+import eug.specific.ck2.CK2SaveGame;
 import eug.specific.ck2.CK2Scenario;
 import eug.specific.clausewitz.ClausewitzHistory;
 import eug.specific.clausewitz.ClausewitzSaveGame;
@@ -190,6 +191,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
             else if (version.getSaveType().equalsIgnoreCase("victoria"))
                 save = Vic2SaveGame.loadSaveGame(saveFile, resolver);
+            else if (version.getSaveType().equalsIgnoreCase("ck2"))
+                save = CK2SaveGame.loadSaveGame(saveFile, resolver);
             else {
                 log.log(Level.WARNING, "Unknown or missing save game type specified by config (\"{0}\"). Defaulting to EU3/EU4.", version.getSaveType());
                 save = EU3SaveGame.loadSaveGame(saveFile, resolver);
