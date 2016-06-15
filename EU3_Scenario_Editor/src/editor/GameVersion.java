@@ -20,6 +20,7 @@ public class GameVersion {
     
     private boolean hasLandList;
     private boolean hasLakes;
+    private boolean hasRivers;
     private boolean isMapInverted;
     private boolean hasRegions;
     private boolean hasClimateTxt;
@@ -52,6 +53,7 @@ public class GameVersion {
                     newVersion.isMapInverted = old.isMapInverted;
                     newVersion.hasLandList = old.hasLandList;
                     newVersion.hasLakes = old.hasLakes;
+                    newVersion.hasRivers = old.hasRivers;
                     newVersion.hasRegions = old.hasRegions;
                     newVersion.hasClimateTxt = old.hasClimateTxt;
                     newVersion.saveType = old.saveType;
@@ -82,6 +84,8 @@ public class GameVersion {
                 newVersion.hasClimateTxt = version.getBoolean("has_climate_txt");
             if (version.hasString("has_lakes"))
                 newVersion.hasLakes = version.getBoolean("has_lakes");
+            if (version.hasString("has_rivers"))
+                newVersion.hasRivers = version.getBoolean("has_rivers");
 
             if (version.hasString("province_loc"))
                 newVersion.provinceLocFmt = version.getString("province_loc");
@@ -153,6 +157,10 @@ public class GameVersion {
 
     public boolean hasLakes() {
         return hasLakes;
+    }
+    
+    public boolean hasRivers() {
+        return hasRivers;
     }
 
     public boolean isMapUpsideDown() {

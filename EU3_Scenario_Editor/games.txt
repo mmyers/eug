@@ -112,6 +112,7 @@ ck2 = {
 	inherit = dw
 	display = "Crusader Kings 2"
 	has_land_list = yes # as of 2.1, Rajas of India patch
+	has_rivers = yes
 	save_type = ck2
 	view_set = ck2
 	new_style_mod = yes

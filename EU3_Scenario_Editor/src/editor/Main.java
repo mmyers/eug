@@ -63,6 +63,7 @@ public class Main {
         setUpLogging();
         
         log.log(Level.INFO, "Java version: {0}", System.getProperty("java.version"));
+        log.log(Level.INFO, "Editor version: {0}", Version.getCurrentVersion());
         
         Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
             log.log(Level.SEVERE, "Uncaught exception", e);

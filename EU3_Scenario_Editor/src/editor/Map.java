@@ -140,7 +140,23 @@ public final class Map {
             
             GenericList seaProvs = mapData.getList("sea_starts");
             if (seaProvs == null) {
-                log.log(Level.WARNING, "No sea_starts found in default.map; weird things might start happening now");
+                List<GenericList> seaZonesLists = mapData.lists.stream()
+                        .filter(w -> w.getName().equalsIgnoreCase("sea_zones"))
+                        .collect(Collectors.toList());
+                if (seaZonesLists.isEmpty()) {
+                    log.log(Level.WARNING, "No sea_starts or sea_zones found in default.map; weird things might start happening now");
+                } else {
+                    mapData.getChildren("ocean_region").forEach((region) -> {
+                        seaZonesLists.addAll(region.lists);
+                    });
+                    
+                    for (GenericList list : seaZonesLists) {
+                        for (String provId : list) {
+                            int id = Integer.parseInt(provId);
+                            isLand[id] = false;
+                        }
+                    }
+                }
             } else {
                 for (String provId : seaProvs) {
                     int id = Integer.parseInt(provId);
@@ -152,6 +168,15 @@ public final class Map {
                 GenericList lakes = mapData.getList("lakes");
                 if (lakes != null) {
                     for (String provId : lakes) {
+                        int id = Integer.parseInt(provId);
+                        isLand[id] = false;
+                    }
+                }
+            }
+            if (version.hasRivers()) {
+                GenericList rivers = mapData.getList("major_rivers");
+                if (rivers != null) {
+                    for (String provId : rivers) {
                         int id = Integer.parseInt(provId);
                         isLand[id] = false;
                     }

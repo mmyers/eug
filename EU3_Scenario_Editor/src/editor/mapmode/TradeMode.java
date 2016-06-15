@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * For EU4.
@@ -23,12 +24,14 @@ import java.util.Map;
  */
 public class TradeMode extends ProvincePaintingMode {
     
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TradeMode.class.getName());
+    
     private Map<Integer, Color> tradeNodes;
     private Map<Integer, Integer> nodeMembers;
     private Map<Integer, List<List<Integer>>> outgoing;
     private Map<Integer, List<Integer>> incoming;
 
-    private static Color[] defaultColors = {
+    private static final Color[] defaultColors = {
         Color.LIGHT_GRAY, Color.CYAN, Color.MAGENTA, Color.WHITE, Color.YELLOW,
         Color.GREEN,      Color.PINK, Color.ORANGE,  Color.RED,   Color.DARK_GRAY
     };
@@ -40,20 +43,24 @@ public class TradeMode extends ProvincePaintingMode {
     }
 
     private void readNodes(GenericObject nodes) {
-        tradeNodes = new HashMap<Integer, Color>();
-        nodeMembers = new HashMap<Integer, Integer>();
-        outgoing = new HashMap<Integer, List<List<Integer>>>();
-        incoming = new HashMap<Integer, List<Integer>>();
+        tradeNodes = new HashMap<>();
+        nodeMembers = new HashMap<>();
+        outgoing = new HashMap<>();
+        incoming = new HashMap<>();
         
         for (GenericObject child : nodes.children) {
             int loc = child.getInt("location");
             tradeNodes.put(loc, getColor(child.getList("color")));
-            for (String id : child.getList("members"))
-                nodeMembers.put(Integer.parseInt(id), loc);
+            if (child.containsList("members")) {
+                for (String id : child.getList("members"))
+                    nodeMembers.put(Integer.parseInt(id), loc);
+            } else {
+                log.log(Level.WARNING, "Trade node {0} has no members", child.name);
+            }
             
             if (child.containsChild("outgoing")) {
                 for (GenericObject obj : child.getChildren("outgoing")) {
-                    List<Integer> path = new ArrayList<Integer>();
+                    List<Integer> path = new ArrayList<>();
                     GenericList pathList = obj.getList("path");
 
                     if (pathList == null || pathList.size() == 0)
@@ -72,11 +79,11 @@ public class TradeMode extends ProvincePaintingMode {
 
                     int target = path.get(path.size()-1);
                     if (!incoming.containsKey(target))
-                        incoming.put(target, new ArrayList<Integer>());
+                        incoming.put(target, new ArrayList<>());
                     incoming.get(target).add(loc);
                     
                     if (!outgoing.containsKey(loc))
-                        outgoing.put(loc, new ArrayList<List<Integer>>());
+                        outgoing.put(loc, new ArrayList<>());
                     outgoing.get(loc).add(path);
                 }
             }
