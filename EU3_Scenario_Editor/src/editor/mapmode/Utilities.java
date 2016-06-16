@@ -119,6 +119,8 @@ public final class Utilities {
     
     private static void initTitles() {
         titles = EUGFileIO.load(resolver.resolveFilename("common/landed_titles.txt"), settings);
+        if (titles == null)
+            titles = EUGFileIO.loadAll(resolver.listFiles("common/landed_titles"), settings);
 
         readTitleColors(titles);
     }
