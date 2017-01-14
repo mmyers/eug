@@ -36,6 +36,9 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
      * Creates a new instance of ClausewitzSaveGame
      */
     public ClausewitzSaveGame(GenericObject root, String savePath, String mainPath, String modName) {
+        if (root == null)
+            throw new NullPointerException("Failed to load game from " + savePath);
+        
         this.root = root;
         this.scenarioName = "";
         this.savePath = savePath;
