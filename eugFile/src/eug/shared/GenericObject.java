@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * This class represents an object present in the game file,
@@ -41,17 +41,32 @@ public final class GenericObject implements WritableObject, Cloneable {
     private InlineComment inlineComment = null;
     
     //modif leo
+    
+    /**
+     * List of all object children of this object. This may include empty objects.
+     */
     public List<GenericObject> children;
+    
+    /**
+     * List of all list children of this object. This does not include empty lists, as they
+     * are parsed as empty objects instead.
+     */
     public List<GenericList> lists;
+    
     private GenericObject parent;
+    
+    /**
+     * List of all value children of this object (e.g. "id = 10000").
+     */
     public List<ObjectVariable> values;
     /** @since EUGFile 1.01.03 */
     private List<Comment> generalComments;  // comments that are not attached to a node
     public String name;
-    private List<WritableObject> allWritable;
     
-    public static final String tab = "    ";
-    public static final int tabLength = 4;
+    /**
+     * List of every child of this object so that the order is preserved.
+     */
+    private List<WritableObject> allWritable;
     
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc=" Constructors ">
@@ -69,14 +84,11 @@ public final class GenericObject implements WritableObject, Cloneable {
         parent = par;
         name = t;
         
-        // Consider using ArrayLists instead.
-        // ArrayLists would probably be a little faster, but are not thread-safe;
-        // however, I don't know if thread safety will ever be an issue.
-        children = new Vector<GenericObject>(0);
-        lists = new Vector<GenericList>(0);
-        values = new Vector<ObjectVariable>(0);
-        generalComments = new Vector<Comment>(0);
-        allWritable = new Vector<WritableObject>(0);
+        children = new ArrayList<>(0);
+        lists = new ArrayList<>(0);
+        values = new ArrayList<>(0);
+        generalComments = new ArrayList<>(0);
+        allWritable = new ArrayList<>(0);
     }
     
     // </editor-fold>
@@ -127,11 +139,9 @@ public final class GenericObject implements WritableObject, Cloneable {
      * @return the named child objects.
      */
     public List<GenericObject> getChildren(String name) {
-        final List<GenericObject> ret = new ArrayList<GenericObject>();
-        for (GenericObject child : children)
-            if (child.name.equalsIgnoreCase(name))
-                ret.add(child);
-        return ret;
+        return children.stream()
+                .filter(child -> child.name.equalsIgnoreCase(name))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -216,7 +226,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the first child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in string form.
      */
     public String getString(String varname) {
@@ -229,7 +239,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the last child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in string form.
      */
     public String getLastString(String varname) {
@@ -252,18 +262,15 @@ public final class GenericObject implements WritableObject, Cloneable {
      * @since EUGFile 1.02.00
      */
     public List<String> getStrings(String name) {
-        final List<String> ret = new ArrayList<String>();
-        
-        for (ObjectVariable var : values)
-            if (var.varname.equalsIgnoreCase(name))
-                ret.add(var.getValue());
-        
-        return ret;
+        return values.stream()
+                .filter(var -> var.varname.equalsIgnoreCase(name))
+                .map(var -> var.getValue())
+                .collect(Collectors.toList());
     }
 
     /**
      * Gets the first child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in int form.
      */
     public int getInt(String varname) {
@@ -276,7 +283,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the last child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in int form.
      */
     public int getLastInt(String varname) {
@@ -289,7 +296,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the first child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in double form.
      */
     public double getDouble(String varname) {
@@ -302,7 +309,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the last child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in double form.
      */
     public double getLastDouble(String varname) {
@@ -314,8 +321,10 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
 
     /**
-     * Gets the first child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * Gets the first child variable with the given name. Returns {@code true}
+     * if the variable's value is {@code "yes"}, ignoring case; {@code false}
+     * otherwise.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in boolean form.
      */
     public boolean getBoolean(String varname) {
@@ -328,7 +337,7 @@ public final class GenericObject implements WritableObject, Cloneable {
 
     /**
      * Gets the last child variable with the given name.
-     * @param childname the name of the variable to retrieve.
+     * @param varname the name of the variable to retrieve.
      * @return the named child variable in boolean form.
      */
     public boolean getLastBoolean(String varname) {
@@ -349,6 +358,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     
     /**
      * Simple recursive method to find the root node.
+     * @return the root node
      * @since EUGFile 1.01.03
      */
     public GenericObject getRoot() {
@@ -356,6 +366,8 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     /**
+     * Gives direct access to the list of all writable objects stored in this
+     * object. The list is not cloned before returning.<p>
      * This method should only be used with great, great caution. Modifying the
      * returned list could cause major problems.
      */
@@ -434,6 +446,11 @@ public final class GenericObject implements WritableObject, Cloneable {
         return nb;
     }
     
+    /**
+     * The total size of the object: the number of sub-objects + the number of
+     * sub-lists + the number of values. Comments are not included in the count.
+     * @return the number of children of this object
+     */
     public int size() {
         return allWritable.size();
     }
@@ -536,11 +553,8 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     public boolean hasString(String varname) {
-        for (ObjectVariable var : values) {
-            if (var.varname.equalsIgnoreCase(varname))
-                return true;
-        }
-        return false;
+        return values.stream()
+                .anyMatch(var -> var.varname.equalsIgnoreCase(varname));
     }
     
     public boolean contains(String str) {
@@ -567,6 +581,17 @@ public final class GenericObject implements WritableObject, Cloneable {
         return parent == null;
     }
     
+    /**
+     * Trims the capacity of all lists used by this object to their current size.
+     */
+    public void trimToSize() {
+        ((ArrayList) children).trimToSize();
+        ((ArrayList) lists).trimToSize();
+        ((ArrayList) values).trimToSize();
+        ((ArrayList) generalComments).trimToSize();
+        ((ArrayList) allWritable).trimToSize();
+    }
+    
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc=" Adders ">
     
@@ -587,15 +612,6 @@ public final class GenericObject implements WritableObject, Cloneable {
         values.add(newVar);
         allWritable.add(newVar);
     }
-    
-//    public void setChild(GenericObject newval, /*String type,*/ int pos){
-//        if (this.children.get(pos).equals(newval)) {
-//            this.children.add(pos, newval);
-//            return;
-//        }
-//
-//        this.addChild(newval);
-//    }
     
     public void addChild(GenericObject newval){
         if (newval == null)
@@ -777,18 +793,8 @@ public final class GenericObject implements WritableObject, Cloneable {
         //so we start by writing children directly
         
         if (comment != null && comment.length() != 0) {
-//            if (allWritable.get(0) != null && allWritable.get(0) instanceof Comment) {
-//                // If there is a file header comment, merge the two, with the new comment first.
-//                Comment c = ((Comment) allWritable.get(0));
-//                String s = c.getComment();
-//                c.setComment(comment);
-//                c.appendComment(s);
-//            } else {
             new HeaderComment(comment).toFileString(bw, 0, style);
-            
-//                bw.newLine();
             bw.newLine();
-//            }
         }
         
         // Changed from foreach
@@ -870,64 +876,6 @@ public final class GenericObject implements WritableObject, Cloneable {
         }
     }
     
-//    private boolean isSameLine() {
-//        // Same line <=> the total number of children is <= 3,
-//        // UNLESS this is an event trigger or action OR a child has an inline
-//        // comment (which would end up commenting out our final "}").
-//
-//        // Root objects are never sameline.
-//        if (name.equals("root"))
-//            return false;
-//
-//        boolean sameLine = allWritable.size() == 0 ||
-//                (
-//                (allWritable.size() < 4) &&
-//                !(
-//                name.equalsIgnoreCase("trigger") || name.startsWith("action_") ||
-//                (allWritable.size() != 1 && name.equalsIgnoreCase("NOT") || (name.equalsIgnoreCase("AND") || name.equalsIgnoreCase("OR")))
-//                )
-//                );
-//        if (sameLine) {
-//            for (ObjectVariable v : values)
-//                if (v.getInlineComment().length() != 0)
-//                    return false;
-//            for (GenericObject o : children)
-//                if (o.getInlineComment().length() != 0)
-//                    return false;
-//            for (GenericList l : lists)
-//                if (l.getInlineComment().length() != 0)
-//                    return false;
-//        }
-//        return sameLine;
-//    }
-    
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc=" Static members ">
-    
-    private static final String[] tabs = {
-        "",
-        tab,
-        tab + tab,
-        tab + tab + tab,
-        tab + tab + tab + tab,
-        tab + tab + tab + tab + tab,
-        tab + tab + tab + tab + tab + tab,
-        tab + tab + tab + tab + tab + tab + tab,
-        tab + tab + tab + tab + tab + tab + tab + tab,
-        tab + tab + tab + tab + tab + tab + tab + tab + tab,
-    };
-    
-    // Could use a loop, but the array method is faster.
-    static String getTab(final int depth) {
-        return tabs[depth];
-    }
-    
-    static void writeTab(final BufferedWriter w, final int depth) throws IOException {
-        w.write(tabs[depth]);
-//        for (int i = 0; i < depth; i++)
-//            w.write(tab);
-    }
-    
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc=" Overrides ">
     
@@ -944,8 +892,8 @@ public final class GenericObject implements WritableObject, Cloneable {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 47 * hash + (this.headComment != null ? this.headComment.hashCode() : 0);
-        hash = 47 * hash + (this.inlineComment != null ? this.inlineComment.hashCode() : 0);
+        //hash = 47 * hash + (this.headComment != null ? this.headComment.hashCode() : 0);
+        //hash = 47 * hash + (this.inlineComment != null ? this.inlineComment.hashCode() : 0);
         hash = 47 * hash + (this.allWritable != null ? this.allWritable.hashCode() : 0);
         return hash;
     }
@@ -957,17 +905,10 @@ public final class GenericObject implements WritableObject, Cloneable {
         if (!name.equals(other.name))
             return false;
         
-            for (WritableObject obj : allWritable) {
-                if (!other.allWritable.contains(obj)) {
-                    return false;
-                }
-            }
-            for (WritableObject obj : other.allWritable) {
-                if (!allWritable.contains(obj)) {
-                    return false;
-                }
-            }
-            return true;
+        if (!allWritable.equals(other.allWritable))
+            return false;
+        
+        return true;
 //        } else {
 //            return false;
 //        }

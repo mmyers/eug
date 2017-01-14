@@ -85,8 +85,8 @@ public class CWordFile {
                 return true;
             }
             
-            BufferedReader reader = new BufferedReader(new FileReader(inFile),
-                    Math.min(65536, (int)inFile.length())); // safeguard for very large files
+            int buffSize = Math.min(65536, (int)inFile.length()); // safeguard for very large files
+            BufferedReader reader = new BufferedReader(new FileReader(inFile), buffSize);
             
             // if it starts with "PK", it's a zip - cancel out.
             // third character should be 0x3 since this isn't an empty or
@@ -332,6 +332,7 @@ public class CWordFile {
                 if (!settings.isIgnoreComments()) {
                     current_node.setInlineComment(readInlineComment());
                 }
+                current_node.trimToSize();
                 current_node = current_node.getParent();
                 lastComment = null;
                 break;

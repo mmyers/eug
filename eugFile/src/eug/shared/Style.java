@@ -35,6 +35,44 @@ public interface Style {
     public boolean isInline(final GenericList list);
     public boolean newLineAfterObject();
     
+    class StyleHelpers {
+        
+        static final String SPACE_TAB = "    ";
+        static final int SPACE_TAB_LENGTH = 4;
+        
+        static final String[] SPACE_TABS = {
+            "",
+            SPACE_TAB,
+            SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB,
+            SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB + SPACE_TAB
+        };
+        
+        static final String[] TABS = {
+            "",
+            "\t",
+            "\t\t",
+            "\t\t\t",
+            "\t\t\t\t",
+            "\t\t\t\t\t",
+            "\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t",
+        };
+    }
+    
     
     // Implementations
     
@@ -51,10 +89,7 @@ public interface Style {
         
         @Override
         public String getTab(int depth) {
-            final StringBuilder sb = new StringBuilder(depth*4);
-            for (int i = 0; i < depth; i++)
-                sb.append("    ");
-            return sb.toString();
+            return StyleHelpers.SPACE_TABS[depth];
         }
         
         @Override
@@ -69,8 +104,7 @@ public interface Style {
         
         @Override
         public void printTab(final BufferedWriter bw, int depth) throws IOException {
-            for (int i = 0; i < depth; i++)
-                bw.write("    ");
+            bw.write(StyleHelpers.SPACE_TABS[depth]);
         }
         
         @Override
@@ -87,7 +121,7 @@ public interface Style {
         public void printHeaderCommentStart(final BufferedWriter bw, int depth) throws IOException {
             printTab(bw, depth);
             
-            for (int i = depth*GenericObject.tabLength; i < 80; i++)
+            for (int i = depth*StyleHelpers.SPACE_TAB_LENGTH; i < 80; i++)
                 bw.write('#');
             
             bw.newLine();
@@ -104,7 +138,7 @@ public interface Style {
             
             printTab(bw, depth);
             
-            for (int i = depth*GenericObject.tabLength; i < 80; i++)
+            for (int i = depth*StyleHelpers.SPACE_TAB_LENGTH; i < 80; i++)
                 bw.write('#');
         }
         
@@ -164,10 +198,7 @@ public interface Style {
         
         @Override
         public String getTab(int depth) {
-            final StringBuilder sb = new StringBuilder(depth);
-            for (int i = 0; i < depth; i++)
-                sb.append("\t");
-            return sb.toString();
+            return StyleHelpers.TABS[depth];
         }
         
         @Override
@@ -182,8 +213,7 @@ public interface Style {
         
         @Override
         public void printTab(final BufferedWriter bw, int depth) throws IOException {
-            for (int i = 0; i < depth; i++)
-                bw.write("\t");
+            bw.write(StyleHelpers.TABS[depth]);
         }
         
         @Override
@@ -358,10 +388,7 @@ public interface Style {
         
         @Override
         public String getTab(int depth) {
-            final StringBuilder sb = new StringBuilder(depth*4);
-            for (int i = 0; i < depth; i++)
-                sb.append("\t");
-            return sb.toString();
+            return StyleHelpers.TABS[depth];
         }
         
         @Override
@@ -376,8 +403,7 @@ public interface Style {
         
         @Override
         public void printTab(final BufferedWriter bw, int depth) throws IOException {
-            for (int i = 0; i < depth; i++)
-                bw.write("\t");
+            bw.write(StyleHelpers.TABS[depth]);
         }
         
         @Override
@@ -434,10 +460,7 @@ public interface Style {
         
         @Override
         public String getTab(int depth) {
-            final StringBuilder sb = new StringBuilder(depth*4);
-            for (int i = 0; i < depth; i++)
-                sb.append("\t");
-            return sb.toString();
+            return StyleHelpers.TABS[depth];
         }
         
         @Override
@@ -452,8 +475,7 @@ public interface Style {
         
         @Override
         public void printTab(final BufferedWriter bw, int depth) throws IOException {
-            for (int i = 0; i < depth; i++)
-                bw.write("\t");
+            bw.write(StyleHelpers.TABS[depth]);
         }
         
         @Override

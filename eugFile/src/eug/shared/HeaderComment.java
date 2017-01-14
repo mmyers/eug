@@ -43,7 +43,7 @@ public class HeaderComment extends InlineComment {
         final String[] lines = newLinePattern.split(comment);
         final int num = lines.length;
         for (int i = 0; i < num; i++) {
-            GenericObject.writeTab(bw, depth);
+            bw.write(style.getTab(depth));
             style.printCommentStart(bw, depth);
             bw.write(lines[i]);
             if (i < num-1)
