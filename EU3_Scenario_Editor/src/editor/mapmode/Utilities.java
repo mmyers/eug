@@ -222,8 +222,8 @@ public final class Utilities {
             final GenericObject countryDef = EUGFileIO.load(filename, settings);
             
             if (countryDef == null) {
-                log.log(Level.WARNING, "No country definition file found for {0}.", country);
-                log.log(Level.WARNING, "Expected to find it in {0}", countries.getString(country));
+                log.log(Level.WARNING, "No country definition file found for {0}. Expected to find it in {1}.", new Object[] { country, countries.getString(country) });
+                ctryColorCache.put(country, COLOR_NO_CTRY_DEF);
                 return COLOR_NO_CTRY_DEF;
             }
             
@@ -231,6 +231,7 @@ public final class Utilities {
             
             if (color == null) {
                 log.log(Level.WARNING, "color for {0} is null", country);
+                ctryColorCache.put(country, COLOR_NO_CTRY_DEF);
                 return COLOR_NO_CTRY_DEF;
             }
             
@@ -256,6 +257,7 @@ public final class Utilities {
                         GenericList color = group.getList("color");
                         if (color == null) {
                             log.log(Level.WARNING, "color for {0} is null", religion);
+                            relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
                             return COLOR_NO_RELIGION_DEF;
                         }
                         ret = parseFloatColor(color);
@@ -268,6 +270,7 @@ public final class Utilities {
                         GenericList color = rel.getList("color");
                         if (color == null) {
                             log.log(Level.WARNING, "color for {0} is null", religion);
+                            relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
                             return COLOR_NO_RELIGION_DEF;
                         }
                         ret = parseFloatColor(color);

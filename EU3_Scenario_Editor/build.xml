@@ -113,6 +113,7 @@
                 <exclude name="**/*.zip" />
                 <exclude name="config.txt" />
                 <exclude name="*.log" />
+                <exclude name="/nbproject/private/profiler/" />
             </zipfileset>
         </zip>
     </target>

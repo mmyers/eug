@@ -374,8 +374,12 @@ public class Main {
             String modPath = f.getName().substring(0, f.getName().length()-4);
             if (obj.contains("path")) {
                 modPath = moddir.getParent() + File.separator + obj.getString("path");
+            } else if (obj.contains("archive")) {
+                log.log(Level.INFO, "Archive mods are not yet supported. Mod \"{0}\" skipped.", obj.getString("name"));
+                continue;
             }
             Mod mod = new Mod(obj.getString("name"), f.getAbsolutePath(), modPath);
+            log.log(Level.INFO, "Mod: {0}; file path: {1}; mod path: {2}", new Object[]{mod.name, mod.modFilePath, mod.modPath});
             ret.add(mod);
         }
         return ret;

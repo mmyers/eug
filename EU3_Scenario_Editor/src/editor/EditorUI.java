@@ -877,17 +877,17 @@ public final class EditorUI extends javax.swing.JFrame {
                         viewModeLabel.setText("Provinces in " + cont);
                         mapPanel.repaint();
                     }
-                } else if (mode instanceof AreaMode) {
+                } else if (mode instanceof SingleAreaMode) {
                     String area = map.getAreasOfProv(lastProv.getId()).get(0);
                     if (!area.equals("(none)")) {
-                        mapPanel.setMode(new AreaMode(mapPanel, area));
+                        mapPanel.setMode(new SingleAreaMode(mapPanel, area));
                         viewModeLabel.setText("Provinces in " + area);
                         mapPanel.repaint();
                     }
-                } else if (mode instanceof RegionsMode) {
+                } else if (mode instanceof SingleRegionMode) {
                     String reg = map.getRegionsOfProv(lastProv.getId()).get(0);
                     if (!reg.equals("(none)")) {
-                        mapPanel.setMode(new RegionsMode(mapPanel, reg));
+                        mapPanel.setMode(new SingleRegionMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
                         mapPanel.repaint();
                     }
@@ -1193,23 +1193,25 @@ public final class EditorUI extends javax.swing.JFrame {
         final StringBuilder allReligions = new StringBuilder("(");
         
         for (GenericObject group : religions.children) {
+            
             Collections.sort(group.children, new ObjectComparator());
             
             JMenu groupMenu = new JMenu(Text.getText(group.name));
             
-            StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
-            
-            for (GenericObject religion : group.children) {
-                groupMenu.add(new CustomFilterAction(Text.getText(religion.name), "religion", religion.name));
-                pattern.append(religion.name).append('|');
-                allReligions.append(religion.name).append('|');
+            if (!group.children.isEmpty()){
+                StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
+
+                for (GenericObject religion : group.children) {
+                    groupMenu.add(new CustomFilterAction(Text.getText(religion.name), "religion", religion.name));
+                    pattern.append(religion.name).append('|');
+                    allReligions.append(religion.name).append('|');
+                }
+
+                pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
+                pattern.append(')');
+
+                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "religion", pattern.toString()));
             }
-            
-            pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
-            pattern.append(')');
-            
-            groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "religion", pattern.toString()));
-            
             rootMenu.add(groupMenu);
         }
         
@@ -2113,14 +2115,14 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private class AreaFilterAction extends FilterAction {
         public AreaFilterAction(String name, String areaName) {
-            super(name, new AreaMode(mapPanel, areaName));
+            super(name, new SingleAreaMode(mapPanel, areaName));
             putValue(SHORT_DESCRIPTION, "Provinces in " + areaName);
         }
     }
     
     private class RegionFilterAction extends FilterAction {
         public RegionFilterAction(String name, String regName) {
-            super(name, new RegionsMode(mapPanel, regName));
+            super(name, new SingleRegionMode(mapPanel, regName));
             putValue(SHORT_DESCRIPTION, "Provinces in " + regName);
         }
     }

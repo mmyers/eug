@@ -15,23 +15,23 @@ import java.util.List;
  * @author Michael Myers
  * @since 0.6pre1
  */
-public class RegionsMode extends GroupMode {
+public class SingleRegionMode extends GroupMode {
     
     /** Creates a new instance of RegionsMode */
-    public RegionsMode(String region) {
+    public SingleRegionMode(String region) {
         provIds = makeIntList(getMap().getRegion(region));
     }
     
-    public RegionsMode(List<String> continent) {
+    public SingleRegionMode(List<String> continent) {
         super(continent);
     }
     
-    public RegionsMode(MapPanel panel, String region) {
+    public SingleRegionMode(MapPanel panel, String region) {
         super(panel);
         provIds = makeIntList(getMap().getRegion(region));
     }
     
-    public RegionsMode(MapPanel panel, List<String> region) {
+    public SingleRegionMode(MapPanel panel, List<String> region) {
         super(panel, region);
     }
     

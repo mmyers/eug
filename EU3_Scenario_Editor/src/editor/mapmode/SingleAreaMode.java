@@ -8,9 +8,9 @@ import java.util.List;
 /**
  * @since 0.9
  */
-public class AreaMode extends GroupMode {
+public class SingleAreaMode extends GroupMode {
     
-    public AreaMode(MapPanel panel, String area) {
+    public SingleAreaMode(MapPanel panel, String area) {
         super(panel);
         provIds = makeIntList(getMap().getArea(area));
     }

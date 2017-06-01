@@ -12,6 +12,9 @@ import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +31,7 @@ public final class Map {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Map.class.getName());
     
-    static final String MAP_DIR_NAME = "/map";
+    private static final String MAP_DIR_NAME = "/map";
     
     private GenericObject mapData;
     
@@ -71,6 +74,42 @@ public final class Map {
 //        }
     }
 
+    private String readFile(String path) {
+        try {
+            String ret = new String(Files.readAllBytes(Paths.get(path)));
+            if (ret.charAt(0) == 0xFFEF)
+                return ret.substring(1);
+            return ret;
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, null, ex);
+            return "";
+        }
+    }
+    
+    private String stripColors(String text) {
+        // Areas could be:
+        // bourgogne_area = { 191 192 193 1877 }
+        // or:
+        // bourgogne_area = { color = { 144 0 32 } 191 192 193 1877 }
+
+        // This method strips such color blocks completely out of a file. It's
+        // easier than rewriting the parsing code to work with objects inside lists.
+        
+        StringBuilder sb = new StringBuilder(text.length());
+        int index = 0;
+        
+        while (true) {
+            int nextIndex = text.indexOf("color =", index);
+            if (nextIndex == -1)
+                break;
+            
+            sb.append(text.substring(index, nextIndex));
+            index = text.indexOf("}", nextIndex) + 1;
+        }
+        sb.append(text.substring(index));
+        
+        return sb.toString();
+    }
     
     private void loadData() {
         //log.log(Level.INFO, "Map file is {0}", resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
@@ -106,21 +145,24 @@ public final class Map {
             if (!regFilename.contains("/"))
                 regFilename = MAP_DIR_NAME + '/' + regFilename;
 
-            regions = EUGFileIO.load(resolver.resolveFilename(regFilename), fastSettings);
+            String regionText = stripColors(readFile(resolver.resolveFilename(regFilename)));
+            regions = EUGFileIO.loadFromString(regionText, fastSettings);
             
             if (mapData.hasString("area")) {
                 String areaFilename = mapData.getString("area").replace('\\', '/');
                 if (!areaFilename.contains("/"))
                     areaFilename = MAP_DIR_NAME + '/' + areaFilename;
                 
-                areas = EUGFileIO.load(resolver.resolveFilename(areaFilename), fastSettings);
+                String areaText = stripColors(readFile(resolver.resolveFilename(areaFilename)));
+                areas = EUGFileIO.loadFromString(areaText, fastSettings);
             }
             if (mapData.hasString("superregion")) {
                 String srFilename = mapData.getString("superregion").replace('\\', '/');
                 if (!srFilename.contains("/"))
                     srFilename = MAP_DIR_NAME + '/' + srFilename;
                 
-                superRegions = EUGFileIO.load(resolver.resolveFilename(srFilename), fastSettings);
+                String srText = stripColors(readFile(resolver.resolveFilename(srFilename)));
+                superRegions = EUGFileIO.loadFromString(srText, fastSettings);
             }
             if (mapData.hasString("provincegroup")) {
                 String pgFilename = mapData.getString("provincegroup").replace('\\', '/');
