@@ -1,5 +1,7 @@
 ### Europa Universalis Editor
 
+[Download it on SourceForge!](https://sourceforge.net/projects/eug/files/latest/download)
+
 A game editor which has as many mapmodes as the game does itself. Includes a syntax-checking text editor at no extra cost.
 
 Compatible with:
@@ -14,10 +16,10 @@ Compatible with older versions of:
 
 The editor might be compatible with the current versions of all of the above, but I own none except Victoria II, which I do not have the expansions for. I welcome test reports for any game.
 
-#####Subprojects
+####Subprojects
 
 - **EU3_Scenario_Editor** - This is the main scenario editor project.
 - **eugFile** - The library that makes the rest of this possible. It handles parsing and loading Paradox game files. The "eug" refers to EU2 save games, which used a .eug extension.
 - **EugFile_specific** - Abstracts engine-specific details, mostly Clausewitz vs. Clausewitz 2 games. Also has some code for old Europa games.
 - **EugSyntax** - A plug-and-play syntax highlighting editor kit for a javax.swing.JEditorPane.
-- **PositionsEditor** - Editor for sprite positions on the game map. Useful for map modders only.
+- **PositionsEditor** - Editor for sprite positions on the game map. Useful for map modders only. Mostly irrelevant for newer games which include the "nudge" editor.
