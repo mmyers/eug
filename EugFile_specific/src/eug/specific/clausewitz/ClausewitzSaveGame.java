@@ -121,12 +121,17 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
     
     @Override
     public GenericObject getCountry(String tag) {
+        if (tag.length() < 3)
+            return null;
         return getCountryMap().get(tag.substring(0,3).toUpperCase());
     }
     
     @Override
     public GenericObject getCountryHistory(String tag) {
-        return getCountryMap().get(tag.substring(0,3).toUpperCase()).getChild("history");
+        GenericObject ctry = getCountry(tag);
+        if (ctry == null)
+            return null;
+        return ctry.getChild("history");
     }
     
     @Override
