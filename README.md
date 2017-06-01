@@ -16,7 +16,7 @@ Compatible with older versions of:
 
 The editor might be compatible with the current versions of all of the above, but I own none except Victoria II, which I do not have the expansions for. I welcome test reports for any game.
 
-####Subprojects
+#### Subprojects
 
 - **EU3_Scenario_Editor** - This is the main scenario editor project.
 - **eugFile** - The library that makes the rest of this possible. It handles parsing and loading Paradox game files. The "eug" refers to EU2 save games, which used a .eug extension.
