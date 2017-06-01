@@ -176,33 +176,6 @@ package eug.parser;
     }
 
     /**
-     * Returns the current list in array form. All comments are stripped out.
-     * @see #getList()
-     * @since EUGFile 1.01.00
-     */
-    public String[] getArray() {
-        if (lastType != TokenType.LIST) {
-            System.err.println("Shouldn't be trying to get a list from token type " + lastType);
-            return new String[] { };
-        }
-
-        return ListScanner.parseArray(yytext().substring(yytext().indexOf('{') + 1, yytext().indexOf('}')));
-    }
-    /**
-     * Returns the current list in the form of a <code>List&lt;String&gt;</code>.
-     * All comments are stripped out.
-     * @see #getArray()
-     */
-    public java.util.List<String> getList() {
-        if (lastType != TokenType.LIST) {
-            System.err.println("Shouldn't be trying to get a list from token type " + lastType);
-            return new java.util.ArrayList<String>();
-        }
-
-        return ListScanner.parseList(yytext().substring(yytext().indexOf('{') + 1, yytext().indexOf('}')));
-    }
-
-    /**
      * Close the scanner's reader. Any <code>IOException</code> will be caught
      * and printed to standard error.
      */
@@ -360,33 +333,6 @@ UNQUOTED_STR                = {ALNUM}+
 /* Note: The Ident macro will slow things down. */
 Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR}* {COMMENT_NEWLINE}* {WHITE_SPACE_CHAR}*)* "=" {NONNEWLINE_WHITE_SPACE_CHAR}*
 
-/* List-detection is somewhat complicated. We want to detect all bracket-
- * delimited blocks such that
- * 1. There is no non-commented equals sign in the block.
- * 2. There is at least one non-blank, non-commented character in the block.
- *
- * What makes it difficult is that sometimes comment characters occur inside
- * quote-delimited strings, such as:
- *
- * monarch_names = {
- *      "Yusuf #0" = 20
- *      "Ibrahim #0" = 40
- *      "Ali #0" = 20
- *      "Mohammed #0" = 20
- *      "Sikandi #0" = 40
- * }
- *
- * In this example, all equals signs occur after comment characters, which
- * fools the parser into thinking that it is a list (which causes errors every
- * time one of the equals signs is read).
- */
-//LIST                        = "{" {NON_OPERATOR}* {ALNUM} {NON_OPERATOR}* "}" {NONNEWLINE_WHITE_SPACE_CHAR}*
-//LIST                        = "{"
-//                                ({COMMENT_NEWLINE}* {NON_OPERATOR}*)*
-//                                (({ALNUM} {NON_OPERATOR}* {COMMENT_NEWLINE}*)|({COMMENT_NEWLINE}* {NON_OPERATOR}* {ALNUM}*))+
-//                                ({NON_OPERATOR}* {COMMENT_NEWLINE}*)*
-//                            "}"
-//                            {NONNEWLINE_WHITE_SPACE_CHAR}*
 
 %% 
 

@@ -4,10 +4,10 @@ package eug.shared;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * This class represents a list from the saved game. For example:<br>
@@ -29,7 +29,7 @@ public final class GenericList
     private InlineComment inlineComment = null;
     
     //modif leo - attributs en public
-    private final Vector<String> list;
+    private final List<String> list;
     private String varname;
     private boolean quotes = false;
     
@@ -41,7 +41,7 @@ public final class GenericList
      */
     GenericList(String name) {
         varname = name;
-        list = new Vector<String>();
+        list = new ArrayList<String>();
     }
     
     public void setHeaderComment(String comment) {
@@ -80,7 +80,7 @@ public final class GenericList
      */
     @SuppressWarnings("unchecked")
     public List<String> getList() {
-        return (List<String>) list.clone();
+        return new ArrayList<String>(list);
     }
     
     public int size() {
@@ -202,11 +202,13 @@ public final class GenericList
         return list.contains(val);
     }
     
+    @Override
     public void toFileString(final BufferedWriter bw, int depth)
             throws IOException {
         toFileString(bw, depth, Style.DEFAULT);
     }
     
+    @Override
     public void toFileString(final BufferedWriter bw, int depth, Style style)
             throws IOException {
         
@@ -270,6 +272,7 @@ public final class GenericList
         return sw.toString();
     }
     
+    @Override
     public Iterator<String> iterator() {
         return list.iterator();
     }
@@ -279,6 +282,7 @@ public final class GenericList
     private static final class NumberStringComparator
             implements Comparator<String>, Serializable {
         private static final long serialVersionUID = 1L;
+        @Override
         public final int compare(String o1, String o2) {
             return Double.compare(
                     Double.parseDouble(o1), Double.parseDouble(o2));

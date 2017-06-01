@@ -30,9 +30,6 @@ public enum TokenType {
     /** Constant indicating that an identifier ("xxx =") has been read. */
     IDENT,
     
-    /** Constant indicating that a list has been read. */
-    LIST,
-    
     /** Constant indicating that a newline character (\r, \n, or \r\n) has been read. */
     NEWLINE,
 }

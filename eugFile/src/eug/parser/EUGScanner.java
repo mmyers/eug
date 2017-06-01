@@ -514,33 +514,6 @@ public final class EUGScanner {
     }
 
     /**
-     * Returns the current list in array form. All comments are stripped out.
-     * @see #getList()
-     * @since EUGFile 1.01.00
-     */
-    public String[] getArray() {
-        if (lastType != TokenType.LIST) {
-            System.err.println("Shouldn't be trying to get a list from token type " + lastType);
-            return new String[] { };
-        }
-
-        return ListScanner.parseArray(yytext().substring(yytext().indexOf('{') + 1, yytext().indexOf('}')));
-    }
-    /**
-     * Returns the current list in the form of a <code>List&lt;String&gt;</code>.
-     * All comments are stripped out.
-     * @see #getArray()
-     */
-    public java.util.List<String> getList() {
-        if (lastType != TokenType.LIST) {
-            System.err.println("Shouldn't be trying to get a list from token type " + lastType);
-            return new java.util.ArrayList<String>();
-        }
-
-        return ListScanner.parseList(yytext().substring(yytext().indexOf('{') + 1, yytext().indexOf('}')));
-    }
-
-    /**
      * Close the scanner's reader. Any <code>IOException</code> will be caught
      * and printed to standard error.
      */

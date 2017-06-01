@@ -346,6 +346,9 @@ public class CWordFile {
                     throw new ParserException("Node " + current_node.name + " does not terminate at the end of the file");
                 break;
             case COMMENT:
+                if (settings.isIgnoreComments())
+                    break;
+                
                 // Here I'm trying to avoid the problem of file header comments
                 // being merged into event header comments. I keep a record of
                 // how many newline characters have been read since the last
@@ -476,13 +479,11 @@ public class CWordFile {
         
         if (tokenType == TokenType.COMMENT) {
             comment = token;   // Got the comment; now look for a newline.
-//            System.out.println(comment);
             
             getNextToken();
             
             if (tokenType != TokenType.NEWLINE) {
                 // Anything other than a newline shouldn't be used here.
-//                System.out.println(tokenType);
                 tokenizer.pushBack();
             }
         } else if (tokenType == TokenType.NEWLINE) {
