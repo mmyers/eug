@@ -74,7 +74,7 @@ public final class Utilities {
     /** Color used if a land province does not have a defined culture. */
     static final Color COLOR_NO_CULTURE = Color.BLACK;
     
-    /** Settings used when loading all data files in this class. */
+    /* Settings used when loading all data files in this class. */
     private static final ParserSettings settings =
             ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
     
@@ -170,18 +170,26 @@ public final class Utilities {
         }
     }
     
-    private static Color parseFloatColor(GenericList color) {
-        float r = Math.min(1.0f, Float.parseFloat(color.get(0)));
-        float g = Math.min(1.0f, Float.parseFloat(color.get(1)));
-        float b = Math.min(1.0f, Float.parseFloat(color.get(2)));
+    private static Color parseColor(GenericList color) {
+        if (color.size() != 3) {
+            log.log(Level.WARNING, "Unable to parse color: {0}", color.toString());
+            return COLOR_NO_HIST;
+        }
+        
+        // No rail correction is done in this method. Float colors are assumed to be between 0.0 and 1.0
+        // and integer colors are assumed to be between 0 and 255.
+        // If a value is out of bounds, an IllegalArgumentException will be thrown.
+        
+        float r = Float.parseFloat(color.get(0));
+        float g = Float.parseFloat(color.get(1));
+        float b = Float.parseFloat(color.get(2));
+        
+        if (color.get(0).contains(".") || color.get(1).contains(".") || color.get(2).contains("."))
+            return new Color(r, g, b);
+        
+        if (r > 1 || g > 1 || b > 1) // assume [0, 255] scale if any value is outside [0, 1]
+            return new Color((int) r, (int) g, (int) b);
         return new Color(r, g, b);
-    }
-    
-    private static Color parseIntColor(GenericList color) {
-        final int red = Math.min((int)Double.parseDouble(color.get(0)), 255);
-        final int green = Math.min((int)Double.parseDouble(color.get(1)), 255);
-        final int blue = Math.min((int)Double.parseDouble(color.get(2)), 255);
-        return new Color(red, green, blue);
     }
 
     private static void readTitleColors(GenericObject titles) {
@@ -194,7 +202,7 @@ public final class Utilities {
                 //log.log(Level.WARNING, "color for {0} is null", title.name);
                 titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
             } else {
-                titleColorCache.put(title.name, parseIntColor(color));
+                titleColorCache.put(title.name, parseColor(color));
             }
             return title;
         }).forEach((title) -> {
@@ -235,7 +243,7 @@ public final class Utilities {
                 return COLOR_NO_CTRY_DEF;
             }
             
-            ret = parseIntColor(color);
+            ret = parseColor(color);
             
             ctryColorCache.put(country, ret);
         }
@@ -260,7 +268,7 @@ public final class Utilities {
                             relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
                             return COLOR_NO_RELIGION_DEF;
                         }
-                        ret = parseFloatColor(color);
+                        ret = parseColor(color);
                         relColorCache.put(religion, ret);
                         return ret;
                 }
@@ -273,7 +281,7 @@ public final class Utilities {
                             relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
                             return COLOR_NO_RELIGION_DEF;
                         }
-                        ret = parseFloatColor(color);
+                        ret = parseColor(color);
                         relColorCache.put(religion, ret);
                         return ret;
                     }
