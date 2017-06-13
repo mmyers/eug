@@ -2,6 +2,21 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.9.5 ===
+
+- Miscellaneous updates to support changes in EU4 1.17, 1.18, and 1.19.
+- Fixed crashes:
+    - When loading a region that includes an area which is not defined
+    - When loading an area with a color block (EU4 1.19)
+    - When loading a religious group with no religions inside
+    - When loading a trade node with no member provinces
+    - When attempting to load a mod in an archive (.zip file)
+- Save files are now remembered between launches.
+- Title mode now works correctly in CK2 save games.
+- Religion mode now supports defining religion colors with RGB values from 0-255
+  instead of 0.0-1.0 as in previous patches. All modes now support both types.
+- Reduced memory usage a little.
+
 === 0.9.1 ===
 
 - Updated region parsing code for the changes in EU4 1.15.
