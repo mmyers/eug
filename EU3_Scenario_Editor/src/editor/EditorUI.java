@@ -1193,6 +1193,10 @@ public final class EditorUI extends javax.swing.JFrame {
         final StringBuilder allReligions = new StringBuilder("(");
         
         for (GenericObject group : religions.children) {
+            // CKII now includes religion visibility triggers in 00_religions.txt.
+            // We don't need to know about triggers.
+            if (group.name.contains("trigger"))
+                continue;
             
             Collections.sort(group.children, new ObjectComparator());
             
