@@ -71,8 +71,6 @@ public final class ClausewitzHistory {
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
-//                if (!date.name.equals("advisor"))
-//                    System.err.println(date.name + " is not a valid date");
                 continue;
             }
             
@@ -95,8 +93,6 @@ public final class ClausewitzHistory {
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
-//                if (!dateObj.name.equals("advisor"))
-//                    System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
             
@@ -111,6 +107,29 @@ public final class ClausewitzHistory {
             }
         }
         return value;
+    }
+    
+    public static List<GenericObject> getHistObjects(final GenericObject history, String name, String date) {
+        if (history == null)
+            return null;
+        
+        final List<GenericObject> objects = history.getChildren(name);
+        
+        for (GenericObject dateObj : history.children) {
+            if (!isDate(dateObj.name)) {
+                continue;
+            }
+            
+            if (DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
+                // The new date is before or equal to the target date
+                GenericObject obj = dateObj.getLastChild(name);
+                if (obj != null) {
+                    objects.add(obj);
+                }
+            }
+        }
+        
+        return objects;
     }
     
     
@@ -146,8 +165,6 @@ public final class ClausewitzHistory {
         String lastDate = "0.0.0";
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
-                //if (!dateObj.name.equals("advisor"))
-                //    System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
             
@@ -172,8 +189,6 @@ public final class ClausewitzHistory {
         
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
-//                if (!dateObj.name.equals("advisor"))
-//                    System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
             
