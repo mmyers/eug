@@ -20,12 +20,12 @@ import java.awt.Graphics2D;
 public class DiscreteScalingMapMode extends ProvincePaintingMode {
 
     private String name;
-    private String prop;
+    protected String prop;
     private int min;
     private int max;
     private int step;
     
-    private int numColors;
+    protected int numColors;
     
     protected Color[] colors;
     
@@ -82,6 +82,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         return (ret / maxRatio);
     }
     
+    @Override
     protected void paintProvince(final Graphics2D g, int provId) {
         String value = mapPanel.getModel().getHistString(provId, prop);
         if (value == null || value.length() == 0)
@@ -98,9 +99,9 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         mapPanel.paintProvince(g, provId, colors[index]);
     }
     
+    @Override
     protected void paintSeaZone(final Graphics2D g, int id) {
         // Do nothing
-        return;
     }
     
     @Override

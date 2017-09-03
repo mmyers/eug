@@ -32,6 +32,8 @@ public final class PoliticalMode extends ProvincePaintingMode {
     protected void paintProvince(final Graphics2D g, int provId) {
         final String owner = mapPanel.getModel().getHistString(provId, "owner");
         String controller = (owner == null || owner.isEmpty()) ? "" : getController(provId);
+        if (owner != null && !owner.isEmpty() && (controller == null || controller.isEmpty()))
+            controller = owner;
         
         if (owner == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
@@ -71,6 +73,8 @@ public final class PoliticalMode extends ProvincePaintingMode {
             return "";
 
         String controller = getController(curr.getId());
+        if (owner != null && !owner.isEmpty() && (controller == null || controller.isEmpty()))
+            controller = owner;
         
         owner = Text.getText(owner);
         controller = Text.getText(controller);

@@ -1157,6 +1157,10 @@ public final class EditorUI extends javax.swing.JFrame {
                 DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1);
                 actn.setStepColors(allColors, view);
                 viewMenu.add(actn);
+            } else if (view.equals("hotspots-owner")) {
+                viewMenu.add(new HotspotFilterAction("owner", 20, 1));
+            } else if (view.equals("hotspots-controller")) {
+                viewMenu.add(new HotspotFilterAction("controller", 40, 2));
             } else if (view.equals("natives-menu")) {
                 JMenu menu = new JMenu("Natives");
                 addNativesFilters(menu, allColors);
@@ -2170,6 +2174,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public PopSplitFilterAction() {
             super("Population split", new PopSplitMapMode(mapPanel));
             putValue(SHORT_DESCRIPTION, "Population split");
+        }
+    }
+    
+    private class HotspotFilterAction extends FilterAction {
+        public HotspotFilterAction(String property, int max, int step) {
+            super("Hot spots (" + property + ")", new HotspotMode(mapPanel, property, max, step));
+            putValue(SHORT_DESCRIPTION, "Provinces which have changed hands the most");
         }
     }
 

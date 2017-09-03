@@ -106,6 +106,10 @@ public class MapPanelDataModel implements java.io.Serializable {
         return ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(provId), name, date);
     }
     
+    public List<GenericObject> getHistObjects(int provId, String name) {
+        return ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(provId), name, date);
+    }
+    
     public String getHistString(String tag, String name) {
         return ClausewitzHistory.getHistString(dataSource.getCountryHistory(tag), name, date);
     }
@@ -116,6 +120,10 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     public GenericObject getHistObject(String tag, String name) {
         return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
+    }
+    
+    public List<GenericObject> getHistObjects(String tag, String name) {
+        return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
     }
     
     
