@@ -1,15 +1,17 @@
 
 package editor;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.logging.Level;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  * This class holds the current version of the editor and handles automatic
@@ -41,7 +43,7 @@ public class Version {
                 return isNewVersion(latestVersion);
         }
         
-        try {
+        try { 
             lastCheck = new Date();
 
             // the document will have only one item, something like:
@@ -50,18 +52,28 @@ public class Version {
             //  <version>X.Y.Z</version>
             //  <url>http://sourceforge.net/whatever</url>
             // </release>
-            JAXBContext jaxbContext = JAXBContext.newInstance(Release.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            Release r = (Release) jaxbUnmarshaller.unmarshal(new URL(UPDATE_URL));
-            if (isNewVersion(r.version)) {
-                latestVersion = r.version;
-                latestVersionLink = r.url;
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(new URL(UPDATE_URL).openStream());
+            doc.normalize();
+            
+            Element release = (Element) doc.getElementsByTagName("release").item(0);
+            
+            boolean recommended = Boolean.parseBoolean(release.getElementsByTagName("recommended").item(0).getTextContent());
+            String version = release.getElementsByTagName("version").item(0).getTextContent();
+            String url = release.getElementsByTagName("url").item(0).getTextContent();
+            
+            if (isNewVersion(version)) {
+                latestVersion = version;
+                latestVersionLink = url;
                 return true;
             }
-        } catch (JAXBException ex) {
+        } catch (ParserConfigurationException | SAXException | MalformedURLException ex) {
             log.log(Level.SEVERE, null, ex);
-        } catch (MalformedURLException ex) {
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, null, ex);
         }
+        
         return false;
     }
     
@@ -100,15 +112,5 @@ public class Version {
     
     public static String getProjectURL() {
         return PROJECT_URL;
-    }
-    
-    @XmlRootElement
-    public static class Release {
-        @XmlElement(defaultValue = "false")
-        public boolean recommended;
-        @XmlElement
-        public String version;
-        @XmlElement
-        public String url;
     }
 }
