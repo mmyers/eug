@@ -11,10 +11,15 @@ import eug.shared.Style;
 import eug.shared.Version;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Static class which performs I/O of {@link GenericObject GenericObjects}.
@@ -225,4 +230,25 @@ public final class EUGFileIO {
         return true;
     }
     
+    public static List<GenericObject> loadZip(String filename) {
+        List<GenericObject> ret = new ArrayList<>();
+        
+        try {
+            ZipInputStream zs = new ZipInputStream(new FileInputStream(filename));
+            ZipEntry z = zs.getNextEntry();
+            while (z != null) {
+                // this is a zip file
+                CWordFile f = new CWordFile();
+                GenericObject o = f.loadFromStream(zs);
+                ret.add(o);
+                z = zs.getNextEntry();
+            }
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        return ret;
+    }
 }

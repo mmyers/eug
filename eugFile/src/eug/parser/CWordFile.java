@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Enumeration;
@@ -240,6 +241,33 @@ public class CWordFile {
         if (numErrors > 0)
             System.out.println("There were " + numErrors + " errors during loading.");
 //        System.out.println("Read " + tokenizer.getCharsRead() + " bytes.");
+        if (settings.isPrintTimingInfo())
+            System.out.println("Loading took " + (System.nanoTime()-startTime) + " ns.\n");
+        
+        return root;
+    }
+    
+    public GenericObject loadFromStream(InputStream stream) {
+        final long startTime = System.nanoTime();
+        
+        tokenizer = new EUGScanner(new InputStreamReader(stream));
+        filename = "(loading from unknown source)";
+        
+        GenericObject root = new GenericObject();
+        try {
+            GenericObject curr = readObject(root);
+            
+            while (tokenType != TokenType.EOF) {
+                curr = readObject(curr);
+            }
+        } catch (ParserException ex) {
+            if (!settings.isTryToRecover())
+                root = null;
+        }
+        
+        if (numErrors > 0)
+            System.out.println("There were " + numErrors + " errors during loading.");
+        
         if (settings.isPrintTimingInfo())
             System.out.println("Loading took " + (System.nanoTime()-startTime) + " ns.\n");
         
