@@ -53,7 +53,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(EditorUI.class.getName());
     
-    private transient ProvinceData.Province currentProvince = null;
+    private transient List<ProvinceData.Province> currentProvinces = new ArrayList<>();
     
 //    /** The province that is selected in the combo box at the left. */
 //    private transient ProvinceData.Province selectedProvince;
@@ -676,7 +676,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
-        FileEditorDialog.showDialog(EditorUI.this, currentProvince, resolver, provinceData);
+        FileEditorDialog.showDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
 //        mapPanel.getModel().getDataSource().reloadProvince(prov.getId());
 //        mapPanel.repaint();
     }//GEN-LAST:event_showProvHistButtonActionPerformed
@@ -708,13 +708,14 @@ public final class EditorUI extends javax.swing.JFrame {
         
         showProvHistButton.setEnabled(false);
         final int clickCount = evt.getClickCount();
+        final boolean addToSelection = (evt.isControlDown() || evt.isMetaDown());
         
         java.awt.EventQueue.invokeLater(
                 () -> {
-                    doMouseClick(lastProv);
+                    doMouseClick(lastProv, addToSelection);
                     
                     // If it was a double click, go ahead and show an editor.
-                    if (clickCount > 1) {
+                    if (clickCount > 1 && !addToSelection) {
 //                    Class c = mapPanel.getMode().getClass();
 //                    if (c.equals(ProvinceMode.class)) {
                         showProvHistButton.doClick(0);
@@ -794,11 +795,19 @@ public final class EditorUI extends javax.swing.JFrame {
         worker.execute();
     }
     
-    private void doMouseClick(final ProvinceData.Province p) {
-        currentProvince = p;
+    private void doMouseClick(final ProvinceData.Province p, boolean addToSelection) {
+        if (!addToSelection)
+            currentProvinces.clear();
+        if (addToSelection && currentProvinces.contains(p))
+            currentProvinces.remove(p);
+        else
+            currentProvinces.add(p);
         
         if (p != null && p.getId() != 0) {
-            mapPanel.flashProvince(p.getId(), 1);
+            for (ProvinceData.Province prov : currentProvinces) {
+                mapPanel.flashProvince(prov.getId(), 1);
+            }
+            //mapPanel.flashProvince(p.getId(), 1);
         } else { // (p == null)
             provNameLabel.setText("No province");
             showProvHistButton.setEnabled(false);
@@ -807,9 +816,22 @@ public final class EditorUI extends javax.swing.JFrame {
             return;
         }
         
-        provNameLabel.setText(p.getName() + " #" + p.getId());
+        if (currentProvinces.size() == 1)
+            provNameLabel.setText(p.getName() + " #" + p.getId());
+        else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(currentProvinces.size()).append(" provinces selected: ");
+            boolean first = true;
+            for (ProvinceData.Province prov : currentProvinces) {
+                if (!first)
+                    sb.append(", ");
+                first = false;
+                sb.append(prov.getName()).append(" #").append(prov.getId());
+            }
+            provNameLabel.setText(sb.toString());
+        }
         
-        if (p.getId() != 0) {
+        if (p.getId() != 0) { // Fix this
             showProvHistButton.setEnabled(true);
             if (mapPanel.getModel().getDataSource() instanceof CK2DataSource) {
                 lastCountry = mapPanel.getModel().getHistString(p.getId(), "title");
@@ -987,7 +1009,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, ClassNotFoundException {
         in.defaultReadObject();
-        currentProvince = null;
+        currentProvinces = new ArrayList<>();
         lastCountry = null;
         lastPt = null;
         lastProv = null;
@@ -1789,8 +1811,8 @@ public final class EditorUI extends javax.swing.JFrame {
             resetScrollPane();
             updateZoomLabel();
             
-            if (currentProvince != null)
-                mapPanel.goToProv(currentProvince.getId());
+            if (currentProvinces.size() == 1)
+                mapPanel.goToProv(currentProvinces.get(0).getId());
         }
     }
     
@@ -1807,8 +1829,8 @@ public final class EditorUI extends javax.swing.JFrame {
             resetScrollPane();
             updateZoomLabel();
             
-            if (currentProvince != null)
-                mapPanel.goToProv(currentProvince.getId());
+            if (currentProvinces.size() == 1)
+                mapPanel.goToProv(currentProvinces.get(0).getId());
         }
     }
     
@@ -1826,7 +1848,7 @@ public final class EditorUI extends javax.swing.JFrame {
                     JOptionPane.showInputDialog(EditorUI.this,
                     "Enter a province ID number (between 1 and " + maxProv +
                     ") or a province name:",
-                    currentProvince == null ? null : currentProvince.getId());
+                    currentProvinces.isEmpty() ? null : currentProvinces.get(0).getId());
             
             if (response == null || response.length() == 0)
                 return;
@@ -1854,7 +1876,7 @@ public final class EditorUI extends javax.swing.JFrame {
             resetScrollPane();
             mapPanel.goToProv(p.getId());
             mapPanel.flashProvince(p.getId());
-            doMouseClick(p);
+            doMouseClick(p, false);
         }
     }
     
