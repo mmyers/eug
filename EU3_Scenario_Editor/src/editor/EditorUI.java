@@ -1207,12 +1207,16 @@ public final class EditorUI extends javax.swing.JFrame {
         } else if (file.exists()) {
             return EUGFileIO.load(file, defaultSettings);
         } else {
+            log.log(Level.WARNING, "Could not load definition files from {0} or {1}", new Object[] { folderName, fileName });
             return null;
         }
     }
     
     private void addReligionFilters(JMenu rootMenu) {
         final GenericObject religions = loadFileOrFolder("common/religions", "common/religion.txt");
+        
+        if (religions == null)
+            return;
 
         Collections.sort(religions.children, new ObjectComparator());
         
@@ -1254,6 +1258,9 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addBuildingFilters(JMenu rootMenu, GenericObject colors) {
         final GenericObject buildings = loadFileOrFolder("common/buildings", "common/buildings.txt");
+        
+        if (buildings == null)
+            return;
         
         Collections.sort(buildings.children, new ObjectComparator());
         
@@ -1324,6 +1331,9 @@ public final class EditorUI extends javax.swing.JFrame {
         final GenericObject buildings =
                 EUGFileIO.load(resolver.resolveFilename("common/buildings.txt"),
                 defaultSettings);
+        
+        if (buildings == null)
+            return;
 
         Collections.sort(buildings.children, new ObjectComparator());
 
@@ -1412,6 +1422,9 @@ public final class EditorUI extends javax.swing.JFrame {
                 EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
         
+        if (cultures == null)
+            return;
+        
         Collections.sort(cultures.lists, new ListComparator());
 
         final Comparator<String> listSorter = new StringComparator();
@@ -1446,6 +1459,9 @@ public final class EditorUI extends javax.swing.JFrame {
 
     private void addNewCultureFilters(JMenu rootMenu) { // In Nomine and newer, and also Victoria 2
         final GenericObject cultures = loadFileOrFolder("common/cultures", "common/cultures.txt");
+        
+        if (cultures == null)
+            return;
 
         final ObjectComparator comp = new ObjectComparator();
         Collections.sort(cultures.children, comp);
@@ -1482,6 +1498,9 @@ public final class EditorUI extends javax.swing.JFrame {
         final GenericObject cultures =
                 EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                 defaultSettings);
+        
+        if (cultures == null)
+            return;
 
         final ObjectComparator comp = new ObjectComparator();
         Collections.sort(cultures.children, comp);
@@ -1513,6 +1532,9 @@ public final class EditorUI extends javax.swing.JFrame {
     private void addGoodsFilters(JMenu rootMenu) {
         final GenericObject goods = loadFileOrFolder("common/tradegoods", "common/tradegoods.txt");
         
+        if (goods == null)
+            return;
+        
         Collections.sort(goods.children, new ObjectComparator());
         
         int counter = 0;
@@ -1530,6 +1552,9 @@ public final class EditorUI extends javax.swing.JFrame {
         final GenericObject goods =
                 EUGFileIO.load(resolver.resolveFilename("common/goods.txt"),
                 defaultSettings);
+        
+        if (goods == null)
+            return;
 
         Collections.sort(goods.children, new ObjectComparator());
 
@@ -1559,10 +1584,9 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addGovernmentFilters(JMenu rootMenu) {
         final GenericObject governments = loadFileOrFolder("common/governments", "common/governments.txt");
-        if (governments == null) {
-            log.warning("Could not find any governments to load");
+        
+        if (governments == null)
             return;
-        }
         
 //        Collections.sort(governments.children, new ObjectComparator());
         final StringBuilder allGovernments = new StringBuilder("(");
@@ -1619,7 +1643,11 @@ public final class EditorUI extends javax.swing.JFrame {
                 EUGFileIO.load(resolver.resolveFilename("common/technology.txt"),
                 defaultSettings);
         
-        groups = groups.getChild("groups");
+        if (groups != null)
+            groups = groups.getChild("groups");
+        
+        if (groups == null)
+            return;
         
         if (!groups.values.isEmpty()) {
             for (ObjectVariable group : groups.values) {
@@ -1706,6 +1734,10 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addNativesFilters(JMenu rootMenu, GenericObject colors) {
         final GenericObject natives = loadFileOrFolder("common/natives", "common/natives.txt");
+        
+        if (natives == null)
+            return;
+        
         map.setNatives(natives);
         
         JMenu nativeTypesMenu = new JMenu("Native types");

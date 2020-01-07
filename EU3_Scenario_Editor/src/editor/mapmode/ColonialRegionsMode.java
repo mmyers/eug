@@ -31,9 +31,16 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
         this.regions = new HashMap<>();
         
         GenericObject obj = EUGFileIO.loadAll(resolver.listFiles("common/colonial_regions"), ParserSettings.getQuietSettings());
-        loadRegions(obj);
+        if (obj != null)
+            loadRegions(obj);
+        else
+            log.warning("Could not load colonial regions files from common/colonial_regions");
+        
         obj = EUGFileIO.loadAll(resolver.listFiles("common/trade_companies"), ParserSettings.getQuietSettings());
-        loadRegions(obj);
+        if (obj != null)
+            loadRegions(obj);
+        else
+            log.warning("Could not load trade company definitions files from common/trade_companies");
     }
     
     private void loadRegions(GenericObject source) {
@@ -82,7 +89,6 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
 
     @Override
     protected void paintSeaZone(Graphics2D g, int id) {
-        // Do nothing
         ColonialRegion cr = regions.get(id);
         if (cr != null) {
             mapPanel.paintProvince(g, id, cr.getColor());
