@@ -200,28 +200,28 @@ public final class FilenameResolver {
             dirName = dirName.substring(1);
         
         if (!usingMod)
-            return mainDirName + dirName;
+            return mainDirName + dirName + File.separator;
         
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
             if (isFolderReplaced(dirName)) {
-                return modDirName + dirName;
+                return modDirName + dirName + File.separator;
             } else if (isExtended(splitPath[0])) {
                 // XXX I don't think extending directories is done correctly
                 if (new File(modDirName + dirName).exists()) {
-                    return modDirName + dirName;
+                    return modDirName + dirName + File.separator;
                 } else {
-                    return mainDirName + dirName;
+                    return mainDirName + dirName + File.separator;
                 }
             } else {
-                return mainDirName + dirName;
+                return mainDirName + dirName + File.separator;
             }
         } else {
             if (new File(modDirName + dirName).exists())
-                return modDirName + dirName;
+                return modDirName + dirName + File.separator;
             else
-                return mainDirName + dirName;
+                return mainDirName + dirName + File.separator;
         }
     }
     
