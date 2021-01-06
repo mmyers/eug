@@ -62,7 +62,7 @@ public final class ReligionMode extends ProvincePaintingMode {
         } else if (religion.length() == 0 || religion.equalsIgnoreCase("none")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_RELIGION);
         } else {
-            final String owner = mapPanel.getModel().getHistString(provId, "owner").toUpperCase();
+            final String owner = mapPanel.getModel().getOwner(provId).toUpperCase();
             //final String ownerRel = (Utilities.isNotACountry(owner) ? null : mapPanel.getModel().getHistString(owner, "religion"));
             final String ownerRel = ctryReligions.get(owner);
 
@@ -93,7 +93,7 @@ public final class ReligionMode extends ProvincePaintingMode {
         if (rel == null || rel.length() == 0)
             return "";
         
-        String owner = mapPanel.getModel().getHistString(id, "owner");
+        String owner = mapPanel.getModel().getOwner(id);
         String ctryRel = null;
         
         if (owner != null) {

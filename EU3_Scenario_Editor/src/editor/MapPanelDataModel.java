@@ -94,6 +94,11 @@ public class MapPanelDataModel implements java.io.Serializable {
     }
     
     
+    /** Special method that treats "owner" and "fake_owner" the same in history files. */
+    public String getOwner(int provId) {
+        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date);
+    }
+    
     public String getHistString(int provId, String name) {
         return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), name, date);
     }
@@ -135,9 +140,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         final java.util.Map<String, Object> ret = new HashMap<>();
         
         for (Integer id : map.getLandProvs()) {
-            ProvinceData.Province p = provinceData.getProvByID(id);
-            
-            String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);
+            String owner = getOwner(id);
             
             if (owner == null || owner.length() == 0 || owner.equals("none") || owner.equals("XXX")) {
                 continue;
@@ -159,9 +162,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         final java.util.Map<String, Object> ret = new HashMap<>();
         
         for (Integer id : map.getLandProvs()) {
-            ProvinceData.Province p = provinceData.getProvByID(id);
-            
-            String owner = ClausewitzHistory.getHistString(dataSource.getProvince(p.getId()), "owner", date);
+            String owner = getOwner(id);
             
             if (owner == null || owner.length() == 0 || owner.equals("none") || owner.equals("XXX")) {
                 continue;

@@ -34,7 +34,7 @@ public class SingleCountryMode extends ProvincePaintingMode {
     }
 
     protected void paintProvince(Graphics2D g, int provId) {
-        if (mapPanel.getModel().getHistString(provId, "owner").equalsIgnoreCase(tag))
+        if (mapPanel.getModel().getOwner(provId).equalsIgnoreCase(tag))
             mapPanel.paintProvince(g, provId, sameCountryColor);
         else
             mapPanel.paintProvince(g, provId, differentCountryColor);
@@ -58,7 +58,7 @@ public class SingleCountryMode extends ProvincePaintingMode {
         if (!getMap().isLand(current.getId()))
             return "";
         
-        final String owner = mapPanel.getModel().getHistString(current.getId(), "owner");
+        final String owner = mapPanel.getModel().getOwner(current.getId());
         if (owner == null || owner.length() == 0)
             return "";
         return "Owned by: " + Text.getText(owner);

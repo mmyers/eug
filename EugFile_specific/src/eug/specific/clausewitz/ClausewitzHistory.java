@@ -141,7 +141,7 @@ public final class ClausewitzHistory {
         String lastDate = "0.0.0";
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
-                if (!"advisor".equals(date.name) && !"controller".equals("date.name"))
+                if (!"advisor".equals(date.name) && !"controller".equals(date.name))
                     System.err.println(date.name + " is not a valid date");
                 continue;
             }
@@ -172,6 +172,32 @@ public final class ClausewitzHistory {
                     DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
                 // The new date is after the old date and before or equal to the target date
                 String newVal = dateObj.getLastString(name);
+                if (newVal.length() != 0) {
+                    value = newVal;
+                    lastDate = dateObj.name;
+                }
+            }
+        }
+        return value;
+    }
+    
+    
+    public static String getHistString(final GenericObject history, String name1, String name2, String date) {
+        if (history == null)
+            return null;
+        
+        // Check both keys and get the last instance of either
+        String value = history.getLastString(name1, name2);
+        String lastDate = "0.0.0";
+        for (GenericObject dateObj : history.children) {
+            if (!isDate(dateObj.name)) {
+                continue;
+            }
+            
+            if (DATE_COMPARATOR.compare(dateObj.name, lastDate) >= 0 &&
+                    DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
+                // The new date is after the old date and before or equal to the target date
+                String newVal = dateObj.getLastString(name1, name2);
                 if (newVal.length() != 0) {
                     value = newVal;
                     lastDate = dateObj.name;

@@ -23,7 +23,7 @@ public class CountryMode extends ProvincePaintingMode {
     
     @Override
     protected void paintProvince(final Graphics2D g, int provId) {
-        final String owner = mapPanel.getModel().getHistString(provId, "owner");
+        final String owner = mapPanel.getModel().getOwner(provId);
         if (getMap().isWasteland(provId))
             mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
         else if (owner == null || owner.isEmpty())
@@ -47,7 +47,7 @@ public class CountryMode extends ProvincePaintingMode {
         if (!getMap().isLand(id))
             return "";
         
-        final String ret = Text.getText(mapPanel.getModel().getHistString(id, "owner"));
+        final String ret = Text.getText(mapPanel.getModel().getOwner(id));
         if (ret.length() == 0)
             return "";
         return "Owned by: " + ret;

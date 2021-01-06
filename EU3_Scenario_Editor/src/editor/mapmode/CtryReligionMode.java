@@ -59,12 +59,12 @@ public class CtryReligionMode extends CountryMode {
         //if (rel.length() == 0)
         //    return "";
         
-        String owner = mapPanel.getModel().getHistString(id, "owner");
+        String owner = mapPanel.getModel().getOwner(id);
         String ctryRel = null;
         
         if (owner != null) {
             owner = owner.toUpperCase();
-            if (Utilities.isNotACountry(owner) /*noCountryPattern.matcher(owner).matches()*/) {
+            if (Utilities.isNotACountry(owner)) {
                 // don't add anything
                 owner = "-";
             } else {

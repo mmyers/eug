@@ -51,7 +51,7 @@ public class AdvancedCustomCountryMode extends CustomCountryMode {
         if (!getMap().isLand(id))
             return "";
         
-        final String tag = mapPanel.getModel().getHistString(id, "owner");
+        final String tag = mapPanel.getModel().getOwner(id);
         if (tag == null || tag.length() == 0)
             return "";
         final String owner = Text.getText(tag);

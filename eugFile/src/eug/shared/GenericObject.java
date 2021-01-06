@@ -251,6 +251,20 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     /**
+     * Gets the last child variable with one of the given names.
+     */
+    public String getLastString(String varname1, String varname2) {
+        for (int i = values.size() - 1; i >= 0; i--) {
+            ObjectVariable value = values.get(i);
+            if (value.varname.equalsIgnoreCase(varname1)
+                    || value.varname.equalsIgnoreCase(varname2)) {
+                return value.getValue();
+            }
+        }
+        return "";
+    }
+    
+    /**
      * Returns all values of the given string. For example, if an object
      * contains something like
      * <pre>

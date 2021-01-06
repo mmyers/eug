@@ -56,7 +56,7 @@ public final class FortMapMode extends DiscreteScalingMapMode {
 
     @Override
     protected void paintProvince(final Graphics2D g, int provId) {
-        String owner = mapPanel.getModel().getHistString(provId, "owner");
+        String owner = mapPanel.getModel().getOwner(provId);
         if (owner == null || owner.length() == 0)
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
         else

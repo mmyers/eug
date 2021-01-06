@@ -787,7 +787,9 @@ public final class EditorUI extends javax.swing.JFrame {
                         EditorUI.this.helpMenu.setOpaque(true);
                         EditorUI.this.checkVersionMenuItem.setBackground(Color.ORANGE);
                     }
-                } catch (InterruptedException | ExecutionException ex) {
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException ex) {
                     log.log(Level.SEVERE, null, ex);
                 }
             }
@@ -840,7 +842,7 @@ public final class EditorUI extends javax.swing.JFrame {
                     lastCountry = mode.getLiege(lastCountry);
                 }
             } else
-                lastCountry = mapPanel.getModel().getHistString(p.getId(), "owner");
+                lastCountry = mapPanel.getModel().getOwner(p.getId());
         } else {
             showProvHistButton.setEnabled(false);
             lastCountry = "";
@@ -873,7 +875,7 @@ public final class EditorUI extends javax.swing.JFrame {
                     mapPanel.repaint();
                 } else if (mode instanceof CustomCountryMode) {
                     final String name = ((CustomCountryMode)mode).getName();
-                    final String owner = mapPanel.getModel().getHistString(p.getId(), "owner");
+                    final String owner = mapPanel.getModel().getOwner(p.getId());
                     if (name.equals("government")) {
                         String government = mapPanel.getModel().getHistString(owner, name);
                         mapPanel.setMode(new CustomCountryMode(mapPanel, "government", government));

@@ -24,21 +24,28 @@ public class CustomMode extends ProvincePaintingMode {
     
     protected String name;
     protected String value;
+    protected boolean isOwner; // special casing for owner mapmode since apparently there are two possible variable names that Paradox uses
     
     /** Creates a new instance of CustomMode */
     public CustomMode(String name, String value) {
         this.name = name;
         this.value = value.toLowerCase();
+        this.isOwner = this.value.equals("owner");
     }
     
     public CustomMode(MapPanel panel, String name, String value) {
         super(panel);
         this.name = name;
         this.value = value.toLowerCase();
+        this.isOwner = this.value.equals("owner");
     }
     
     protected void paintProvince(final Graphics2D g, int provId) {
-        final String prop = mapPanel.getModel().getHistString(provId, name);
+        String prop;
+        if (isOwner)
+            prop = mapPanel.getModel().getOwner(provId);
+        else
+            prop = mapPanel.getModel().getHistString(provId, name);
         
         if (getMap().isWasteland(provId))
             mapPanel.paintProvince(g, provId, java.awt.Color.BLACK);
