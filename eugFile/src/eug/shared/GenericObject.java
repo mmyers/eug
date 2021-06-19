@@ -994,6 +994,9 @@ public final class GenericObject implements WritableObject, Cloneable {
         return sw.toString();
     }
     
+    /**
+     * Converts this object to string using the {@link Style.DEFAULT default style}.
+     */
     @Override
     public String toString() {
         return toString(Style.DEFAULT);

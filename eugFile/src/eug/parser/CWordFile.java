@@ -9,8 +9,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import javax.swing.JOptionPane;
 
@@ -108,15 +112,23 @@ public class CWordFile {
                 // and one with the same name as the outer file
                 // but since the outer file could have been renamed, it's safer
                 // to just ignore "meta" and read whatever else is there
+                
+                // 10/2019: there are now three entries (ai, gamestate, and meta)
+                // and two of them are necessary for displaying save games
+                // so just get everything
+                List<InputStream> elements = new ArrayList<>();
                 for (Enumeration<? extends ZipEntry> enume = file.entries(); enume.hasMoreElements(); ) {
                     ZipEntry entry = enume.nextElement();
-                    if (!entry.getName().equalsIgnoreCase("meta")) {
-                        reader = new BufferedReader(new InputStreamReader(file.getInputStream(entry)));
-                        break;
-                    }
+                    elements.add(file.getInputStream(entry));
+//                    if (!entry.getName().equalsIgnoreCase("meta")) {
+//                        reader = new BufferedReader(new InputStreamReader(file.getInputStream(entry)));
+//                        break;
+//                    }
                 }
-                if (reader == null) // couldn't find the .eu4?
-                    return false;
+                SequenceInputStream sis = new SequenceInputStream(Collections.enumeration(elements));
+                reader = new BufferedReader(new InputStreamReader(sis));
+//                if (reader == null) // couldn't find the .eu4?
+//                    return false;
             }
             
             tokenizer = new EUGScanner(reader);
