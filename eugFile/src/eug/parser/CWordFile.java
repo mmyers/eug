@@ -307,60 +307,7 @@ public class CWordFile {
                 final String name = token;
                 getNextToken();
                 
-                // A little weirdness here, brought on by Java's lack of a
-                // 'goto' keyword. Note that if we break out of the switch
-                // normally, the while loop will also be broken. Its only
-                // function is to restart the switch if we read a comment.
-                findType: while (true) {
-                    switch (tokenType) {
-                        case COMMENT:
-                            // fall through to NEWLINE
-                        case NEWLINE:
-                            do {
-                                getNextToken();
-                            } while (tokenType == TokenType.COMMENT || tokenType == TokenType.NEWLINE);
-                            continue findType;
-                        case ULSTRING:
-                        case DLSTRING:
-                            boolean quotes = (tokenType == TokenType.DLSTRING);
-                            
-                            current_node.addString(name, token, quotes,
-                                    lastComment, readInlineComment());
-                            
-                            lastComment = null;
-                            break;
-                        case LBRACE:
-                            // Lookahead
-                            tokenizer.setCommentsIgnored(true);
-                            final TokenType type = tokenizer.nextToken();
-                            tokenizer.pushBack();
-                            tokenizer.setCommentsIgnored(settings.isIgnoreComments());
-                            if (type == TokenType.DLSTRING || type == TokenType.ULSTRING) {
-                                // it must be a list
-                                if (!settings.isAllowLists()) {
-                                    warn("Read list when lists are not allowed");
-                                    break;
-                                }
-                                current_node = tryToReadList(current_node, name);
-                                lastComment = null;
-                            } else {
-                                GenericObject tmpObj = current_node.createChild(name);
-                                if (!settings.isIgnoreComments())
-                                    tmpObj.setHeadComment(lastComment);
-                                lastComment = null;
-                                current_node = tmpObj;
-                            }
-                            break;
-                        case EOF:
-                            warn("Reached end of file after " + name + " (unclosed bracket somewhere?)");
-                            break;
-                        default:
-                            warn("Unexpected token type: " + tokenType + " on line " + tokenizer.getLine());
-                            break;
-                    }
-                    // If we get here normally, we shouldn't loop again
-                    break;
-                }
+                current_node = readNode(current_node, name);
                 
                 break;
             case RBRACE:     // Reached end of a node.
@@ -421,12 +368,12 @@ public class CWordFile {
                     current_node.addString(token, "1", false, lastComment,
                             readInlineComment());
                 } else {
-                    warn("Warning: Illegal string: " + token + " on line " + tokenizer.getLine());
+                    warn("Warning: Unexpected string: " + token + " on line " + tokenizer.getLine());
                 }
                 break;
             case DLSTRING:
                 // Shouldn't happen.
-                warn("Warning: Illegal string: \"" + token + "\" on line " + tokenizer.getLine());
+                warn("Warning: Unexpected string: \"" + token + "\" on line " + tokenizer.getLine());
                 break;
             case NEWLINE:
                 // Only used for matching header comments to objects.
@@ -434,10 +381,68 @@ public class CWordFile {
                 break;
             default:
                 // Shouldn't happen.
-                System.err.println("Token type: " + tokenType + "\nm_word: " + token);
+                warn("Unexpected token! Token type: " + tokenType + "; token: \"" + token + "\" on line " + tokenizer.getLine());
                 break;
         }
         
+        return current_node;
+    }
+
+    private GenericObject readNode(GenericObject current_node, final String name) {
+        // A little weirdness here, brought on by Java's lack of a
+        // 'goto' keyword. Note that if we break out of the switch
+        // normally, the while loop will also be broken. Its only
+        // function is to restart the switch if we read a comment.
+        findType: while (true) {
+            switch (tokenType) {
+                case COMMENT:
+                    // fall through to NEWLINE
+                case NEWLINE:
+                    do {
+                        getNextToken();
+                    } while (tokenType == TokenType.COMMENT || tokenType == TokenType.NEWLINE);
+                    continue findType;
+                case ULSTRING:
+                case DLSTRING:
+                    boolean quotes = (tokenType == TokenType.DLSTRING);
+                    
+                    current_node.addString(name, token, quotes,
+                            lastComment, readInlineComment());
+                    
+                    lastComment = null;
+                    break;
+                case LBRACE:
+                    // Lookahead
+                    tokenizer.setCommentsIgnored(true);
+                    final TokenType type = tokenizer.nextToken();
+                    tokenizer.pushBack();
+                    tokenizer.setCommentsIgnored(settings.isIgnoreComments());
+                    if (type == TokenType.DLSTRING || type == TokenType.ULSTRING) {
+                        // it must be a list
+                        if (!settings.isAllowLists()) {
+                            warn("Read list when lists are not allowed");
+                            break;
+                        }
+                        current_node = tryToReadList(current_node, name);
+                        lastComment = null;
+                    } else {
+                        GenericObject tmpObj = current_node.createChild(name);
+                        if (!settings.isIgnoreComments())
+                            tmpObj.setHeadComment(lastComment);
+                        lastComment = null;
+                        current_node = tmpObj;
+                    }
+                    break;
+                case EOF:
+                    warn("Reached end of file after " + name + " (unclosed bracket somewhere?)");
+                    break;
+                default:
+                    warn("Unexpected token type: " + tokenType + " on line " + tokenizer.getLine());
+                    break;
+            }
+            // If we get here normally, we shouldn't loop again
+            break;
+        }
         return current_node;
     }
     
