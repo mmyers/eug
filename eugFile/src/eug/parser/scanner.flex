@@ -107,7 +107,7 @@ package eug.parser;
     }
 
     private void badChar(char c) {
-        System.err.println("Illegal character: \'" + c +
+        System.err.println("Unexpected character: \'" + c +
             "\' (#" + Integer.toHexString((int)c) + 
             ") on line " + getLine() + ", column " + getColumn() + " of " + filename);
     }

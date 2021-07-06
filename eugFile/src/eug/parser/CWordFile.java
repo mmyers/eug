@@ -324,7 +324,27 @@ public class CWordFile {
                 lastComment = null;
                 break;
             case LBRACE:     // Create nameless node
-                current_node = current_node.createChild("");
+                // Lookahead in case it's a nameless list instead of a nameless node
+                // (borrowed from readNode() - perhaps could be extracted into a method)
+                tokenizer.setCommentsIgnored(true);
+                final TokenType type = tokenizer.nextToken();
+                tokenizer.pushBack();
+                tokenizer.setCommentsIgnored(settings.isIgnoreComments());
+                if (type == TokenType.DLSTRING || type == TokenType.ULSTRING) {
+                    // it must be a list
+                    if (!settings.isAllowLists()) {
+                        warn("Read list when lists are not allowed");
+                        break;
+                    }
+                    current_node = tryToReadList(current_node, "");
+                    lastComment = null;
+                } else {
+                    GenericObject tmpObj = current_node.createChild("");
+                    if (!settings.isIgnoreComments())
+                        tmpObj.setHeadComment(lastComment);
+                    lastComment = null;
+                    current_node = tmpObj;
+                }
                 break;
             case EOF:
                 if (current_node.isRoot() || settings.isTryToRecover())

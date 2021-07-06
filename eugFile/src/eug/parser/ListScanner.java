@@ -425,7 +425,7 @@ final class ListScanner {
     }
 
     private void badChar(char c) {
-        System.err.println("Illegal list character: \'" + c +
+        System.err.println("Unexpected character when parsing a list: \'" + c +
             "\' (#" + Integer.toHexString((int)c) + ")");
     }
 

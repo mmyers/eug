@@ -46,6 +46,14 @@ public class EUGFileIOTest {
             + "# Object comment\n"
             + PARSE_STRING;
     
+    private static final String EU4_FUNKY_STRING =
+            "province={\n"
+                + "interactions_last_used={\n"
+                + "{\n"
+                + "1 1745.11.10			}\n"
+		+ "}\n"
+            + "}";
+    
     private static GenericObject buildObject() {
         GenericObject composite = new GenericObject();
         GenericObject t = composite.createChild("test");
@@ -67,6 +75,12 @@ public class EUGFileIOTest {
         assertNotNull(test.getChild("test"));
         assertNotNull(test.values);
         assertNotNull(test.lists);
+    }
+    
+    @Test
+    public void testLoadUnusualObject() {
+        GenericObject test = EUGFileIO.loadFromString(EU4_FUNKY_STRING, TEST_SETTINGS);
+        assertNotNull(test);
     }
     
     @Test

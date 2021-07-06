@@ -217,8 +217,10 @@ public final class GenericList
         
         style.printTab(bw, depth);
         
-        bw.write(varname);
-        style.printEqualsSign(bw, depth);
+        if (!"".equals(varname)) {
+            bw.write(varname);
+            style.printEqualsSign(bw, depth);
+        }
         style.printOpeningBrace(bw, depth);
         
         boolean isInline = style.isInline(this);
