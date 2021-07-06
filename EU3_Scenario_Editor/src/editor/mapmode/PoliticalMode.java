@@ -73,7 +73,7 @@ public final class PoliticalMode extends ProvincePaintingMode {
             return "";
 
         String controller = getController(curr.getId());
-        if (owner != null && !owner.isEmpty() && (controller == null || controller.isEmpty()))
+        if (controller == null || controller.isEmpty())
             controller = owner;
         
         owner = Text.getText(owner);

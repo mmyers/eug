@@ -210,6 +210,9 @@ public final class EditorUI extends javax.swing.JFrame {
             FileEditorDialog.setDataSource(save);
 
             String[] date = save.getDate().split("\\.");
+            if (date.length != 3) {
+                log.log(Level.SEVERE, "Could not parse date from {0}", save.getDate());
+            }
             ((SpinnerNumberModel)yearSpinner.getModel()).setMaximum(Integer.parseInt(date[0]));
 
             mapPanel.getModel().setDate(save.getDate());
@@ -609,13 +612,23 @@ public final class EditorUI extends javax.swing.JFrame {
     
 //    private transient Point lastClick = null;
     
+    /** Tag of the owner of the last province that was clicked on */
     private transient String lastCountry = null;
 
     private String getLastCountryName() {
         if (mapPanel.getDataSource() instanceof CK2DataSource)
             return TitleMode.getTitleName(lastCountry, lastProv);
-        else
-            return Text.getText(lastCountry);
+        else {
+            String name = Text.getText(lastCountry);
+            if (name.equals(lastCountry)) { // no text?
+                name = mapPanel.getDataSource().getCountry(lastCountry).getString("name");
+                if (name != null && !"".equals(name))
+                    return name + " (" + lastCountry + ")";
+            } else {
+                return name + " (" + lastCountry + ")";
+            }
+        }
+        return lastCountry; // just the tag if that's all we have
     }
     
     private void mapPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseMoved
@@ -1032,168 +1045,180 @@ public final class EditorUI extends javax.swing.JFrame {
             views = allViews.getList("eu3");
         }
 
+        boolean exception = false;
+        
         for (String viewName : views) {
             String view = viewName.toLowerCase();
-            if (view.equals("provinces")) {
-                viewMenu.add(new ProvinceFilterAction());
-            } else if (view.equals("countries")) {
-                viewMenu.add(new PoliticalFilterAction());
-            } else if (view.equals("titles")) {
-                for (TitleMode.TitleType t : TitleMode.TitleType.values())
-                    viewMenu.add(new TitleFilterAction(t));
-            } else if (view.equals("country-menu")) {
-                JMenu menu = new JMenu("Single country");
-                addCountryFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("continents-menu")) {
-                JMenu menu = new JMenu("Continents");
-                addContinentFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("regions-menu") && version.hasRegions()) {
-                JMenu menu = new JMenu("Regions");
-                addRegionFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("areas-menu") && version.hasRegions()) {
-                JMenu menu = new JMenu("Areas");
-                addAreaFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("superregions-menu") && version.hasRegions()) {
-                JMenu menu = new JMenu("Super regions");
-                addSuperRegionFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("provincegroups-menu") && version.hasRegions()) {
-                JMenu menu = new JMenu("Province groups");
-                addProvinceGroupFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("colonial-regions")) {
-                viewMenu.add(new ColonialRegionFilterAction());
-            } else if (view.equals("climates-menu") && version.hasClimateTxt()) {
-                JMenu menu = new JMenu("Climates");
-                addClimateFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("province-religions")) {
-                viewMenu.add(new ProvReligionFilterAction());
-            } else if (view.equals("country-religions")) {
-                viewMenu.add(new CtryReligionFilterAction());
-            } else if (view.equals("religions")) {
-                viewMenu.add(new ReligionFilterAction());
-            } else if (view.equals("religions-menu")) {
-                JMenu menu = new JMenu("Single religion");
-                addReligionFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("buildings-menu")) {
-                JMenu menu = new JMenu("Buildings");
-                addBuildingFilters(menu, allColors);
-                viewMenu.add(menu);
-            } else if (view.equals("hoi3-buildings-menu")) {
-                JMenu menu = new JMenu("Buildings");
-                addHOI3BuildingFilters(menu, allColors);
-                viewMenu.add(menu);
-            } else if (view.equals("old-cultures-menu")) {
-                JMenu menu = new JMenu("Cultures");
-                addOldCultureFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("new-cultures-menu")) {
-                JMenu menu = new JMenu("Cultures");
-                addNewCultureFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("rome-cultures-menu")) {
-                JMenu menu = new JMenu("Cultures");
-                addRomeCultureFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("province-cultures")) {
-                viewMenu.add(new ProvinceCultureFilterAction());
-            } else if (view.equals("trade-goods")) {
-                viewMenu.add(new GoodsFilterAction());
-            } else if (view.equals("victoria-trade-goods")) {
-                viewMenu.add(new GoodsFilterAction(true));
-            } else if (view.equals("trade-goods-menu")) {
-                JMenu menu = new JMenu("Single trade good");
-                addGoodsFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("hoi3-goods-menu")) {
-                JMenu menu = new JMenu("Province production levels");
-                addHOI3GoodsFilters(menu, allColors);
-                viewMenu.add(menu);
-            } else if (view.equals("victoria-goods-menu") && isSavedGame) {
-                JMenu menu = new JMenu("Single trade good");
-                addVictoriaGoodsFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("governments-menu")) {
-                JMenu menu = new JMenu("Governments");
-                addGovernmentFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("tech-groups-menu")) {
-                JMenu menu = new JMenu("Tech groups");
-                addTechGroupFilters(menu);
-                viewMenu.add(menu);
-            } else if (view.equals("cots")) {
-                viewMenu.add(new CustomFilterAction("Centers of trade", "cot", "yes"));
-            } else if (view.equals("tradenodes")) {
-                viewMenu.add(new TradeNodeFilterAction());
-            } else if (view.equals("capitals")) {
-                viewMenu.add(new CapitalFilterAction());
-            } else if (view.equals("hre")) {
-                viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
-            } else if (view.equals("base-tax")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1);
-                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
-                viewMenu.add(actn);
-            } else if (view.equals("base-production")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base production", "base_production", 0, 18, 1);
-                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
-                viewMenu.add(actn);
-            } else if (view.equals("base-manpower")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base manpower", "base_manpower", 0, 18, 1);
-                actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
-                viewMenu.add(actn);
-            } else if (view.equals("population")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "citysize", 0, 250000, 10000);
-                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
-                viewMenu.add(actn);
-            } else if (view.equals("rome-population")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "population", 0, 100, 5);
-                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
-                viewMenu.add(actn);
-            } else if (view.equals("population-split")) {
-                viewMenu.add(new PopSplitFilterAction());
-            } else if (view.equals("manpower")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1);
-                actn.setStepColors(allColors, view);
-                viewMenu.add(actn);
-            } else if (view.equals("revolt-risk")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1);
-                actn.setStepColors(allColors, view, Color.YELLOW, Color.ORANGE.darker(), Color.RED.darker());
-                viewMenu.add(actn);
-            } else if (view.equals("life-rating")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Life rating", "life_rating", 0, 50, 5);
-                actn.setStepColors(allColors, view, Color.RED, null, Color.GREEN.darker());
-                viewMenu.add(actn);
-            } else if (view.equals("civilization-value")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Civilization value", "civilization_value", 0, 100, 5);
-                actn.setStepColors(allColors, view);
-                viewMenu.add(actn);
-            } else if (view.equals("barbarian-power")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Barbarian power", "barbarian_power", 0, 10, 1);
-                actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.RED.darker());
-                viewMenu.add(actn);
-            } else if (view.equals("leadership")) {
-                DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1);
-                actn.setStepColors(allColors, view);
-                viewMenu.add(actn);
-            } else if (view.equals("hotspots-owner")) {
-                viewMenu.add(new HotspotFilterAction("owner", 20, 1));
-            } else if (view.equals("hotspots-controller")) {
-                viewMenu.add(new HotspotFilterAction("controller", 40, 2));
-            } else if (view.equals("natives-menu")) {
-                JMenu menu = new JMenu("Natives");
-                addNativesFilters(menu, allColors);
-                viewMenu.add(menu);
-            } else if (view.equals("wars")) {
-                viewMenu.add(new WarsAction());
-            } else {
-                log.log(Level.WARNING, "Unknown menu item: {0}", view);
+            try {
+                if (view.equals("provinces")) {
+                    viewMenu.add(new ProvinceFilterAction());
+                } else if (view.equals("countries")) {
+                    viewMenu.add(new PoliticalFilterAction());
+                } else if (view.equals("titles")) {
+                    for (TitleMode.TitleType t : TitleMode.TitleType.values())
+                        viewMenu.add(new TitleFilterAction(t));
+                } else if (view.equals("country-menu")) {
+                    JMenu menu = new JMenu("Single country");
+                    addCountryFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("continents-menu")) {
+                    JMenu menu = new JMenu("Continents");
+                    addContinentFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("regions-menu") && version.hasRegions()) {
+                    JMenu menu = new JMenu("Regions");
+                    addRegionFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("areas-menu") && version.hasRegions()) {
+                    JMenu menu = new JMenu("Areas");
+                    addAreaFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("superregions-menu") && version.hasRegions()) {
+                    JMenu menu = new JMenu("Super regions");
+                    addSuperRegionFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("provincegroups-menu") && version.hasRegions()) {
+                    JMenu menu = new JMenu("Province groups");
+                    addProvinceGroupFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("colonial-regions")) {
+                    viewMenu.add(new ColonialRegionFilterAction());
+                } else if (view.equals("climates-menu") && version.hasClimateTxt()) {
+                    JMenu menu = new JMenu("Climates");
+                    addClimateFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("province-religions")) {
+                    viewMenu.add(new ProvReligionFilterAction());
+                } else if (view.equals("country-religions")) {
+                    viewMenu.add(new CtryReligionFilterAction());
+                } else if (view.equals("religions")) {
+                    viewMenu.add(new ReligionFilterAction());
+                } else if (view.equals("religions-menu")) {
+                    JMenu menu = new JMenu("Single religion");
+                    addReligionFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("buildings-menu")) {
+                    JMenu menu = new JMenu("Buildings");
+                    addBuildingFilters(menu, allColors);
+                    viewMenu.add(menu);
+                } else if (view.equals("hoi3-buildings-menu")) {
+                    JMenu menu = new JMenu("Buildings");
+                    addHOI3BuildingFilters(menu, allColors);
+                    viewMenu.add(menu);
+                } else if (view.equals("old-cultures-menu")) {
+                    JMenu menu = new JMenu("Cultures");
+                    addOldCultureFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("new-cultures-menu")) {
+                    JMenu menu = new JMenu("Cultures");
+                    addNewCultureFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("rome-cultures-menu")) {
+                    JMenu menu = new JMenu("Cultures");
+                    addRomeCultureFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("province-cultures")) {
+                    viewMenu.add(new ProvinceCultureFilterAction());
+                } else if (view.equals("trade-goods")) {
+                    viewMenu.add(new GoodsFilterAction());
+                } else if (view.equals("victoria-trade-goods")) {
+                    viewMenu.add(new GoodsFilterAction(true));
+                } else if (view.equals("trade-goods-menu")) {
+                    JMenu menu = new JMenu("Single trade good");
+                    addGoodsFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("hoi3-goods-menu")) {
+                    JMenu menu = new JMenu("Province production levels");
+                    addHOI3GoodsFilters(menu, allColors);
+                    viewMenu.add(menu);
+                } else if (view.equals("victoria-goods-menu") && isSavedGame) {
+                    JMenu menu = new JMenu("Single trade good");
+                    addVictoriaGoodsFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("governments-menu")) {
+                    JMenu menu = new JMenu("Governments");
+                    addGovernmentFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("tech-groups-menu")) {
+                    JMenu menu = new JMenu("Tech groups");
+                    addTechGroupFilters(menu);
+                    viewMenu.add(menu);
+                } else if (view.equals("cots")) {
+                    viewMenu.add(new CustomFilterAction("Centers of trade", "cot", "yes"));
+                } else if (view.equals("tradenodes")) {
+                    viewMenu.add(new TradeNodeFilterAction());
+                } else if (view.equals("capitals")) {
+                    viewMenu.add(new CapitalFilterAction());
+                } else if (view.equals("hre")) {
+                    viewMenu.add(new CustomFilterAction("Holy Roman Empire", "hre", "yes"));
+                } else if (view.equals("base-tax")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base tax value", "base_tax", 0, 18, 1);
+                    actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                    viewMenu.add(actn);
+                } else if (view.equals("base-production")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base production", "base_production", 0, 18, 1);
+                    actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                    viewMenu.add(actn);
+                } else if (view.equals("base-manpower")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Base manpower", "base_manpower", 0, 18, 1);
+                    actn.setStepColors(allColors, view, Color.RED.darker(), Color.GREEN.darker(), Color.BLUE);
+                    viewMenu.add(actn);
+                } else if (view.equals("population")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "citysize", 0, 250000, 10000);
+                    actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("rome-population")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Population", "population", 0, 100, 5);
+                    actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.GREEN.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("population-split")) {
+                    viewMenu.add(new PopSplitFilterAction());
+                } else if (view.equals("manpower")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Manpower", "manpower", 0, 10, 1);
+                    actn.setStepColors(allColors, view);
+                    viewMenu.add(actn);
+                } else if (view.equals("revolt-risk")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1);
+                    actn.setStepColors(allColors, view, Color.YELLOW, Color.ORANGE.darker(), Color.RED.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("life-rating")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Life rating", "life_rating", 0, 50, 5);
+                    actn.setStepColors(allColors, view, Color.RED, null, Color.GREEN.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("civilization-value")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Civilization value", "civilization_value", 0, 100, 5);
+                    actn.setStepColors(allColors, view);
+                    viewMenu.add(actn);
+                } else if (view.equals("barbarian-power")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Barbarian power", "barbarian_power", 0, 10, 1);
+                    actn.setStepColors(allColors, view, Color.LIGHT_GRAY, null, Color.RED.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("leadership")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1);
+                    actn.setStepColors(allColors, view);
+                    viewMenu.add(actn);
+                } else if (view.equals("hotspots-owner")) {
+                    viewMenu.add(new HotspotFilterAction("owner", 20, 1));
+                } else if (view.equals("hotspots-controller")) {
+                    viewMenu.add(new HotspotFilterAction("controller", 40, 2));
+                } else if (view.equals("natives-menu")) {
+                    JMenu menu = new JMenu("Natives");
+                    addNativesFilters(menu, allColors);
+                    viewMenu.add(menu);
+                } else if (view.equals("wars")) {
+                    viewMenu.add(new WarsAction());
+                } else {
+                    log.log(Level.WARNING, "Unknown menu item: {0}", view);
+                }
+            } catch (RuntimeException ex) {
+                log.log(Level.SEVERE, "Error loading menu item {0}", view);
+                log.log(Level.SEVERE, "The error information is: ", ex);
+                exception = true; // instead of showing message boxes for each exception, show only one in case there's a cascade
             }
+        }
+        
+        if (exception) {
+            JOptionPane.showMessageDialog(null, "There was an error loading one of the view menu items. Please see the log for details.", "Problem", JOptionPane.WARNING_MESSAGE);
         }
 
         viewMenu.add(new JSeparator());

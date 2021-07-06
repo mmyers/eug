@@ -41,7 +41,7 @@ public final class CapitalsMode extends ProvincePaintingMode {
         
         for (String tag : tags) {
             String cap = mapPanel.getModel().getHistString(tag, "capital");
-            if (cap.length() != 0)
+            if (cap != null && cap.length() != 0)
                 capitals.put(Integer.parseInt(cap), Text.getText(tag));
         }
     }

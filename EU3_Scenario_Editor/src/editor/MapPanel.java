@@ -137,14 +137,20 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         if (scaledMapImage == null) {
             super.paintComponent(g);
         } else {
-            mode.paint(g);
+            try {
+                mode.paint(g);
 
-            for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
-                paintProvince((Graphics2D) g, override.getKey(), override.getValue());
-            }
+                for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
+                    paintProvince((Graphics2D) g, override.getKey(), override.getValue());
+                }
 
-            if (paintBorders && mode.paintsBorders()) {
-                paintBorders((Graphics2D) g);
+                if (paintBorders && mode.paintsBorders()) {
+                    paintBorders((Graphics2D) g);
+                }
+            } catch (RuntimeException ex) {
+                // can't pop up a message box from inside paintComponent, but the problem will probably be obvious anyway
+                log.log(Level.SEVERE, "Error while coloring the map! Current map mode is {0}", mode.getClass().getName());
+                log.log(Level.SEVERE, "The exception was: ", ex);
             }
         }
     }

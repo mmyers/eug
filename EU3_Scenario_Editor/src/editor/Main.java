@@ -237,6 +237,8 @@ public class Main {
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                log.log(Level.INFO, "**************************************************");
+                
                 if (gameDirField.getText().isEmpty())
                     return;
                 
