@@ -375,7 +375,11 @@ public class Main {
             GenericObject obj = EUGFileIO.load(f, ParserSettings.getQuietSettings());
             String modPath = f.getName().substring(0, f.getName().length()-4);
             if (obj.contains("path")) {
-                modPath = moddir.getParent() + File.separator + obj.getString("path");
+                // detect if path is absolute - fixes #28
+                if (new java.io.File(obj.getString("path")).isAbsolute())
+                    modPath = obj.getString("path");
+                else
+                    modPath = moddir.getParent() + File.separator + obj.getString("path");
             } else if (obj.contains("archive")) {
                 log.log(Level.INFO, "Archive mods are not yet supported. Mod \"{0}\" skipped.", obj.getString("name"));
                 continue;
