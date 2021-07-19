@@ -146,26 +146,31 @@ public final class Utilities {
         int colorIdx = 0;
         
         for (GenericObject group : cultures.children) {
-            Color baseColor = groupColors[colorIdx++];
-            colorIdx = colorIdx % groupColors.length;
-            
-            int colorModIdx = 0;
-            
-            for (GenericObject cul : group.children) {
-                Color modColor = baseColor;
-                if (colorModIdx % 2 == 0) {
-                    for (int i = 0; i < colorModIdx / 2; i++) {
-                        modColor = modColor.darker();
+            try {
+                Color baseColor = groupColors[colorIdx++];
+                colorIdx = colorIdx % groupColors.length;
+
+                int colorModIdx = 0;
+
+                for (GenericObject cul : group.children) {
+                    Color modColor = baseColor;
+                    if (colorModIdx % 2 == 0) {
+                        for (int i = 0; i < colorModIdx / 2; i++) {
+                            modColor = modColor.darker();
+                        }
+                    } else {
+                        for (int i = 0; i < colorModIdx / 2 + 1; i++) {
+                            modColor = modColor.brighter();
+                        }
                     }
-                } else {
-                    for (int i = 0; i < colorModIdx / 2 + 1; i++) {
-                        modColor = modColor.brighter();
-                    }
+                    colorModIdx++;
+                    cultureColorCache.put(cul.name, modColor);
+
+                    cultureGroups.put(cul.name, group.name);
                 }
-                colorModIdx++;
-                cultureColorCache.put(cul.name, modColor);
-                
-                cultureGroups.put(cul.name, group.name);
+            } catch (RuntimeException ex) {
+                log.log(Level.SEVERE, "Error parsing a culture color in culture group {0}", group.name);
+                log.log(Level.SEVERE, "The actual error is below.", ex);
             }
         }
     }
@@ -202,7 +207,14 @@ public final class Utilities {
                 //log.log(Level.WARNING, "color for {0} is null", title.name);
                 titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
             } else {
-                titleColorCache.put(title.name, parseColor(color));
+                try {
+                    Color c = parseColor(color);
+                    titleColorCache.put(title.name, c);
+                } catch (RuntimeException ex) {
+                    log.log(Level.SEVERE, "Error parsing a title color. Title is {0}", title.name);
+                    log.log(Level.SEVERE, "The actual error is below.", ex);
+                    titleColorCache.put(title.name, COLOR_NO_CTRY_DEF);
+                }
             }
             return title;
         }).forEach((title) -> {
@@ -243,9 +255,14 @@ public final class Utilities {
                 return COLOR_NO_CTRY_DEF;
             }
             
-            ret = parseColor(color);
-            
-            ctryColorCache.put(country, ret);
+            try {
+                ret = parseColor(color);
+
+                ctryColorCache.put(country, ret);
+            } catch (RuntimeException ex) {
+                log.log(Level.SEVERE, "Error parsing a country\'s color. Country tag is {0}", country);
+                log.log(Level.SEVERE, "The actual error is below.", ex);
+            }
         }
         return ret;
     }
@@ -260,31 +277,36 @@ public final class Utilities {
         
         if (ret == null) {
             for (GenericObject group : religions.children) {
-                if (group.name.equalsIgnoreCase(religion)) {
-                        // found it, which means this isn't a group at all
-                        GenericList color = group.getList("color");
-                        if (color == null) {
-                            log.log(Level.WARNING, "color for {0} is null", religion);
-                            relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
-                            return COLOR_NO_RELIGION_DEF;
-                        }
-                        ret = parseColor(color);
-                        relColorCache.put(religion, ret);
-                        return ret;
-                }
-                for (GenericObject rel : group.children) {
-                    if (rel.name.equalsIgnoreCase(religion)) {
-                        // found it
-                        GenericList color = rel.getList("color");
-                        if (color == null) {
-                            log.log(Level.WARNING, "color for {0} is null", religion);
-                            relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
-                            return COLOR_NO_RELIGION_DEF;
-                        }
-                        ret = parseColor(color);
-                        relColorCache.put(religion, ret);
-                        return ret;
+                try {
+                    if (group.name.equalsIgnoreCase(religion)) {
+                            // found it, which means this isn't a group at all
+                            GenericList color = group.getList("color");
+                            if (color == null) {
+                                log.log(Level.WARNING, "color for {0} is null", religion);
+                                relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
+                                return COLOR_NO_RELIGION_DEF;
+                            }
+                            ret = parseColor(color);
+                            relColorCache.put(religion, ret);
+                            return ret;
                     }
+                    for (GenericObject rel : group.children) {
+                        if (rel.name.equalsIgnoreCase(religion)) {
+                            // found it
+                            GenericList color = rel.getList("color");
+                            if (color == null) {
+                                log.log(Level.WARNING, "color for {0} is null", religion);
+                                relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
+                                return COLOR_NO_RELIGION_DEF;
+                            }
+                            ret = parseColor(color);
+                            relColorCache.put(religion, ret);
+                            return ret;
+                        }
+                    }
+                } catch (RuntimeException ex) {
+                    log.log(Level.SEVERE, "Error parsing a religion color. Religion (or religion group) is {0}", religion);
+                    log.log(Level.SEVERE, "The actual error is below.", ex);
                 }
             }
             

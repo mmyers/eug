@@ -109,6 +109,9 @@ public class TradeMode extends ProvincePaintingMode {
             Integer node = nodeMembers.get(provId);
             if (node != null) {
                 mapPanel.paintProvince(g, provId, tradeNodes.get(node).darker());
+            } else if (getMap().isWasteland(provId)) {
+                // color wasteland specially, otherwise it might look like large inland oceans
+                mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
             }
         }
     }
@@ -171,6 +174,8 @@ public class TradeMode extends ProvincePaintingMode {
             return "Trade Node<br>" + inflow + "<br>" + outflow;
         } else if (nodeMembers.containsKey(current.getId()))
             return "Trades in " + mapPanel.getModel().getProvinceData().getProvByID(nodeMembers.get(current.getId())).getName();
+        else if (getMap().isWasteland(current.getId()))
+            return "Wasteland";
         else if(getMap().isLand(current.getId()))
             return "Unknown trade node";
         else
