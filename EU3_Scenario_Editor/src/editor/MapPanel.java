@@ -515,14 +515,20 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     /** @since 0.4pre4 */
     public void flashProvince(final int provId, final int numFlashes) {
+        flashProvinces(java.util.Arrays.asList(provId), numFlashes, Color.WHITE);
+    }
+    
+    public void flashProvinces(final List<Integer> provIds, final int numFlashes, final Color provColor) {
         final ActionListener listener = new ActionListener() {
             private boolean color = true;
             @Override
             public void actionPerformed(final ActionEvent e) {
                 if (color) {
-                    colorProvince(provId, Color.WHITE);
+                    for (Integer provId : provIds)
+                        colorProvince(provId, provColor);
                 } else {
-                    uncolorProvince(provId);
+                    for (Integer provId : provIds)
+                        uncolorProvince(provId);
                 }
                 color = !color;
                 repaint();

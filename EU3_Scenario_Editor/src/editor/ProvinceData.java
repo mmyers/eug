@@ -156,7 +156,7 @@ public final class ProvinceData {
      * Class that encapsulates the data associated with an entry in the province
      * definition file.
      */
-    public static final class Province {
+    public static final class Province implements Comparable<Province> {
         
         private final int id;
         private final String name;
@@ -183,6 +183,11 @@ public final class ProvinceData {
         @Override
         public String toString() {
             return id + " = " + name;
+        }
+
+        @Override
+        public int compareTo(Province p) {
+            return Integer.compare(id, p.id);
         }
     }
 }

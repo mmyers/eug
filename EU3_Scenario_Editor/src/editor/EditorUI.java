@@ -28,6 +28,8 @@ import eug.specific.victoria2.Vic2Scenario;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -41,8 +43,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.swing.*;
 
 /**
@@ -235,7 +239,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
             while((line = reader.readLine()) != null) {
                 int index = line.indexOf("--"); // remove Lua comments
-                if (index > 0)
+                if (index >= 0)
                     line = line.substring(0, index);
                 stringBuilder.append(line).append('\n');
             }
@@ -314,6 +318,8 @@ public final class EditorUI extends javax.swing.JFrame {
         zoomLabel = new javax.swing.JLabel();
         javax.swing.JSeparator jSeparator2 = new javax.swing.JSeparator();
         goToProvButton = new javax.swing.JButton();
+        flashProvsButton = new javax.swing.JButton();
+        copyProvIdsButton = new javax.swing.JButton();
         mapScrollPane = new javax.swing.JScrollPane();
         javax.swing.JPanel lowerPanel = new javax.swing.JPanel();
         provNameLabel = new javax.swing.JLabel();
@@ -407,6 +413,22 @@ public final class EditorUI extends javax.swing.JFrame {
         goToProvButton.setAction(goToProvAction);
         toolBar.add(goToProvButton);
 
+        flashProvsButton.setText("Blink selected province(s)");
+        flashProvsButton.setToolTipText("Where am I? Click to find out!");
+        flashProvsButton.setFocusable(false);
+        flashProvsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        flashProvsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        flashProvsButton.addActionListener(formListener);
+        toolBar.add(flashProvsButton);
+
+        copyProvIdsButton.setText("Copy selected province ID(s)");
+        copyProvIdsButton.setToolTipText("");
+        copyProvIdsButton.setFocusable(false);
+        copyProvIdsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        copyProvIdsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        copyProvIdsButton.addActionListener(formListener);
+        toolBar.add(copyProvIdsButton);
+
         getContentPane().add(toolBar, java.awt.BorderLayout.NORTH);
 
         mapPanel.addMouseListener(formListener);
@@ -415,6 +437,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
         getContentPane().add(mapScrollPane, java.awt.BorderLayout.CENTER);
 
+        provNameLabel.setText("Click to select a province; right-click or hold <ctrl> to select multiple provinces");
         lowerPanel.add(provNameLabel);
 
         showProvHistButton.setText("Show province history");
@@ -497,6 +520,12 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == bookmarksButton) {
                 EditorUI.this.bookmarksButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == flashProvsButton) {
+                EditorUI.this.flashProvsButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == copyProvIdsButton) {
+                EditorUI.this.copyProvIdsButtonActionPerformed(evt);
             }
             else if (evt.getSource() == showProvHistButton) {
                 EditorUI.this.showProvHistButtonActionPerformed(evt);
@@ -713,7 +742,6 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void mapPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseClicked
-//        provNameLabel.setText("Loading...");
         if (evt.isPopupTrigger()) {
             popupTriggered(evt);
             return;
@@ -782,6 +810,38 @@ public final class EditorUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "No new version available!");
         }
     }//GEN-LAST:event_checkVersionMenuItemActionPerformed
+
+    private void flashProvsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_flashProvsButtonActionPerformed
+        if (currentProvinces.isEmpty())
+            return;
+        
+        mapPanel.goToProv(currentProvinces.get(0).getId());
+        flashCurrentProvinces(3, Color.WHITE);
+    }//GEN-LAST:event_flashProvsButtonActionPerformed
+
+    private void copyProvIdsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyProvIdsButtonActionPerformed
+        if (currentProvinces.isEmpty())
+            return;
+        StringBuilder sb = new StringBuilder();
+        List<ProvinceData.Province> sortedProvs = new ArrayList<>(currentProvinces);
+        Collections.sort(sortedProvs);
+        for (ProvinceData.Province prov : sortedProvs) {
+            sb.append(prov.getId());
+            sb.append(" ");
+        }
+        StringSelection sel = new StringSelection(sb.toString().trim());
+        try {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, sel);
+            flashCurrentProvinces(3, Color.WHITE);
+            provNameLabel.setText("Copied " + sb.toString().trim() + "!");
+        } catch (IllegalStateException ex) {
+            log.log(Level.WARNING, "Couldn't copy province IDs for some reason. Ids were \"{0}\"", sb.toString().trim());
+            log.log(Level.WARNING, "Actual exception is: ", ex);
+            JTextField textField = new JTextField("Selected province IDs are: " + sb.toString().trim());
+            textField.setEditable(false);
+            JOptionPane.showMessageDialog(this, textField);
+        }
+    }//GEN-LAST:event_copyProvIdsButtonActionPerformed
     
     private void checkForUpdates() {
         SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
@@ -819,12 +879,9 @@ public final class EditorUI extends javax.swing.JFrame {
             currentProvinces.add(p);
         
         if (p != null && p.getId() != 0) {
-            for (ProvinceData.Province prov : currentProvinces) {
-                mapPanel.flashProvince(prov.getId(), 1);
-            }
-            //mapPanel.flashProvince(p.getId(), 1);
+            flashCurrentProvinces(1, Color.WHITE);
         } else { // (p == null)
-            provNameLabel.setText("No province");
+            provNameLabel.setText("Click to select a province; right-click or hold <ctrl> to select multiple provinces");
             showProvHistButton.setEnabled(false);
             ctryNameLabel.setText("No country");
             showCountryHistButton.setEnabled(false);
@@ -982,6 +1039,15 @@ public final class EditorUI extends javax.swing.JFrame {
             ctryNameLabel.setText("");
             showCountryHistButton.setEnabled(false);
         }
+    }
+
+    private void flashCurrentProvinces(int numFlashes, Color color) {
+        // grab just the IDs
+        List<Integer> provIds = currentProvinces
+                .stream()
+                .map(p -> p.getId())
+                .collect(Collectors.toList());
+        mapPanel.flashProvinces(provIds, numFlashes, color);
     }
     
     private void popupTriggered(java.awt.event.MouseEvent evt) {
@@ -1239,6 +1305,8 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private static final int MAX_PER_SUBMENU = 30;
+    
     private void addReligionFilters(JMenu rootMenu) {
         final GenericObject religions = loadFileOrFolder("common/religions", "common/religion.txt");
         
@@ -1340,16 +1408,17 @@ public final class EditorUI extends javax.swing.JFrame {
             for (Action a : onePerCountry)
                 uniqueMenu.add(a);
         }
-        for (int i = 0; i < other.size(); i++) {
-            rootMenu.add(other.get(i));
-            if ((i+1) % 25 == 0)
-                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
-        }
 
         if (!forts.isEmpty()) {
             FortLevelFilterAction actn = new FortLevelFilterAction(forts);
             actn.setStepColors(colors, "fort-level", Color.YELLOW, Color.GREEN.darker(), Color.BLUE.darker());
             rootMenu.add(actn);
+        }
+        
+        for (int i = 0; i < other.size(); i++) {
+            rootMenu.add(other.get(i));
+            if ((i+1) % MAX_PER_SUBMENU == 0)
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
         }
     }
 
@@ -1422,7 +1491,7 @@ public final class EditorUI extends javax.swing.JFrame {
                 int counter = 0;
                 for (Object m : menus[i]) {
                     menu.add((JMenu)m);
-                    if (counter++ > 23) {
+                    if (counter++ > MAX_PER_SUBMENU) {
                         menu = (JMenu) menu.add(new JMenu("More..."));
                         counter = 0;
                     }
@@ -1436,7 +1505,7 @@ public final class EditorUI extends javax.swing.JFrame {
             int counter = 0;
             for (JMenu m : otherMenu) {
                 menu.add(m);
-                if (counter++ > 23) {
+                if (counter++ > MAX_PER_SUBMENU) {
                     menu = (JMenu) menu.add(new JMenu("More..."));
                     counter = 0;
                 }
@@ -1477,7 +1546,7 @@ public final class EditorUI extends javax.swing.JFrame {
             }
 
             rootMenu.add(groupMenu);
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1514,7 +1583,7 @@ public final class EditorUI extends javax.swing.JFrame {
             }
 
             rootMenu.add(groupMenu);
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1567,7 +1636,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (GenericObject good : goods.children) {
             rootMenu.add(new CustomFilterAction(Text.getText(good.name), "trade_goods", good.name));
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1593,7 +1662,7 @@ public final class EditorUI extends javax.swing.JFrame {
             int counter = 0;
             for (GenericObject good : group.children) {
                 groupMenu.add(new CustomFilterAction(Text.getText(good.name), "trade_goods", good.name));
-                if (counter++ > 25) {
+                if (counter++ > MAX_PER_SUBMENU) {
                     groupMenu = (JMenu) groupMenu.add(new JMenu("More..."));
                     counter = 0;
                 }
@@ -1615,9 +1684,9 @@ public final class EditorUI extends javax.swing.JFrame {
         if (governments == null)
             return;
         
-//        Collections.sort(governments.children, new ObjectComparator());
+        Collections.sort(governments.children, new ObjectComparator());
         final StringBuilder allGovernments = new StringBuilder("(");
-        if (governments.size() > 20) {
+        if (governments.size() > MAX_PER_SUBMENU) {
             JMenu republicMenu = new JMenu("Republics");
             JMenu religiousMenu = new JMenu("Religious");
             JMenu normalMenu = new JMenu("Normal");
@@ -1632,15 +1701,15 @@ public final class EditorUI extends javax.swing.JFrame {
                         new CustomCountryFilterAction(Text.getText(government.name), "government", government.name);
                 
                 if (government.getString("republican_name").equals("yes")) {
-                    if (tmpRepublic.getMenuComponentCount() > 25)
+                    if (tmpRepublic.getMenuComponentCount() > MAX_PER_SUBMENU)
                         tmpRepublic = (JMenu)tmpRepublic.add(new JMenu("More..."));
                     tmpRepublic.add(action);
                 } else if (government.getString("religion").equals("yes")) {
-                    if (tmpReligious.getMenuComponentCount() > 25)
+                    if (tmpReligious.getMenuComponentCount() > MAX_PER_SUBMENU)
                         tmpReligious = (JMenu)tmpReligious.add(new JMenu("More..."));
                     tmpReligious.add(action);
                 } else {
-                    if (tmpNormal.getMenuComponentCount() > 25)
+                    if (tmpNormal.getMenuComponentCount() > MAX_PER_SUBMENU)
                         tmpNormal = (JMenu)tmpNormal.add(new JMenu("More..."));
                     tmpNormal.add(action);
                 }
@@ -1677,11 +1746,13 @@ public final class EditorUI extends javax.swing.JFrame {
             return;
         
         if (!groups.values.isEmpty()) {
+            Collections.sort(groups.values);
             for (ObjectVariable group : groups.values) {
                 rootMenu.add(new CustomCountryFilterAction(Text.getText(group.varname), "technology_group", group.varname));
             }
         } else {
             // must be In Nomine
+            Collections.sort(groups.children, new ObjectComparator());
             for (GenericObject group : groups.children) {
                 rootMenu.add(new CustomCountryFilterAction(Text.getText(group.name), "technology_group", group.name));
             }
@@ -1689,13 +1760,17 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addContinentFilters(JMenu rootMenu) {
-        for (String cont : map.getContinents().keySet()) {
+        List<String> contNames = new ArrayList<>(map.getContinents().keySet());
+        Collections.sort(contNames, new StringComparator());
+        for (String cont : contNames) {
             rootMenu.add(new ContinentFilterAction(Text.getText(cont), cont));
         }
     }
     
     private void addClimateFilters(JMenu rootMenu) {
-        for (String climate : map.getClimates().keySet()) {
+        List<String> climateNames = new ArrayList<>(map.getClimates().keySet());
+        Collections.sort(climateNames, new StringComparator());
+        for (String climate : climateNames) {
             rootMenu.add(new ClimateFilterAction(Text.getText(climate), climate));
         }
     }
@@ -1708,7 +1783,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (String area : areaNames) {
             rootMenu.add(new AreaFilterAction(Text.getText(area), area));
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1723,7 +1798,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (String region : regionNames) {
             rootMenu.add(new RegionFilterAction(Text.getText(region), region));
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1737,7 +1812,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (String region : superRegionNames) {
             rootMenu.add(new SuperRegionFilterAction(Text.getText(region), region));
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1752,7 +1827,7 @@ public final class EditorUI extends javax.swing.JFrame {
         int counter = 0;
         for (String group : groupNames) {
             rootMenu.add(new ProvinceGroupFilterAction(Text.getText(group), group));
-            if (counter++ > 25) {
+            if (counter++ > MAX_PER_SUBMENU) {
                 rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
                 counter = 0;
             }
@@ -1768,7 +1843,9 @@ public final class EditorUI extends javax.swing.JFrame {
         map.setNatives(natives);
         
         JMenu nativeTypesMenu = new JMenu("Native types");
-        for (String nativeType : map.getNatives().keySet()) {
+        List<String> nativeNames = new ArrayList<>(map.getNatives().keySet());
+        Collections.sort(nativeNames, new StringComparator());
+        for (String nativeType : nativeNames) {
             nativeTypesMenu.add(new NativesFilterAction(Text.getText(nativeType), nativeType));
         }
         rootMenu.add(nativeTypesMenu);
@@ -1788,12 +1865,14 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton bookmarksButton;
     javax.swing.JMenuItem checkVersionMenuItem;
+    javax.swing.JButton copyProvIdsButton;
     private javax.swing.JLabel ctryNameLabel;
     private javax.swing.JSpinner daySpinner;
     private javax.swing.JMenuItem exitMenuItem;
+    javax.swing.JButton flashProvsButton;
     private javax.swing.JButton goToProvButton;
     private javax.swing.JMenuItem goToProvMenuItem;
-    private javax.swing.JMenu helpMenu;
+    javax.swing.JMenu helpMenu;
     private final editor.MapPanel mapPanel = new editor.MapPanel();
     private javax.swing.JScrollPane mapScrollPane;
     private javax.swing.JSpinner monthSpinner;
@@ -2030,12 +2109,12 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
-    private class CountryFilterAction extends FilterAction {
-        public CountryFilterAction() {
-            super("Countries", new CountryMode(mapPanel));
-            putValue(SHORT_DESCRIPTION, "Countries");
-        }
-    }
+//    private class CountryFilterAction extends FilterAction {
+//        public CountryFilterAction() {
+//            super("Countries", new CountryMode(mapPanel));
+//            putValue(SHORT_DESCRIPTION, "Countries");
+//        }
+//    }
     
     private class PoliticalFilterAction extends FilterAction {
         public PoliticalFilterAction() {
