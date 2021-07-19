@@ -20,7 +20,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.FlavorEvent;
-import java.awt.datatransfer.FlavorListener;
 import java.awt.event.*;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -51,8 +50,8 @@ public class EditorDialog extends JDialog {
     
     private static Font font = initFont();
 
-    private FilenameResolver resolver;
-    private ProvinceData provinceData;
+    private final FilenameResolver resolver;
+    private final ProvinceData provinceData;
     
     private static Font initFont() {
         String fontName = config.getString("editor.font.name");
@@ -101,75 +100,37 @@ public class EditorDialog extends JDialog {
         
         initDocument();
         
-        textPane.addCaretListener(new CaretListener() {
-//            int lastLocation = 0;
-            public void caretUpdate(CaretEvent e) {
-                // TODO: Highlight matching brackets
-//                if (e.getDot() != lastLocation) {
-//                    lastLocation = e.getDot();
-//                }
-                if (e.getMark() != e.getDot()) {
-                    cutMenuItem.setEnabled(true);
-                    copyMenuItem.setEnabled(true);
-                } else {
-                    cutMenuItem.setEnabled(false);
-                    copyMenuItem.setEnabled(false);
-                }
+        textPane.addCaretListener((CaretEvent e) -> {
+            // TODO: Highlight matching brackets
+            if (e.getMark() != e.getDot()) {
+                cutMenuItem.setEnabled(true);
+                copyMenuItem.setEnabled(true);
+            } else {
+                cutMenuItem.setEnabled(false);
+                copyMenuItem.setEnabled(false);
             }
         });
         
-        // FIXME Is there a better way to add global key bindings?
-        // TODO Add find and replace
-        textPane.addKeyListener(new KeyListener() {
-            public void keyPressed(final KeyEvent e) {
-                if (((e.getModifiers() & KeyEvent.CTRL_MASK) != 0) ||
-                        (e.getModifiers() & KeyEvent.CTRL_DOWN_MASK) != 0) {
-                    if (e.getKeyCode() == KeyEvent.VK_Z)
-                        undoMenuItem.doClick();
-                    else if (e.getKeyCode() == KeyEvent.VK_R)
-                        redoMenuItem.doClick();
-                    else if (e.getKeyCode() == KeyEvent.VK_G)
-                        goToMenuItem.doClick();
-                    else if (e.getKeyCode() == KeyEvent.VK_F)
-                        findMenuItem.doClick();
-                }
-            }
-            public void keyReleased(KeyEvent e) { }
-            public void keyTyped(KeyEvent e) { }
-        });
-//        DefaultInputHandler handler = (DefaultInputHandler) textArea.getInputHandler();
-//        handler.addKeyBinding("C+C", new CopyListener());
-//        handler.addKeyBinding("C+X", new CutListener());
-//        handler.addKeyBinding("C+V", new PasteListener());
-//        handler.addKeyBinding("C+Z", new UndoListener());
-//        handler.addKeyBinding("C+R", new RedoListener());
-//        handler.addKeyBinding("C+G", new GoToListener());
         //}}}
         
-        Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(
-                new FlavorListener() {
-            public void flavorsChanged(FlavorEvent e) {
-                final Clipboard clipboard =
-                        Toolkit.getDefaultToolkit().getSystemClipboard();
-                
-                if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-                    pasteMenuItem.setEnabled(true);
-                } else {
-                    pasteMenuItem.setEnabled(false);
-                }
+        Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener((FlavorEvent e) -> {
+            final Clipboard clipboard =
+                    Toolkit.getDefaultToolkit().getSystemClipboard();
+            
+            if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                pasteMenuItem.setEnabled(true);
+            } else {
+                pasteMenuItem.setEnabled(false);
             }
-        }
-        );
+        });
         
         textAreaKeyTyped(); // set the syntaxCheckLabel
     }
     
     private void initDocument() {
-        textPane.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent e) {
-                undo.addEdit(e.getEdit());
-                updateUndoStates();
-            }
+        textPane.getDocument().addUndoableEditListener((UndoableEditEvent e) -> {
+            undo.addEdit(e.getEdit());
+            updateUndoStates();
         });
         
         // Here I want to make it so that if a change is made, a timer (one
@@ -571,8 +532,8 @@ public class EditorDialog extends JDialog {
      */
     private java.util.Map<Integer, Integer> findUnmatchedBrackets() {
         final Segment text = new Segment();
-        final java.util.Stack<Integer> lefts = new java.util.Stack<Integer>();
-        final java.util.Map<Integer, Integer> unmatched = new java.util.HashMap<Integer, Integer>();
+        final java.util.Stack<Integer> lefts = new java.util.Stack<>();
+        final java.util.Map<Integer, Integer> unmatched = new java.util.HashMap<>();
         final int lineCount = getLineCount();
         
         for (int line = 0; line < lineCount; line++) {
@@ -941,11 +902,11 @@ public class EditorDialog extends JDialog {
     
     //<editor-fold defaultstate="collapsed" desc=" FindDialog ">
     private final class FindDialog extends JDialog {
-        private JTextField findField;
-        private JTextField replaceField;
-        private JRadioButton forwardButton;
-        private JRadioButton backwardButton;
-        private JCheckBox matchCaseCheckBox;
+        private final JTextField findField;
+        private final JTextField replaceField;
+        private final JRadioButton forwardButton;
+        private final JRadioButton backwardButton;
+        private final JCheckBox matchCaseCheckBox;
         FindDialog() {
             super(EditorDialog.this, "Find");
             
@@ -992,9 +953,7 @@ public class EditorDialog extends JDialog {
             lowerPanel.add(directionPanel);
             
             matchCaseCheckBox = new JCheckBox("Match case");
-            matchCaseCheckBox.setSelected(true);
-            matchCaseCheckBox.setEnabled(false);
-            matchCaseCheckBox.setToolTipText("Case insensitive searching is not yet supported.");
+            matchCaseCheckBox.setSelected(false);
             lowerPanel.add(matchCaseCheckBox);
             
             add(lowerPanel, BorderLayout.SOUTH);
@@ -1024,43 +983,43 @@ public class EditorDialog extends JDialog {
             }
             @Override
             public void actionPerformed(ActionEvent e) {
-                final Segment text = new Segment();
-                final String findText = findField.getText();
+                final boolean matchCase = matchCaseCheckBox.isSelected();
                 final int lineCount = getLineCount();
-//                final boolean matchCase = matchCaseCheckBox.isSelected();
-//                final String pattern = Pattern.quote(findText);
-                int idx;
+                Segment textSegment = new Segment();
+                String findText = findField.getText();
+                if (!matchCase)
+                    findText = findText.toLowerCase();
                 
                 if (forwardButton.isSelected()) {
-                    lineLoop:
-                        for (int line = 0; line < lineCount; line++) {
-                            int lineStart = getLineStartOffset(line);
-                            if (line < lineCount-1 && getLineStartOffset(line+1) < textPane.getCaretPosition())
-                                continue;
-                            
-                            getLineText(line, text);
-                            if (text.toString().contains(findText)) {
-                                // try to figure out where it is
-//                            log.log(Level.FINEST, "Found on line {0}", line);
-                                for (int i = 0; i < text.count; i++) {
-                                    if (lineStart + i < textPane.getCaretPosition())
-                                        continue;
-                                    
-//                                log.log(Level.FINEST, text.toString());
-                                    String remainder = new String(text.array, text.offset+i, text.count-i);
-//                                log.log(Level.FINEST, "remainder = {0}", remainder);
-                                    idx = remainder.indexOf(findText);
-                                    if (idx >= 0) {
-                                        idx += lineStart + i;
-                                        textPane.setCaretPosition(idx);
-                                        textPane.select(idx, idx + findText.length());
-//                                    break lineLoop;
-                                        return;
-                                    }
+                    for (int lineNum = 0; lineNum < lineCount; lineNum++) {
+                        int lineStart = getLineStartOffset(lineNum);
+                        if (lineNum < lineCount-1 && getLineStartOffset(lineNum+1) < textPane.getCaretPosition())
+                            continue;
+
+                        getLineText(lineNum, textSegment);
+                        String lineText = textSegment.toString();
+                        if (!matchCase)
+                            lineText = lineText.toLowerCase();
+                        if (lineText.contains(findText)) {
+                            // try to figure out where it is
+                            for (int i = 0; i < textSegment.count; i++) {
+                                if (lineStart + i < textPane.getCaretPosition())
+                                    continue;
+
+                                String remainder = new String(textSegment.array, textSegment.offset+i, textSegment.count-i);
+                                if (!matchCase)
+                                    remainder = remainder.toLowerCase();
+                                int idx = remainder.indexOf(findText);
+                                if (idx >= 0) {
+                                    idx += lineStart + i;
+                                    textPane.setCaretPosition(idx);
+                                    textPane.select(idx, idx + findText.length());
+                                    return;
                                 }
-//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
                             }
+//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
                         }
+                    }
                 } else {
                     // Backwards
 //                    JOptionPane.showMessageDialog(EditorDialog.FindDialog.this,
@@ -1073,19 +1032,19 @@ public class EditorDialog extends JDialog {
                             if (lineStart >= textPane.getCaretPosition())
                                 continue;
                             
-                            getLineText(line, text);
-                            if (text.toString().contains(findText)) {
+                            getLineText(line, textSegment);
+                            if (textSegment.toString().contains(findText)) {
                                 // try to figure out where it is
                                 log.log(Level.FINEST, "Found on line {0}", line);
-                                for (int i = text.count-1; i >= 0; i--) {
+                                for (int i = textSegment.count-1; i >= 0; i--) {
                                     // loop until i is at or before the caret
                                     if (lineStart + i > textPane.getCaretPosition())
                                         continue;
                                     
-                                    log.log(Level.FINEST, text.toString());
-                                    String remainder = new String(text.array, text.offset, text.count-i); //text.subSequence(0, i).toString();
+                                    log.log(Level.FINEST, textSegment.toString());
+                                    String remainder = new String(textSegment.array, textSegment.offset, textSegment.count-i); //text.subSequence(0, i).toString();
                                     log.log(Level.FINEST, "remainder = {0}", remainder);
-                                    idx = remainder.indexOf(findText);
+                                    int idx = remainder.indexOf(findText);
                                     if (idx >= 0) {
                                         idx += lineStart + i;
                                         textPane.setCaretPosition(idx);
@@ -1105,12 +1064,6 @@ public class EditorDialog extends JDialog {
     //</editor-fold>
     
     
-    private static final double javaVersion =
-            Double.parseDouble(System.getProperty("java.version").substring(0, 3));
-    private static final boolean supportsRowSorter =
-            (javaVersion >= 1.6);
-    
-    
     //<editor-fold defaultstate="collapsed" desc=" CountryListDialog ">
     private static final class CountryListDialog extends JDialog {
         CountryListDialog(java.awt.Frame parent, FilenameResolver resolver) {
@@ -1119,6 +1072,9 @@ public class EditorDialog extends JDialog {
             GenericObject countries =
                     EUGFileIO.load(resolver.resolveFilename("common/countries.txt"),
                     ParserSettings.getNoCommentSettings());
+            if (countries == null)
+                countries = EUGFileIO.loadAll(resolver.listFiles("common/country_tags"),
+                        ParserSettings.getNoCommentSettings());
             
             String[][] tagNameTable = new String[countries.size()][2];
             int i = 0;
@@ -1131,11 +1087,7 @@ public class EditorDialog extends JDialog {
             JTable countryTable = new JTable(tagNameTable, new String[] { "Tag", "Name" } );
             countryTable.setDefaultEditor(Object.class, null);
             
-            if (supportsRowSorter) {
-                countryTable.setAutoCreateRowSorter(true);
-            } else {
-                log.log(Level.WARNING, "Table sorting not supported.");
-            }
+            countryTable.setAutoCreateRowSorter(true);
             
             setLayout(new BorderLayout());
             add(new JScrollPane(countryTable), BorderLayout.CENTER);
@@ -1175,14 +1127,10 @@ public class EditorDialog extends JDialog {
                 i++;
             }
             
-            JTable provTable = new JTable(provNameTable, new String[] { "Tag", "Name in definition", "Display name" } );
+            JTable provTable = new JTable(provNameTable, new String[] { "ID", "Display name" } );
             provTable.setDefaultEditor(Object.class, null);
             
-            if (supportsRowSorter) {
-                provTable.setAutoCreateRowSorter(true);
-            } else {
-                log.log(Level.WARNING, "Table sorting not supported.");
-            }
+            provTable.setAutoCreateRowSorter(true);
             
             setLayout(new BorderLayout());
             add(new JScrollPane(provTable), BorderLayout.CENTER);
@@ -1209,39 +1157,46 @@ public class EditorDialog extends JDialog {
             GenericObject cultureGroups =
                     EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"),
                     ParserSettings.getNoCommentSettings());
+            if (cultureGroups == null)
+                cultureGroups = EUGFileIO.loadAll(resolver.listFiles("common/cultures"),
+                        ParserSettings.getNoCommentSettings());
             
             // No easy way to do this with an array or a list, so use vector instead.
             Vector<Vector<String>> cultureGroupNameTable =
                     new Vector<Vector<String>>();
-            
-            for (GenericList group : cultureGroups.lists) {
-                String groupName = group.getName();
-//                String groupText = Text.getText(groupName);
-                
-                for (String culture : group) {
-                    Vector<String> vector = new Vector<String>(2);
-                    vector.add(groupName);
-//                    vector.add(groupText);
-                    vector.add(culture);
-//                    vector.add(Text.getText(culture));
-                    cultureGroupNameTable.add(vector);
+            if (!cultureGroups.lists.isEmpty()) {
+                for (GenericList group : cultureGroups.lists) {
+                    String groupName = group.getName();
+
+                    for (String culture : group) {
+                        Vector<String> vector = new Vector<String>(2);
+                        vector.add(groupName);
+                        vector.add(culture);
+                        cultureGroupNameTable.add(vector);
+                    }
+                }
+            } else if (!cultureGroups.children.isEmpty()) {
+                for (GenericObject group : cultureGroups.children) {
+                    String groupName = group.name;
+                    
+                    for (GenericObject culture : group.children) {
+                        String cultureName = culture.name;
+                        Vector<String> vector = new Vector<String>(2);
+                        vector.add(groupName);
+                        vector.add(cultureName);
+                        cultureGroupNameTable.add(vector);
+                    }
                 }
             }
             
             Vector<String> labels = new Vector<String>(4);
             labels.add("Group");
-//            labels.add("Group display name");
             labels.add("Culture");
-//            labels.add("Culture display name");
             
             JTable cultureTable = new JTable(cultureGroupNameTable, labels);
             cultureTable.setDefaultEditor(Object.class, null);
             
-            if (supportsRowSorter) {
-                cultureTable.setAutoCreateRowSorter(true);
-            } else {
-                log.log(Level.WARNING, "Table sorting not supported.");
-            }
+            cultureTable.setAutoCreateRowSorter(true);
             
             setLayout(new BorderLayout());
             add(new JScrollPane(cultureTable), BorderLayout.CENTER);
@@ -1259,52 +1214,4 @@ public class EditorDialog extends JDialog {
     }
     //</editor-fold>
     
-    //<editor-fold defaultstate="collapsed" desc=" ActionListeners ">
-    //{{{ ActionListeners
-//    private class CopyListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            copy();
-//        }
-//    }
-//
-//    private class CutListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            cut();
-//        }
-//    }
-//
-//    private class PasteListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            paste();
-//        }
-//    }
-//
-//    private class UndoListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            undo();
-//        }
-//    }
-//
-//    private class RedoListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            redo();
-//        }
-//    }
-//
-//    private class GoToListener extends AbstractAction implements ActionListener {
-//        public void actionPerformed(ActionEvent e) {
-//            int lineCount = getLineCount();
-//            int caretLine = getCaretLine();
-//            String response =
-//                    JOptionPane.showInputDialog(EditorDialog.this,
-//                    "Go to line (0 - " + (lineCount-1) + "): ", caretLine);
-//
-//            if (response == null || response.length() == 0)
-//                return;
-//
-//            textPane.setCaretPosition(getLineStartOffset(Integer.parseInt(response)));
-//        }
-//    }
-    //}}}
-    //</editor-fold>
 }
