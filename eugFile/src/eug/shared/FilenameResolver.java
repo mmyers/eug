@@ -55,6 +55,8 @@ public final class FilenameResolver {
      */
     private boolean clausewitz2Mod;
     
+    private final Set<String> ignoreFileTypes = new HashSet<>();
+    
     /**
      * Creates a new instance of FilenameResolver, loading configuration from
      * the given file.
@@ -239,39 +241,63 @@ public final class FilenameResolver {
             dirName = dirName.substring(1);
         
         if (!usingMod)
-            return new File(mainDirName + dirName).listFiles();
+            return filterFiles(new File(mainDirName + dirName).listFiles());
         
         final String[] splitPath = splitParent(dirName);
         
         if (modFile) {
             if (isFolderReplaced(dirName)) {
-                return new File(modDirName + dirName).listFiles();
+                return filterFiles(new File(modDirName + dirName).listFiles());
             } else if (isExtended(splitPath[0])) {
                 final Map<String, File> ret = new HashMap<>();
 
                 final File[] files = new File(mainDirName + dirName).listFiles();
                 if (files != null) {
-                    for (File file : files)
-                        ret.put(file.getName().toLowerCase(), file);
+                    for (File file : files) {
+                        String filename = file.getName().toLowerCase();
+                        if (ignoreFileTypes.stream().anyMatch(ext -> filename.endsWith(ext)))
+                            continue;
+                        ret.put(filename, file);
+                    }
                 }
                 
                 final File moddedDir = new File(modDirName + dirName);
                 if (moddedDir.exists()) {
                     // only add files which don't use the same name
-                    for (File f : moddedDir.listFiles())
-                        ret.put(f.getName().toLowerCase(), f); // overwrites
+                    for (File f : moddedDir.listFiles()) {
+                        String filename = f.getName().toLowerCase();
+                        if (ignoreFileTypes.stream().anyMatch(ext -> filename.endsWith(ext)))
+                            continue;
+                        ret.put(filename, f); // overwrites
+                    }
                 }
                 
                 return ret.values().toArray(new File[ret.size()]);
             } else {
-                return new File(mainDirName + dirName).listFiles();
+                return filterFiles(new File(mainDirName + dirName).listFiles());
             }
         } else {
-            if (new File(modDirName + dirName).exists())
-                return new File(modDirName + dirName).listFiles();
-            else
-                return new File(mainDirName + dirName).listFiles();
+            if (new File(modDirName + dirName).exists()) {
+                return filterFiles(new File(modDirName + dirName).listFiles());
+            } else {
+                return filterFiles(new File(mainDirName + dirName).listFiles());
+            }
         }
+    }
+    
+    /** Filters out any files with extensions matching {@link #ignoreFileTypes}. */
+    private File[] filterFiles(File[] files) {
+        if (files == null || files.length == 0 || ignoreFileTypes.isEmpty())
+            return files;
+        
+        java.util.List<File> filteredFiles = new java.util.ArrayList<>();
+        for (File f : files) {
+            for (String ext : ignoreFileTypes) {
+                if (!f.getName().endsWith(ext))
+                    filteredFiles.add(f);
+            }
+        }
+        return filteredFiles.toArray(new File[filteredFiles.size()]);
     }
     
     /**
@@ -718,5 +744,14 @@ public final class FilenameResolver {
             pathBuilder.append("/");
         }
         return false;
+    }
+    
+    /**
+     * Set this resolver to ignore files whose names end with the specified string.
+     * {@link #listFiles} will not return any files matching the criteria.
+     * @param type the file ending to ignore
+     */
+    public void ignoreFileType(String type) {
+        ignoreFileTypes.add(type);
     }
 }
