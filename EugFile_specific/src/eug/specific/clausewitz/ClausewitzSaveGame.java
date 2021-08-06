@@ -77,6 +77,17 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
                 }
                 provinces.put(i, prov);
             }
+            
+            if (lastProvId == 0) {
+                for (int i = 1; ; i++) {
+                    GenericObject prov = provs.getChild(Integer.toString(i));
+                    if (prov == null) {
+                        lastProvId = i-1;
+                        break;
+                    }
+                    provinces.put(i, prov);
+                }
+            }
         }
     }
     
@@ -161,6 +172,23 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
             provinces.put(id, prov);
             if (id > lastProvId)
                 lastProvId = id;
+        } else {
+            GenericObject provinceRoot = root.getChild("provinces");
+            if (provinceRoot != null) {
+                prov = provinceRoot.getChild(Integer.toString(id));
+                if (prov != null) {
+                    provinces.put(id, prov);
+                    if (id > lastProvId)
+                        lastProvId = id;
+                } else {
+                    prov = provinceRoot.getChild("-" + id);
+                    if (prov != null) {
+                        provinces.put(id, prov);
+                        if (id > lastProvId)
+                            lastProvId = id;
+                    }
+                }
+            }
         }
         return prov;
     }
