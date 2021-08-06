@@ -39,6 +39,8 @@ public final class ProvinceData {
         String defFileName = map.getString("definitions").replace('\\', '/');
         if (!defFileName.contains("/"))
             defFileName = "map/" + defFileName;
+        if (defFileName.startsWith(".."))
+            defFileName = "mod/" + defFileName;
         
         try {
             parseDefs(resolver.resolveFilename(defFileName), numProvs);

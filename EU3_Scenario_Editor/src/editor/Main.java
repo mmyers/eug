@@ -283,6 +283,7 @@ public class Main {
                 } else {
                     resolver.setModName(mod.getName().equals("None") ? "" : mod.getModPath());
                 }
+                resolver.ignoreFileType(".info");
 
                 boolean checkForUpdates = true;
                 if (config.hasString("check_for_updates"))

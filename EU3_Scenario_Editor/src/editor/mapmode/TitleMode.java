@@ -96,7 +96,7 @@ public class TitleMode extends ProvincePaintingMode {
                 if (title.startsWith("b_"))
                     liege = getTitleHistString(title, "liege");
 
-                if (liege != null && !liege.isEmpty())
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
             case DUCHY:
@@ -105,7 +105,7 @@ public class TitleMode extends ProvincePaintingMode {
                 else if (title.startsWith("c_"))
                     liege = getTitleHistString(title, "liege");
 
-                if (liege != null && !liege.isEmpty())
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
             case KINGDOM:
@@ -114,16 +114,19 @@ public class TitleMode extends ProvincePaintingMode {
                 else if (title.startsWith("d_"))
                     liege = getTitleHistString(title, "liege");
 
-                if (liege != null && !liege.isEmpty())
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
             case EMPIRE:
-                if (title.startsWith("b_") || title.startsWith("c_") || title.startsWith("d_"))
-                    liege = getLiege(getTitleHistString(title, "liege"), level);
-                else if (title.startsWith("k_"))
+                if (title.startsWith("b_") || title.startsWith("c_") || title.startsWith("d_")) {
+                    String tmpLiege = getTitleHistString(title, "liege");
+                    if (tmpLiege != null && tmpLiege.equalsIgnoreCase(title))
+                        return title;
+                    liege = getLiege(tmpLiege, level);
+                } else if (title.startsWith("k_"))
                     liege = getTitleHistString(title, "liege");
 
-                if (liege != null && !liege.isEmpty())
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
             default:
@@ -156,9 +159,12 @@ public class TitleMode extends ProvincePaintingMode {
 
         StringBuilder ret = new StringBuilder();
         String title = lowestTitle;
-        while (title != null && !title.isEmpty()) {
+        while (true) {
             ret.append(getTitleName(title, current)).append("<br>");
-            title = getTitleHistString(title, "liege");
+            String liege = getTitleHistString(title, "liege");
+            if (liege == null || liege.isEmpty() || liege.equals("0") || liege.equalsIgnoreCase(title))
+                break;
+            title = liege;
         }
 
         return ret.toString();

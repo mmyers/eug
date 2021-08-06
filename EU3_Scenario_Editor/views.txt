@@ -54,6 +54,7 @@ in_nomine = {
 
 eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	provinces
+	override-simple-terrain
 	countries
 	country-menu
 	continents-menu
@@ -101,6 +102,7 @@ victoria2 = {
 	governments-menu
         capitals
 	life-rating
+	history-simple-terrain
 	wars
 }
 
@@ -151,4 +153,5 @@ ck2 = {
 	#religions
 	religions-menu
         #capitals
+	history-simple-terrain
 }

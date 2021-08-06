@@ -11,6 +11,7 @@ import eug.parser.ParserSettings;
 import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,6 +56,10 @@ public final class Map {
     
     private GenericObject provinceGroups;
     private java.util.Map<String, List<String>> provinceGroupList = null;
+    
+    private GenericObject terrains;
+    private java.util.Map<String, Color> terrainColorsList = null;
+    private java.util.Map<String, Terrain> terrainOverridesList = null;
     
     private boolean[] isLand = null;   // for In Nomine mainly
 
@@ -140,6 +145,12 @@ public final class Map {
         
         natives = EUGFileIO.load(resolver.resolveFilename(nativesFilename), fastSettings);
         
+        String terrainFilename = mapData.getString("terrain_definition").replace('\\', '/');
+        if (!terrainFilename.contains("/"))
+            terrainFilename = MAP_DIR_NAME + '/' + terrainFilename;
+        
+        terrains = EUGFileIO.load(resolver.resolveFilename(terrainFilename));
+        
         if (version.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
             if (!regFilename.contains("/"))
@@ -188,16 +199,25 @@ public final class Map {
                 if (seaZonesLists.isEmpty()) {
                     log.log(Level.WARNING, "No sea_starts or sea_zones found in default.map; weird things might start happening now");
                 } else {
-                    mapData.getChildren("ocean_region").forEach((region) -> {
-                        seaZonesLists.addAll(region.lists);
-                    });
-                    
-                    for (GenericList list : seaZonesLists) {
-                        for (String provId : list) {
-                            int id = Integer.parseInt(provId);
-                            isLand[id] = false;
+                    for (GenericList seaZoneRange : seaZonesLists) {
+                        if (seaZoneRange.size() == 2) {
+                            int start = Integer.parseInt(seaZoneRange.get(0));
+                            int end = Integer.parseInt(seaZoneRange.get(1));
+                            for (int i = start; i <= end; i++) {
+                                isLand[i] = false;
+                            }
                         }
                     }
+//                    mapData.getChildren("ocean_region").forEach((region) -> {
+//                        seaZonesLists.addAll(region.lists);
+//                    });
+                    
+//                    for (GenericList list : seaZonesLists) {
+//                        for (String provId : list) {
+//                            int id = Integer.parseInt(provId);
+//                            isLand[id] = false;
+//                        }
+//                    }
                 }
             } else {
                 for (String provId : seaProvs) {
@@ -553,6 +573,60 @@ public final class Map {
         return getNativeTypeOfProv(Integer.toString(provId));
     }
     
+    public java.util.Map<String, Color> getTerrainColors() {
+        if (terrainColorsList == null) {
+            terrainColorsList = new HashMap<>();
+            
+            GenericObject categories = terrains.getChild("categories");
+            if (categories != null) {
+                for (GenericObject terrain : categories.children) {
+                    terrainColorsList.put(terrain.name, parseColor(terrain.getList("color")));
+                }
+            }
+        }
+        return terrainColorsList;
+    }
+    
+    public java.util.Map<String, Terrain> getTerrainOverrides() {
+        if (terrainOverridesList == null) {
+            terrainOverridesList = new HashMap<>();
+            
+            GenericObject categories = terrains.getChild("categories");
+            if (categories != null) {
+                for (GenericObject terrain : categories.children) {
+                    if (terrain.containsList("terrain_override")) {
+                        terrainOverridesList.put(terrain.name,
+                                new Terrain(terrain.name, parseColor(terrain.getList("color")), terrain.getList("terrain_override").getList()));
+                    }
+                }
+            }
+        }
+        return terrainOverridesList;
+    }
+    
+    // same as editor.mapmode.Utilities
+    private static Color parseColor(GenericList color) {
+        if (color.size() != 3) {
+            log.log(Level.WARNING, "Unable to parse color: {0}", color.toString());
+            return null;
+        }
+        
+        // No rail correction is done in this method. Float colors are assumed to be between 0.0 and 1.0
+        // and integer colors are assumed to be between 0 and 255.
+        // If a value is out of bounds, an IllegalArgumentException will be thrown.
+        
+        float r = Float.parseFloat(color.get(0));
+        float g = Float.parseFloat(color.get(1));
+        float b = Float.parseFloat(color.get(2));
+        
+        if (color.get(0).contains(".") || color.get(1).contains(".") || color.get(2).contains("."))
+            return new Color(r, g, b);
+        
+        if (r > 1 || g > 1 || b > 1) // assume [0, 255] scale if any value is outside [0, 1]
+            return new Color((int) r, (int) g, (int) b);
+        return new Color(r, g, b);
+    }
+    
     public String getString(String key) {
         return mapData.getString(key);
     }
@@ -659,5 +733,28 @@ public final class Map {
             throw new UnsupportedOperationException();
         }
         
+    }
+    
+    public static class Terrain {
+        private final String name;
+        private final Color color;
+        private final List<String> overrides;
+        private Terrain(String name, Color color, List<String> overrides) {
+            this.name = name;
+            this.color = color;
+            this.overrides = overrides;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public Color getColor() {
+            return color;
+        }
+        
+        public List<String> getOverrides() {
+            return overrides;
+        }
     }
 }

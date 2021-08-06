@@ -199,7 +199,7 @@ public final class Utilities {
 
     private static void readTitleColors(GenericObject titles) {
         titles.children.stream()
-                .filter((title) -> !(title.isEmpty())) // skip bishoprics and such
+                .filter((title) -> !title.isEmpty() && title.name.charAt(1) == '_') // skip bishoprics and triggers and such
                 .map((title) -> {
 
             GenericList color = title.getList("color");

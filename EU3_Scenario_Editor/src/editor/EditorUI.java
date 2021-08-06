@@ -1120,6 +1120,10 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(new ProvinceFilterAction());
                 } else if (view.equals("countries")) {
                     viewMenu.add(new PoliticalFilterAction());
+                } else if (view.equals("override-simple-terrain")) {
+                    viewMenu.add(new SimpleTerrainFilterAction());
+                } else if (view.equals("history-simple-terrain")) {
+                    viewMenu.add(new HistorySimpleTerrainFilterAction());
                 } else if (view.equals("titles")) {
                     for (TitleMode.TitleType t : TitleMode.TitleType.values())
                         viewMenu.add(new TitleFilterAction(t));
@@ -1331,6 +1335,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
 
                 for (GenericObject religion : group.children) {
+                    if (religion.isEmpty())
+                        continue;
                     groupMenu.add(new CustomFilterAction(Text.getText(religion.name), "religion", religion.name));
                     pattern.append(religion.name).append('|');
                     allReligions.append(religion.name).append('|');
@@ -1572,6 +1578,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 StringBuilder pattern = new StringBuilder(group.size()*10).append('(');
 
                 for (GenericObject culture : group.children) {
+                    if (culture.name.equals("alternate_start"))
+                        continue;
                     groupMenu.add(new CustomFilterAction(Text.getText(culture.name), "culture", culture.name));
                     pattern.append(culture.name).append('|');
                 }
@@ -2128,6 +2136,20 @@ public final class EditorUI extends javax.swing.JFrame {
         public TitleFilterAction(TitleMode.TitleType type) {
             super(type.getName() + " Titles", new TitleMode(mapPanel, type));
             putValue(SHORT_DESCRIPTION, type.getName() + " Titles");
+        }
+    }
+    
+    private class SimpleTerrainFilterAction extends FilterAction {
+        public SimpleTerrainFilterAction() {
+            super ("Simple terrain", new SimpleTerrainMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Simple terrain");
+        }
+    }
+    
+    private class HistorySimpleTerrainFilterAction extends FilterAction {
+        public HistorySimpleTerrainFilterAction() {
+            super ("Simple terrain", new HistorySimpleTerrainMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Simple terrain");
         }
     }
     
