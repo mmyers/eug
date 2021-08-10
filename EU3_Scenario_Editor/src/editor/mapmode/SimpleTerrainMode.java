@@ -36,7 +36,7 @@ public class SimpleTerrainMode extends ProvincePaintingMode {
         if (sTerr != null) {
             editor.Map.Terrain terr = terrains.getOrDefault(sTerr, null);
             if (terr != null)
-                mapPanel.paintProvince(g, provId, terrains.get(terr).getColor());
+                mapPanel.paintProvince(g, provId, terr.getColor());
             else
                 mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
         } else {
