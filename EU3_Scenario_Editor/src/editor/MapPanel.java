@@ -393,9 +393,14 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         return false;
     }
     
+    private java.util.Map<Integer, Rectangle> boundsCache = new java.util.HashMap<>();
     private Point getCenterPoint(int provId) {
-        java.awt.Rectangle r =
-                calculateBounds(model.getMapData().getLinesInProv(model.getProvinceData().getProvByID(provId).getColor()));
+        Rectangle r = boundsCache.get(provId);
+            
+        if (r == null) {
+            r = calculateBounds(model.getMapData().getLinesInProv(model.getProvinceData().getProvByID(provId).getColor()));
+            boundsCache.put(provId, r);
+        }
         
         if (r == null) // province does not appear on the map
             return null;
@@ -577,20 +582,42 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         g.setColor(Color.BLACK);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        double straightLength = pFrom.distance(pTo);
-        double edgeLengthLeft = pFrom.distance(new Point(pTo.x - scaledMapImage.getWidth(), pTo.y));
-        double edgeLengthRight = pFrom.distance(new Point(pTo.x + scaledMapImage.getWidth(), pTo.y));
         
-        if (straightLength < edgeLengthLeft && straightLength < edgeLengthRight)
+        double x1 = pFrom.x, x2 = pTo.x;
+        double y1 = pFrom.y, y2 = pTo.y;
+        
+        if (Math.abs(x1 - x2) < scaledMapImage.getWidth()/2) {
+            // easy case, line doesn't cross the edge of the map
             g.drawLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
-        else if (edgeLengthLeft < edgeLengthRight) {
+        } else if (x1 < x2) {
+            // line goes off left side and should wrap to the right side
             g.drawLine(pFrom.x, pFrom.y, pTo.x - scaledMapImage.getWidth(), pTo.y);
             g.drawLine(pFrom.x + scaledMapImage.getWidth(), pFrom.y, pTo.x, pTo.y);
+            
+            x1 = pFrom.x + scaledMapImage.getWidth();
         } else {
+            // line goes off right side and should wrap to the left side
             g.drawLine(pFrom.x, pFrom.y, pTo.x + scaledMapImage.getWidth(), pTo.y);
             g.drawLine(pFrom.x - scaledMapImage.getWidth(), pFrom.y, pTo.x, pTo.y);
+            
+            x1 = pFrom.x - scaledMapImage.getWidth();
         }
+        
+        // arrow head adapted from https://stackoverflow.com/a/4112875
+        // slight modification because arrows would be drawn backwards when a line crosses the edge of the map
+        final int ARROW_SIZE = 4;
+        double dx = x2 - x1, dy = y2 - y1;
+        double angle = Math.atan2(dy, dx);
+        int len = (int) Math.sqrt(dx*dx + dy*dy);
+        AffineTransform old = g.getTransform();
+        AffineTransform at = AffineTransform.getTranslateInstance(x1, y1);
+        at.concatenate(AffineTransform.getRotateInstance(angle));
+        g.transform(at);
+
+        // Draw horizontal arrow starting in (0, 0)
+        g.fillPolygon(new int[] {len, len-ARROW_SIZE, len-ARROW_SIZE, len},
+                      new int[] {0, -ARROW_SIZE, ARROW_SIZE, 0}, 4);
+        g.setTransform(old);
     }
 
     // blah
