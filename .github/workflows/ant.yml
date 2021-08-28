@@ -1,0 +1,31 @@
+# This workflow will build a Java project with Ant
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-ant
+
+name: Java CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+    - name: Build eugFile
+      run: ant -noinput -buildfile eugFile/build.xml
+    - name: Build EugFile_specific
+      run: ant -noinput -buildfile EugFile_specific/build.xml
+    - name: Build EugSyntax
+      run: ant -noinput -buildfile EugSyntax/build.xml
+    - name: Build Scenario Editor
+      run: ant -noinput -buildfile EU3_Scenario_Editor/build.xml
