@@ -21,6 +21,11 @@ public class ProvCultureMode extends ProvincePaintingMode {
     
     @Override
     protected void paintProvince(final Graphics2D g, int provId) {
+        if (mapPanel.getMap().isWasteland(provId)) {
+            mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_CULTURE);
+            return;
+        }
+            
         final String culture = mapPanel.getModel().getHistString(provId, "culture");
         if (culture == null) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_NO_HIST);
@@ -45,6 +50,7 @@ public class ProvCultureMode extends ProvincePaintingMode {
         final String ret = Text.getText(culture);
         if (ret == null || ret.length() == 0)
             return "";
-        return "Culture: " + ret + " (" + Text.getText(Utilities.getCultureGroup(culture)) + ")";
+        java.awt.Color c = Utilities.getCultureColor(culture);
+        return "Culture: " + ret + " (" + Text.getText(Utilities.getCultureGroup(culture)) + ")\nColor: " + c.getRed() + " " + c.getGreen() + " " + c.getBlue();
     }
 }

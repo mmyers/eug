@@ -54,15 +54,18 @@ in_nomine = {
 
 eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	provinces
-	override-simple-terrain
 	countries
 	country-menu
+	---
+	province-areas-menu
 	continents-menu
 	superregions-menu    # EU4 1.14
 	regions-menu
 	areas-menu           # EU4 1.14
 	provincegroups-menu  # EU4 1.14
 	colonial-regions
+	---
+	override-simple-terrain
 	climates-menu
 	province-religions
 	religions
@@ -77,9 +80,11 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	tradenodes
         capitals
 	hre
+	---
 	base-tax
 	base-production
 	base-manpower
+	---
 	revolt-risk
 	hotspots-owner
 	hotspots-controller
@@ -91,8 +96,11 @@ victoria2 = {
 	provinces
 	countries
 	country-menu
+	---
+	province-areas-menu
 	continents-menu
 	regions-menu
+	---
 	country-religions
 	religions-menu
 	#victoria-buildings-menu

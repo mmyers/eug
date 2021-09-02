@@ -17,7 +17,9 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -97,6 +99,8 @@ public final class Utilities {
     
     /** Mapping of culture to its culture group */
     private static final java.util.Map<String, String> cultureGroups = new HashMap<>();
+    
+    private static final List<Color> geographyColors = new ArrayList<>();
 
     private static FilenameResolver resolver;
 
@@ -138,10 +142,13 @@ public final class Utilities {
             Color.GRAY,
             Color.RED.darker().darker(),
             Color.CYAN.darker().darker(),
-            Color.PINK.darker(),
+            Color.PINK.darker().darker(),
             Color.GREEN.darker().darker(),
             Color.YELLOW.darker().darker(),
-            Color.MAGENTA.darker().darker()
+            Color.MAGENTA.darker().darker(),
+            new Color(108, 70, 220), // purple
+            new Color(38, 180, 210), // light grayish blue
+            new Color(250, 125, 0),  // orange
         };
         int colorIdx = 0;
         
@@ -171,6 +178,24 @@ public final class Utilities {
             } catch (RuntimeException ex) {
                 log.log(Level.SEVERE, "Error parsing a culture color in culture group {0}", group.name);
                 log.log(Level.SEVERE, "The actual error is below.", ex);
+            }
+        }
+    }
+    
+    private static void initGeographyColors() {
+        GenericObject colors = EUGFileIO.load(resolver.resolveFilename("common/region_colors.txt"), settings);
+        if (colors == null)
+            colors = EUGFileIO.loadAll(resolver.listFiles("common/region_colors"), settings);
+        if (colors == null)
+            colors = EUGFileIO.load(resolver.resolveFilename("common/cot_colors.txt"));
+        if (colors == null)
+            return;
+        
+        for (GenericList color : colors.lists) {
+            if (color.getName().equalsIgnoreCase("color")) {
+                Color c = parseColor(color);
+                if (c != null)
+                    geographyColors.add(c);
             }
         }
     }
@@ -340,6 +365,13 @@ public final class Utilities {
     
     static String getCultureGroup(String culture) {
         return cultureGroups.get(culture);
+    }
+    
+    static List<Color> getGeographyColors() {
+        if (geographyColors.size() == 0) {
+            initGeographyColors();
+        }
+        return geographyColors;
     }
     
     // Our own little toUpperCase method, because every tag is converted to

@@ -1143,6 +1143,21 @@ public final class EditorUI extends javax.swing.JFrame {
                     JMenu menu = new JMenu("Areas");
                     addAreaFilters(menu);
                     viewMenu.add(menu);
+                } else if (view.equals("province-areas-menu") && version.hasRegions()) {
+                    JMenu menu = new JMenu("Geography");
+                    try {
+                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.AREAS));
+                    } catch (Exception ex) {}
+                    try {
+                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.REGIONS));
+                    } catch (Exception ex) {}
+                    try {
+                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.SUPER_REGIONS));
+                    } catch (Exception ex) {}
+                    try {
+                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.CONTINENTS));
+                    } catch (Exception ex) {}
+                    viewMenu.add(menu);
                 } else if (view.equals("superregions-menu") && version.hasRegions()) {
                     JMenu menu = new JMenu("Super regions");
                     addSuperRegionFilters(menu);
@@ -1277,6 +1292,8 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(menu);
                 } else if (view.equals("wars")) {
                     viewMenu.add(new WarsAction());
+                } else if (view.equals("---")) {
+                    viewMenu.add(new JSeparator());
                 } else {
                     log.log(Level.WARNING, "Unknown menu item: {0}", view);
                 }
@@ -2307,6 +2324,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public AreaFilterAction(String name, String areaName) {
             super(name, new SingleAreaMode(mapPanel, areaName));
             putValue(SHORT_DESCRIPTION, "Provinces in " + areaName);
+        }
+    }
+    
+    private class AllAreasFilterAction extends FilterAction {
+        public AllAreasFilterAction(AllAreasMapMode.GeographyType type) {
+            super("All " + type.getReadableName() + "s", new AllAreasMapMode(mapPanel, type));
+            putValue(SHORT_DESCRIPTION, "All map " + type.getReadableName().toLowerCase() + "s");
         }
     }
     
