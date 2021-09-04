@@ -9,6 +9,7 @@ package editor;
 import eug.shared.FilenameResolver;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
+import eug.specific.victoria2.Vic2Scenario;
 import java.util.HashMap;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
@@ -62,9 +63,15 @@ public class FileEditorDialog extends EditorDialog {
         this.id = p.getId();
         this.name = p.getName();
         readFile(p.getId(), p.getName());
-        String[] files = resolver.getProvinceHistoryFiles(p.getId());
-        if (files.length > 0 && files[0] != null)
-            setTitle(getTitle() + " (" + files[0] + ")");
+        if (dataSource instanceof Vic2Scenario) {
+            String file = resolver.getVic2ProvinceHistoryFile(p.getId());
+            if (file != null)
+                setTitle(getTitle() + " (" + file + ")");
+        } else {
+            String[] files = resolver.getProvinceHistoryFiles(p.getId());
+            if (files.length > 0 && files[0] != null)
+                setTitle(getTitle() + " (" + files[0] + ")");
+        }
         register(this); // Register last in case exceptions occur
     }
     

@@ -18,6 +18,7 @@ import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -75,6 +76,20 @@ public final class Utilities {
     static final Color COLOR_NO_CULTURE_DEF = Color.BLACK;
     /** Color used if a land province does not have a defined culture. */
     static final Color COLOR_NO_CULTURE = Color.BLACK;
+    
+    private static final Color[] DEFAULT_CULTURE_COLORS = {
+        Color.BLUE.darker().darker(),
+        Color.GRAY,
+        Color.RED.darker().darker(),
+        Color.CYAN.darker().darker(),
+        Color.PINK.darker().darker(),
+        Color.GREEN.darker().darker(),
+        Color.YELLOW.darker().darker(),
+        Color.MAGENTA.darker().darker(),
+        new Color(108, 70, 220), // purple
+        new Color(38, 180, 210), // light grayish blue
+        new Color(250, 125, 0),  // orange
+    };
     
     /* Settings used when loading all data files in this class. */
     private static final ParserSettings settings =
@@ -137,19 +152,7 @@ public final class Utilities {
         // go ahead and set up the colors here since we need to keep track of
         // which color each culture group is
         
-        Color[] groupColors = {
-            Color.BLUE.darker().darker(),
-            Color.GRAY,
-            Color.RED.darker().darker(),
-            Color.CYAN.darker().darker(),
-            Color.PINK.darker().darker(),
-            Color.GREEN.darker().darker(),
-            Color.YELLOW.darker().darker(),
-            Color.MAGENTA.darker().darker(),
-            new Color(108, 70, 220), // purple
-            new Color(38, 180, 210), // light grayish blue
-            new Color(250, 125, 0),  // orange
-        };
+        Color[] groupColors = DEFAULT_CULTURE_COLORS;
         int colorIdx = 0;
         
         for (GenericObject group : cultures.children) {
@@ -186,10 +189,12 @@ public final class Utilities {
         GenericObject colors = EUGFileIO.load(resolver.resolveFilename("common/region_colors.txt"), settings);
         if (colors == null)
             colors = EUGFileIO.loadAll(resolver.listFiles("common/region_colors"), settings);
-        if (colors == null)
+        if (colors == null || colors.isEmpty())
             colors = EUGFileIO.load(resolver.resolveFilename("common/cot_colors.txt"));
-        if (colors == null)
+        if (colors == null) {
+            geographyColors.addAll(Arrays.asList(DEFAULT_CULTURE_COLORS));
             return;
+        }
         
         for (GenericList color : colors.lists) {
             if (color.getName().equalsIgnoreCase("color")) {

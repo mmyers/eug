@@ -90,7 +90,7 @@ v2 = {
 }
 
 ahd = {
-	display = "A House Divided"
+	display = "Victoria 2: A House Divided"
 	inherit = v2
 	new_style_mod = yes
 }
