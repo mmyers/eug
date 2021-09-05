@@ -2,6 +2,46 @@
 |=== Changelog ===|
 \=================/
 
+=== 0.9.7 ===
+
+New features:
+- New "Simple Terrain" mode for EU4, CK2, and Victoria 2. Simple terrain mode
+  only uses terrain.txt or province history files, not terrain.bmp.
+- New set of "Geography" modes which show all of (areas, regions, super regions,
+  continents) at once, if supported. EU4 supports all four, while Victoria 2
+  only supports regions and continents.
+- Added new buttons "Blink selected province(s)" and "Copy selected province ID(s)"
+  to make it easy to use the editor to build province lists for mods.
+
+Improvements:
+- Text editor now supports case insensitive searching.
+- EU4 trade node map now includes arrowheads to indicate the direction of flow.
+- In EU4 saves, province histories now treat "owner" and "fake_owner" as the same thing.
+- CK2's .info files are now ignored when the editor is reading all files in
+  a directory inside the "common" folder.
+- "A House Divided" is now called "Victoria 2: A House Divided" in games.txt
+  to hopefully make it clear that most Victoria 2 users should be using it.
+
+Bugfixes:
+- Errors should now mostly be caught and logged by the application instead of
+  simply crashing.
+- Fixed a crash when running under OpenJDK 15.
+- Fixed the province, country, and culture list dialogs inside the text editor.
+- Fixed some broken parts of mod file resolution under CK2 and Victoria 2.
+- Fixed sea zone parsing in CK2's default.map. Ireland is no longer underwater.
+- Fixed issue with Victoria 2 mod default.map files that use
+  definitions = "../<modname>/map/definition.csv"
+- Fixed some issues with CK2 save file parsing.
+- Text editor title bar now correctly shows the name of the current file when
+  working on Victoria 2 history files.
+
+
+=== 0.9.6 ===
+
+- Fixed version checker to work with Java 10+.
+- Added "hot spots" view of which provinces have changed hands the most.
+
+
 === 0.9.5 ===
 
 - Miscellaneous updates to support changes in EU4 1.17, 1.18, and 1.19.
@@ -16,6 +56,7 @@
 - Religion mode now supports defining religion colors with RGB values from 0-255
   instead of 0.0-1.0 as in previous patches. All modes now support both types.
 - Reduced memory usage a little.
+
 
 === 0.9.1 ===
 
