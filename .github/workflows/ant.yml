@@ -22,7 +22,7 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build eugFile
-      run: ant -noinput -buildfile eugFile/build.xml -keep-going 
+      run: ant -noinput -buildfile eugFile/build.xml
     - name: Build EugFile_specific
       run: ant -noinput -buildfile EugFile_specific/build.xml
     - name: Build EugSyntax
