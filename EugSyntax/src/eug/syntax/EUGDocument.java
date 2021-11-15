@@ -112,11 +112,11 @@ public class EUGDocument extends PlainDocument {
             p0 = start;
         }
         
-        public int getStartOffset() {
+        public long getStartOffset() {
             return p0 + scanner.getTokenStart();
         }
         
-        public int getEndOffset() {
+        public long getEndOffset() {
             return p0 + scanner.getTokenEnd();
         }
         

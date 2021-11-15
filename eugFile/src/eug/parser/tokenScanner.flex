@@ -145,7 +145,7 @@ package eug.parser;
      * Returns the number of characters up to the start of the token.
      * @see #getTokenStart()
      */
-    public int getCharsRead() {
+    public long getCharsRead() {
         return yychar;
     }
 
@@ -154,7 +154,7 @@ package eug.parser;
      * syntax highlighting.
      * @see #getCharsRead()
      */
-    public int getTokenStart() {
+    public long getTokenStart() {
         return yychar;
     }
 
@@ -170,7 +170,7 @@ package eug.parser;
      * Returns the index of the end of the token. Useful for
      * syntax highlighting.
      */
-    public int getTokenEnd() {
+    public long getTokenEnd() {
         return yychar + yylength();
     }
 %} 

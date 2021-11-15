@@ -232,7 +232,7 @@ package eug.parser;
      * Returns the number of characters up to the start of the token.
      * @see #getTokenStart()
      */
-    public int getCharsRead() {
+    public long getCharsRead() {
         return yychar;
     }
 
@@ -242,7 +242,7 @@ package eug.parser;
      * @see #getCharsRead()
      * @since EUGFile 1.06.00pre1
      */
-    public int getTokenStart() {
+    public long getTokenStart() {
         return yychar;
     }
 
@@ -260,7 +260,7 @@ package eug.parser;
      * syntax highlighting.
      * @since EUGFile 1.06.00pre1
      */
-    public int getTokenEnd() {
+    public long getTokenEnd() {
         return yychar + yylength();
     }
 
