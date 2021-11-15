@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * <code>
  *  "New Zealand"#Important
  *              Ontario
- *              "Québec" "British Columbia"
+ *              "Quebec" "British Columbia"
  * </code>
  * <p>
  * This is an internal class, meant for use only by {@link EUGScanner}.
