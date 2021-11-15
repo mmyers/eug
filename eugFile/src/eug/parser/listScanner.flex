@@ -123,7 +123,7 @@ import java.util.ArrayList;
 /* %switch */
 /* %table */ /* option removed in JFlex 1.6 */
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨,’–]
+ALPHA                       = [[:letter:]_\[\]\-',\u00B4\u00A8\u2010-\u2019]
 DIGIT                       = [0-9\.\-/]
 
 WHITE_SPACE_CHAR            = [\r\n\ \t\b\012\u00A0]
