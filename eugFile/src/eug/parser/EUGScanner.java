@@ -27,7 +27,8 @@ package eug.parser;
  *      or '"') can be retrieved through {@link lastStr()}.
  * <li>When finished, call {@link #close()}.
  * </ol>
- * <h4>Comment Handling:</h4>
+ * <p>
+ * <b>Comment Handling:</b><br>
  * Comments can be enabled or disabled through
  * {@link #setCommentsIgnored(boolean)}. If they are disabled,
  * <code>nextToken()</code> will never return {@link TokenType#COMMENT}.
