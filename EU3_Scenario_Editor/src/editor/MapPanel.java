@@ -68,7 +68,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     private Map map;
     
     /**
-     * Creates new form MapPanel. {@link #initialize()} must be called before the
+     * Creates new form MapPanel. {@link #initialize(Map, FilenameResolver, ProvinceData, boolean)} must be called before the
      * panel is shown; this way, GUI editors can use this component without
      * having to load the data.
      */

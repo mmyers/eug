@@ -18,8 +18,8 @@ import javax.swing.JOptionPane;
  * Dialog to edit province or country history files with syntax highlighting.
  * <p>
  * All interaction with this class is handled through the static methods
- * {@link #showDialog(Frame, ProvinceData.Province)} and
- * {@link #showDialog(Frame, String, String)}.
+ * {@link #showDialog(Frame, ProvinceData.Province, FilenameResolver, ProvinceData)} and
+ * {@link #showDialog(Frame, String, String, FilenameResolver, ProvinceData)}.
  * @author Michael Myers
  */
 public class FileEditorDialog extends EditorDialog {
