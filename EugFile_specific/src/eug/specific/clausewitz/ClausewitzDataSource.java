@@ -35,7 +35,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the country data for the country with the given tag.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getCountryHistory}.
      * @param tag the country tag to fetch data for.
@@ -45,7 +45,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the country history for the country with the given tag.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getCountry}.
      * @param tag the country tag to fetch data for.
@@ -55,7 +55,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the province data for the province with the given ID.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getProvinceHistory}.
      * @param id the ID of the province to fetch data for.
@@ -65,7 +65,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the province history for the province with the given ID.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getProvince}.
      * @param id the ID of the province to fetch data for.
@@ -90,7 +90,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the country data for the country with the given tag.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getCountry(tag).toString()</code>.
      * @param tag the country tag to fetch data for.
@@ -100,7 +100,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the country history for the country with the given tag.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getCountryHistory(tag).toString()</code>.
      * @param tag the country tag to fetch data for.
@@ -110,7 +110,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the province data for the province with the given ID.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getProvince(id).toString()</code>.
      * @param id the ID of the province to fetch data for.
@@ -120,7 +120,7 @@ public interface ClausewitzDataSource {
 
     /**
      * Returns the province history for the province with the given ID.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getProvinceHistory(id).toString()</code>.
      * @param id the ID of the province to fetch data for.
@@ -223,7 +223,7 @@ public interface ClausewitzDataSource {
     /**
      * Preloads all province data for provinces with IDs up to
      * <code>last</code>, usually into a cache.
-     * <p/>
+     * <p>
      * Some implementations may go further, if preloading is inexpensive (i.e.,
      * does not involve file I/O).
      * @param last the ID of the last province to preload.
