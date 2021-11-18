@@ -25,6 +25,8 @@ jobs:
       run: ant -noinput -buildfile eugFile/build.xml
     - name: Build EugFile_specific
       run: ant -noinput -buildfile EugFile_specific/build.xml
+      env:
+        project.EugFile: ../EugFile
     - name: Build EugSyntax
       run: ant -noinput -buildfile EugSyntax/build.xml
     - name: Build Scenario Editor
