@@ -67,20 +67,20 @@ jobs:
     #   make release
     - name: Build eugFile
       run: ant -noinput -buildfile eugFile/build.xml
-    - name: Build EugFile_specific
-      run: ant -noinput -buildfile EugFile_specific/build.xml
-      env:
-        project.EugFile: ../EugFile
-    - name: Build EugSyntax
-      run: ant -noinput -buildfile EugSyntax/build.xml
-      env:
-        project.EugFile: ../EugFile
-    - name: Build Scenario Editor
-      run: ant -noinput -buildfile EU3_Scenario_Editor/build.xml
-      env:
-        project.EugFile: ../EugFile
-        project.EugFile_specific: ../EugFile_specific
-        project.EugSyntax: ../EugSyntax
+    #- name: Build EugFile_specific
+    #  run: ant -noinput -buildfile EugFile_specific/build.xml
+    #  env:
+    #    project.EugFile: ../EugFile
+    #- name: Build EugSyntax
+    #  run: ant -noinput -buildfile EugSyntax/build.xml
+    #  env:
+    #    project.EugFile: ../EugFile
+    #- name: Build Scenario Editor
+    #  run: ant -noinput -buildfile EU3_Scenario_Editor/build.xml
+    #  env:
+    #    project.EugFile: ../EugFile
+    #    project.EugFile_specific: ../EugFile_specific
+    #    project.EugSyntax: ../EugSyntax
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
