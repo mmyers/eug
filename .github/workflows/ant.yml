@@ -21,6 +21,12 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
+        
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: java
+        
     - name: Build eugFile
       run: ant -noinput -buildfile eugFile/build.xml
     - name: Build EugFile_specific
@@ -37,3 +43,6 @@ jobs:
         project.EugFile: ../EugFile
         project.EugFile_specific: ../EugFile_specific
         project.EugSyntax: ../EugSyntax
+        
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
