@@ -34,6 +34,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -120,6 +122,34 @@ public class Main {
                     Vector<Mod> mods = listMods(new File(modPath), true);
                     modBox.setModel(new DefaultComboBoxModel<>(mods));
                 }
+            }
+        });
+        gameDirField.getDocument().addDocumentListener(new DocumentListener() {
+            private void checkMods() {
+                File dir = new File(gameDirField.getText());
+                if (dir.exists() && dir.isDirectory()) {
+                    String modPath = dir.getAbsolutePath() + File.separator + "mod";
+                    
+                    @SuppressWarnings("UseOfObsoleteCollectionType")
+                    Vector<Mod> mods = listMods(new File(modPath), true);
+                    modBox.setModel(new DefaultComboBoxModel<>(mods));
+                }
+            }
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                // insertUpdate is called on a paste event
+                // maybe the user is pasting the game directory in?
+                checkMods();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                checkMods();
+            }
+            
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                checkMods();
             }
         });
 
