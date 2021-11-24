@@ -13,8 +13,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -200,13 +201,13 @@ public final class EUGFileIO {
                 comment = NO_COMMENT;
             
             if (!overwrite && new File(filename).canRead()) {
-                BufferedWriter w = new BufferedWriter(new FileWriter(filename, true));
+                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, true), "Cp1252"));
                 obj.toFileString(w,
                         String.format("Added on %1$te-%1$tm-%1$tY", Calendar.getInstance()) +
                         (NO_COMMENT.equals(comment) ? "" : "\n\n" + comment),
                         style);
             } else {
-                BufferedWriter w = new BufferedWriter(new FileWriter(filename));
+                BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "Cp1252"));
                 if (filename.endsWith(".eu4")) {
                     w.write("EU4txt"); // magic EU4 string
                     w.newLine();

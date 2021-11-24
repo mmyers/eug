@@ -4,6 +4,7 @@ import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -91,7 +92,7 @@ public class CWordFile {
             }
             
             int buffSize = Math.min(65536, (int)inFile.length()); // safeguard for very large files
-            BufferedReader reader = new BufferedReader(new FileReader(inFile), buffSize);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inFile), "Cp1252"), buffSize);
             
             // if it starts with "PK", it's a zip - cancel out.
             // third character should be 0x3 since this isn't an empty or
