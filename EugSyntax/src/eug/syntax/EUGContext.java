@@ -87,7 +87,7 @@ public class EUGContext extends StyleContext implements ViewFactory {
             
             while (p0 < p1) {
                 updateScanner(p0);
-                int p = Math.min(scanner.getEndOffset(), p1);
+                int p = (int) Math.min(scanner.getEndOffset(), p1);
                 p = (p <= p0) ? p1 : p;
                 
                 final MutableAttributeSet style =
@@ -131,7 +131,7 @@ public class EUGContext extends StyleContext implements ViewFactory {
             
             while (p0 < p1) {
                 updateScanner(p0);
-                int p = Math.min(scanner.getEndOffset(), p1);
+                int p = (int) Math.min(scanner.getEndOffset(), p1);
                 p = (p <= p0) ? p1 : p;
                 
                 final MutableAttributeSet style =

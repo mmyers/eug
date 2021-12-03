@@ -11,7 +11,7 @@ public interface CK2DataSource extends ClausewitzDataSource {
 
     /**
      * Returns the title data for the landed title with the given name.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getTitleHistory}.
      * @param title the title to fetch data for.
@@ -21,7 +21,7 @@ public interface CK2DataSource extends ClausewitzDataSource {
 
     /**
      * Returns the title history for the landed title with the given name.
-     * <p/>
+     * <p>
      * In some implementations, this may be equivalent to
      * {@link #getTitle}.
      * @param title the title to fetch data for.
@@ -31,7 +31,7 @@ public interface CK2DataSource extends ClausewitzDataSource {
 
     /**
      * Returns the title data for the landed title with the given name.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getTitle(tag).toString()</code>.
      * @param title the title to fetch data for.
@@ -41,7 +41,7 @@ public interface CK2DataSource extends ClausewitzDataSource {
 
     /**
      * Returns the title history for the landed title with the given name.
-     * <p/>
+     * <p>
      * This may or may not be equivalent to calling
      * <code>getTitleHistory(title).toString()</code>.
      * @param title the title to fetch data for.

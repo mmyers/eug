@@ -21,11 +21,48 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
+        
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: java
+    
+    # Build all four main projects
     - name: Build eugFile
       run: ant -noinput -buildfile eugFile/build.xml
     - name: Build EugFile_specific
       run: ant -noinput -buildfile EugFile_specific/build.xml
+      env:
+        project.EugFile: ../EugFile
     - name: Build EugSyntax
       run: ant -noinput -buildfile EugSyntax/build.xml
+      env:
+        project.EugFile: ../EugFile
     - name: Build Scenario Editor
       run: ant -noinput -buildfile EU3_Scenario_Editor/build.xml
+      env:
+        project.EugFile: ../EugFile
+        project.EugFile_specific: ../EugFile_specific
+        project.EugSyntax: ../EugSyntax
+        
+    # CodeQL
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+      
+    # Artifact upload
+    - name: Upload EugFile artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: EugFile
+        path: eugFile/dist/eugFile.jar
+    - name: Upload EugFile_specific artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: EugFile_specific
+        path: EugFile_specific/dist/EugFile_specific.jar
+    - name: Upload EugSyntax artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: EugSyntax
+        path: EugSyntax/dist/EugSyntax.jar
+

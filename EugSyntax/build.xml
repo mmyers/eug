@@ -70,4 +70,12 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <target name="-pre-init">
+        <property environment="env"/>
+        <condition property="project.EugFile" value="${env.project.EugFile}">
+            <isset property="env.project.EugFile" />
+        </condition>
+    </target>
+    
 </project>

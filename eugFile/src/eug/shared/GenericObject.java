@@ -73,7 +73,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     
     /**
      * Creates a root object. Use
-     * {@link #createChild(GenericObject,String) createChild} to create
+     * {@link #createChild(String) createChild} to create
      * non-root objects.
      */
     public GenericObject() {
@@ -995,7 +995,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     }
     
     /**
-     * Converts this object to string using the {@link Style.DEFAULT default style}.
+     * Converts this object to string using the {@link Style#DEFAULT default style}.
      */
     @Override
     public String toString() {

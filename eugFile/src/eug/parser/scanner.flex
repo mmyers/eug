@@ -23,7 +23,8 @@ package eug.parser;
  *      or '"') can be retrieved through {@link lastStr()}.
  * <li>When finished, call {@link #close()}.
  * </ol>
- * <h4>Comment Handling:</h4>
+ * <p>
+ * <b>Comment Handling:</b><br>
  * Comments can be enabled or disabled through
  * {@link #setCommentsIgnored(boolean)}. If they are disabled,
  * <code>nextToken()</code> will never return {@link TokenType#COMMENT}.
@@ -232,7 +233,7 @@ package eug.parser;
      * Returns the number of characters up to the start of the token.
      * @see #getTokenStart()
      */
-    public int getCharsRead() {
+    public long getCharsRead() {
         return yychar;
     }
 
@@ -242,7 +243,7 @@ package eug.parser;
      * @see #getCharsRead()
      * @since EUGFile 1.06.00pre1
      */
-    public int getTokenStart() {
+    public long getTokenStart() {
         return yychar;
     }
 
@@ -260,7 +261,7 @@ package eug.parser;
      * syntax highlighting.
      * @since EUGFile 1.06.00pre1
      */
-    public int getTokenEnd() {
+    public long getTokenEnd() {
         return yychar + yylength();
     }
 
@@ -312,7 +313,7 @@ package eug.parser;
 
 %standalone
 
-ALPHA                       = [[:letter:]_\[\]\-'´¨,’–]    //[A-Za-zÀ-ÿ_\[\]\-'´¨]
+ALPHA                       = [[:letter:]_\[\]\-',\u00B4\u00A8\u2010-\u2019]
 DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
 

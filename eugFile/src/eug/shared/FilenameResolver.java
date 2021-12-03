@@ -45,7 +45,7 @@ public final class FilenameResolver {
     
     private boolean usingMod;
     
-    /** true <=> main mod directory has a .mod file corresponding to each mod. */
+    /** true if and only if main mod directory has a .mod file corresponding to each mod. */
     private boolean modFile = true;
     
     /**

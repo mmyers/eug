@@ -13,7 +13,7 @@ import java.awt.Color;
 
 /**
  * A <code>MapMode</code> that paints countries based on a property defined in
- * either the constructor or in {@link #setName}.
+ * the constructor.
  * @author Michael Myers
  * @since 0.5pre3
  */
