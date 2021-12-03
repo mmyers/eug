@@ -65,4 +65,8 @@ jobs:
       with:
         name: EugSyntax
         path: EugSyntax/dist/EugSyntax.jar
-
+    - name: Upload scenario editor snapshot artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Scenario_Editor
+        path: EU3_Scenario_Editor/Scenario_Editor.zip
