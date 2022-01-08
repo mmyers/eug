@@ -49,6 +49,7 @@ public class EditorDialog extends JDialog {
             eug.parser.ParserSettings.getDefaults().setPrintTimingInfo(false));
     
     private static Font font = initFont();
+    protected static boolean saveBackups = initBackups();
 
     private final FilenameResolver resolver;
     private final ProvinceData provinceData;
@@ -65,6 +66,16 @@ public class EditorDialog extends JDialog {
         config.setString("editor.font.name", newFont.getFamily(), true);
 //        config.setString("editor.font.style", font.getStyle())
         config.setInt("editor.font.size", newFont.getSize());
+    }
+    
+    private static boolean initBackups() {
+        // getBoolean defaults to false if not found, which is what we want
+        return config.getBoolean("editor.savebackups");
+    }
+    
+    private static void setStaticBackups(boolean backups) {
+        saveBackups = backups;
+        config.setBoolean("editor.savebackups", backups);
     }
     
     /** Creates new form EditorDialog */
@@ -191,6 +202,7 @@ public class EditorDialog extends JDialog {
         textPane = new javax.swing.JEditorPane();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        setBackupFilesCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         closeMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu editMenu = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
@@ -223,7 +235,7 @@ public class EditorDialog extends JDialog {
 
         getContentPane().add(lowerPanel, java.awt.BorderLayout.SOUTH);
 
-        textPane.setContentType("text/eug");
+        textPane.setContentType("text/eug"); // NOI18N
         textPane.setEditorKit(new eug.syntax.EUGEditorKit());
         textPane.setFont(font);
         textPane.setText(originalContents);
@@ -234,6 +246,11 @@ public class EditorDialog extends JDialog {
 
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
+
+        setBackupFilesCheckBoxMenuItem.setSelected(saveBackups);
+        setBackupFilesCheckBoxMenuItem.setText("Save backup files");
+        setBackupFilesCheckBoxMenuItem.addActionListener(formListener);
+        fileMenu.add(setBackupFilesCheckBoxMenuItem);
 
         closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Close");
@@ -375,6 +392,9 @@ public class EditorDialog extends JDialog {
             else if (evt.getSource() == setFontMenuItem) {
                 EditorDialog.this.setFontMenuItemActionPerformed(evt);
             }
+            else if (evt.getSource() == setBackupFilesCheckBoxMenuItem) {
+                EditorDialog.this.setBackupFilesCheckBoxMenuItemActionPerformed(evt);
+            }
         }
 
         public void windowActivated(java.awt.event.WindowEvent evt) {
@@ -481,6 +501,11 @@ public class EditorDialog extends JDialog {
     private void closeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeMenuItemActionPerformed
         close();
     }//GEN-LAST:event_closeMenuItemActionPerformed
+
+    private void setBackupFilesCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setBackupFilesCheckBoxMenuItemActionPerformed
+        boolean selection = setBackupFilesCheckBoxMenuItem.isSelected();
+        setStaticBackups(selection);
+    }//GEN-LAST:event_setBackupFilesCheckBoxMenuItemActionPerformed
     
     
     private void updateUndoStates() {
@@ -745,6 +770,7 @@ public class EditorDialog extends JDialog {
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JMenuItem replaceMenuItem;
+    javax.swing.JCheckBoxMenuItem setBackupFilesCheckBoxMenuItem;
     private javax.swing.JMenuItem setFontMenuItem;
     private javax.swing.JMenuItem showCountryListMenuItem;
     private javax.swing.JMenuItem showCultureListMenuItem;
