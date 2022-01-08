@@ -1,0 +1,7 @@
+/build/
+/dist/
+/nbproject/private/
+*.zip
+
+# Backup files created by JFlex
+*.java~
