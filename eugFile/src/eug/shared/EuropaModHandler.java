@@ -23,23 +23,23 @@ public class EuropaModHandler implements ModHandler {
      */
     public EuropaModHandler(String baseDir, String modDir) {
         this.baseDir = Paths.get(baseDir);
-        if (!this.baseDir.toFile().exists())
-            throw new IllegalArgumentException("Base dir " + baseDir + " does not exist");
+        //if (!this.baseDir.toFile().exists())
+        //    throw new IllegalArgumentException("Base dir " + baseDir + " does not exist");
         
-        if (modDir == null)
+        if (modDir == null || modDir.isEmpty())
             this.modDir = null;
         else if (new File(modDir).exists())
             this.modDir = Paths.get(modDir);
-        else if (new File(baseDir + File.separator + modDir).exists())
+        else //if (new File(baseDir + File.separator + modDir).exists())
             this.modDir = Paths.get(baseDir, modDir);
-        else
-            throw new IllegalArgumentException("Mod dir must either be a subfolder of the game folder or else a fully qualified pathname");
+        //else
+        //    throw new IllegalArgumentException("Mod dir must either be a subfolder of the game folder or else a fully qualified pathname");
     }
     
     @Override
     public String resolveDirectory(String path) {
         // Europa engine resolves files and directories the same
-        return resolveFilename(path);
+        return resolveFilename(path) + File.separatorChar;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class EuropaModHandler implements ModHandler {
     }
 
     @Override
-    public String[] listFiles(String path) {
-        return new File(resolveDirectory(path)).list();
+    public File[] listFiles(String path) {
+        return new File(resolveDirectory(path)).listFiles();
     }
 }
