@@ -77,6 +77,11 @@
         <condition property="project.EugFile" value="${env.project.EugFile}">
             <isset property="env.project.EugFile" />
         </condition>
+        <condition property="project.EugFile" value="../eugFile">
+            <not>
+                <isset property="env.project.EugFile" />
+            </not>
+        </condition>
     </target>
 
     <target name="-post-jar">
