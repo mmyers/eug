@@ -254,7 +254,7 @@ public interface Style {
                 return false;
             
             boolean sameLine = (size == 0);
-            if (sameLine) {
+            if (!sameLine) {
                     sameLine = (size < 4) && !(
                     name.equalsIgnoreCase("trigger") || name.startsWith("action_") ||
                     (size != 1 && (name.equalsIgnoreCase("NOT") || (name.equalsIgnoreCase("AND") || name.equalsIgnoreCase("OR"))))
