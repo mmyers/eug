@@ -40,6 +40,7 @@ public class EUGContext extends StyleContext implements ViewFactory {
         ((DefaultEUGStyleSet)styles).addDefaults();
     }
     
+    @Override
     public View create(Element elem) {
         return new EUGView(elem);
     }
