@@ -41,12 +41,12 @@ public class FileEditorDialog extends EditorDialog {
     /**
      * The name of the province or country.
      */
-    private String name;
+    private final String name;
     
     /**
      * True if editing a province; false if editing a country.
      */
-    private boolean isProvince;
+    private final boolean isProvince;
     
     
     /**
@@ -142,6 +142,7 @@ public class FileEditorDialog extends EditorDialog {
     }
     
     private void save() {
+        dataSource.setBackups(saveBackups);
         if (isProvince) {
             dataSource.saveProvince(id, name, getText());
             dataSource.reloadProvince(id);
@@ -177,8 +178,7 @@ public class FileEditorDialog extends EditorDialog {
     // Static Members
     // -------------------------------------------------------------------
     
-    private static final java.util.Map<Integer, FileEditorDialog> showing =
-            new HashMap<Integer, FileEditorDialog>();
+    private static final java.util.Map<Integer, FileEditorDialog> showing = new HashMap<>();
     
     private static void register(FileEditorDialog d) {
         showing.put(d.id, d);

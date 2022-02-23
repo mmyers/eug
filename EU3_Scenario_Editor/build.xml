@@ -78,6 +78,12 @@
         <property name="releasename" value="Scenario_Editor.zip" />
         <property name="sourcename" value="Scenario_Editor_Code.zip" />
 
+        <!-- Library jars don't get copied correctly when running with GitHub actions, so do it manually -->
+        <mkdir dir="dist/lib" />
+        <copy todir="dist/lib" file="../eugFile/dist/EugFile.jar" />
+        <copy todir="dist/lib" file="../EugFile_specific/dist/EugFile_specific.jar" />
+        <copy todir="dist/lib" file="../EugSyntax/dist/EugSyntax.jar" />
+        
         <!-- First the release build -->
         <mkdir dir="${dirname}" />
         <!-- copy dist files into temp directory -->

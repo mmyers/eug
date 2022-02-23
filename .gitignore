@@ -1,0 +1,17 @@
+/EU3_Scenario_Editor/nbproject/private/
+/EugFile_specific/nbproject/private/
+/EugSyntax/nbproject/private/
+/PositionsEditor/nbproject/private/
+/eugFile/nbproject/private/
+/eugFile/build/
+/eugFile/dist/
+/EugFile_specific/build/
+/EugFile_specific/dist/
+/EugSyntax/build/
+/EugSyntax/dist/
+/PositionsEditor/build/
+/EU3_Scenario_Editor/build/
+/EU3_Scenario_Editor/dist/
+/PositionsEditor/dist/
+*.zip
+*.log

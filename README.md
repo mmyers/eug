@@ -15,6 +15,23 @@ Compatible with older versions of:
 
 The editor might be compatible with the current versions of all of the above, but I own none except Victoria II, which I do not have the expansions for. I welcome test reports for any game.
 
+### Screenshots
+
+![Map view](/screenshot.png)
+*Europe map in 1444. Click for larger image*
+
+![Religions view](/screenshot-religions.png)
+*Religious map at the Thirty Years War bookmark. As in game, diagonal stripes indicate the province religion is different from the country religion.*
+
+![Editor](/screenshot-editor.png)
+*Syntax-highlighting text editor. If a brace is unmatched, the editor will highlight the line to make it easy to find.*
+
+![Trade nodes view](/screenshot-tradenodes.png)
+*Trade nodes and trade flow*
+
+![Map modes](/screenshot-menu.png)
+*Menu showing all current mapmodes available when working on EU4. Other games may have different mapmodes available.*
+
 #### Subprojects
 
 - **EU3_Scenario_Editor** - This is the main scenario editor project.

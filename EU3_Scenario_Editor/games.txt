@@ -108,6 +108,12 @@ hoi3 = {
 	text = csv
 }
 
+tfh = {
+	display = "HOI3: Their Finest Hour"
+	inherit = hoi3
+	new_style_mod = yes
+}
+
 ck2 = {
 	inherit = dw
 	display = "Crusader Kings 2"
