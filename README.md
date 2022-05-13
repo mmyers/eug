@@ -1,5 +1,5 @@
 ### Europa Universalis Editor
-[![Download Europa Universalis Game Tools](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/eug/files/latest/download) [![Download Europa Universalis Game Tools](https://img.shields.io/sourceforge/dt/eug.svg)](https://sourceforge.net/projects/eug/files/latest/download) [Chat on Discord!](https://discord.gg/bkeaCZxd)
+[![Download Europa Universalis Game Tools](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/eug/files/latest/download) [![Download Europa Universalis Game Tools](https://img.shields.io/sourceforge/dt/eug.svg)](https://sourceforge.net/projects/eug/files/latest/download) [Chat on Discord!](https://discord.gg/j382dvC3Fw)
 
 A game editor which has as many mapmodes as the game does itself. Includes a syntax-checking text editor at no extra cost.
 
