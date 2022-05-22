@@ -6,6 +6,7 @@
 
 package posed;
 
+import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import java.awt.Color;
@@ -131,6 +132,39 @@ public class ProvincePanel extends javax.swing.JPanel {
         for (GenericObject obj : positionTypes.children) {
             drawIcons(g2d, positions.getChild(obj.name), obj);
         }
+        if (positions != null && !positions.lists.isEmpty()) {
+            if (positionTypes.containsList("position") && positionTypes.containsList("rotation")) {
+                drawIconsFromList(g2d, positions.getList("position"), positions.getList("rotation"), positionTypes.getList("position"));
+            }
+        }
+    }
+    
+    private void drawIconsFromList(Graphics2D g2d, GenericList positions, GenericList rotations, GenericList positionTypes) {
+        // Lists must be in a definite order
+        // If we have a list of x/y coordinates and a list of rotations, try to match them
+        int i = 0;
+        for (int j = 0; j < positionTypes.size(); j++) {
+            String positionType = positionTypes.get(j);
+            String value = positions.get(i);
+            i++;
+            if (i >= positions.size())
+                log.log(Level.WARNING, "List did not have enough elements to match the validation: {0}", positions.getName());
+            
+            if (positionType.contains("/")) {
+                String[] valSplit = positionType.split("/");
+                String valType = valSplit[1];
+                if (valType.equals("xy")) {
+                    // expect two list elements for an X/Y coordinate pair
+                    String val2 = positions.get(i);
+                    i++;
+                    
+                    float x = translateX(Float.parseFloat(value));
+                    float y = translateY(Float.parseFloat(val2));
+                    double rotation = Double.parseDouble(rotations.get(j)); // j, not i, since i increments twice for every position type
+                    drawLocation(valSplit[0], g2d, rotation, 0.0, x, y);
+                }
+            }
+        }
     }
     
     private void drawLocationIfPossible(String name, Graphics2D g, GenericObject positions) {
@@ -144,50 +178,61 @@ public class ProvincePanel extends javax.swing.JPanel {
 
             float x = translateX(temp.getDouble("x"));
             float y = translateY(temp.getDouble("y"));
+            
+            drawLocation(name, g, rotation, locScale, x, y);
+        }
+    }
+    
+    private void drawLocation(String name, Graphics2D g, double rotation, double locScale, float x, float y) {
 
-            Font oldFont = null;
-            if (locScale > 0.0) {
-                oldFont = g.getFont();
-                float fontSize = (float) (this.scale * ourScale * locScale);
+        Font oldFont = null;
+        if (locScale > 0.0) {
+            oldFont = g.getFont();
+            float fontSize = (float) (this.scale * ourScale * locScale);
 //                if (fontSize < 6.0f)
 //                    fontSize = 6.0f;
 //                else if (fontSize > 24.)
-                g.setFont(oldFont.deriveFont(fontSize));
+            g.setFont(oldFont.deriveFont(fontSize));
+        } else {
+            Font f = g.getFont();
+            if (f.getSize() < 10) {
+                oldFont = g.getFont();
+                g.setFont(oldFont.deriveFont(10.0f));
             }
-
-            Rectangle2D rect = g.getFontMetrics().getStringBounds(image.getProvName(), g);
-
-            AffineTransform at = null;
-            AffineTransform oldTx = null;
-
-            if (rotation != -1.0) {
-    //            at = AffineTransform.getTranslateInstance(x - (rect.getWidth()/2), y - (rect.getHeight()/2));
-                at = AffineTransform.getTranslateInstance(x, y);
-                at.rotate(-rotation);
-                oldTx = g.getTransform();
-                g.transform(at);
-            }
-
-            String text = (name.equalsIgnoreCase("text_position") ? image.getProvName() : name);
-            if (at != null) {
-                g.drawString(text, -(int) (rect.getWidth()/2), 0);
-            } else {
-                g.drawString(text, x - (int) (rect.getWidth()/2), y + (int) (rect.getHeight()/2));
-            }
-
-            if (rotation > 0.0) {
-                g.setTransform(oldTx);
-            }
-
-            if (locScale > 0.0) {
-                g.setFont(oldFont);
-            }
-
-            Paint old = g.getPaint();
-            g.setColor(DOT_COLORS[(colorIdx++) % DOT_COLORS.length]);
-            g.fillOval((int) x - 3, (int) y - 3, 6, 6);
-            g.setPaint(old);
         }
+
+        Rectangle2D rect = g.getFontMetrics().getStringBounds(image.getProvName(), g);
+
+        AffineTransform at = null;
+        AffineTransform oldTx = null;
+
+        if (rotation != -1.0 && rotation != 0.0) {
+//            at = AffineTransform.getTranslateInstance(x - (rect.getWidth()/2), y - (rect.getHeight()/2));
+            at = AffineTransform.getTranslateInstance(x, y);
+            at.rotate(-rotation);
+            oldTx = g.getTransform();
+            g.transform(at);
+        }
+
+        String text = (name.equalsIgnoreCase("text_position") ? image.getProvName() : name);
+        if (at != null) {
+            g.drawString(text, -(int) (rect.getWidth()/2), 0);
+        } else {
+            g.drawString(text, x - (int) (rect.getWidth()/2), y + (int) (rect.getHeight()/2));
+        }
+
+        if (oldTx != null) {
+            g.setTransform(oldTx);
+        }
+
+        if (oldFont != null) {
+            g.setFont(oldFont);
+        }
+
+        Paint old = g.getPaint();
+        g.setColor(DOT_COLORS[(colorIdx++) % DOT_COLORS.length]);
+        g.fillOval((int) x - 3, (int) y - 3, 6, 6);
+        g.setPaint(old);
     }
     
     private void drawText(Graphics2D g) {

@@ -72,6 +72,8 @@ public final class Text {
                     if (firstSemi < 0 || secondSemi < 0) {
                         log.log(Level.WARNING, "Malformed line in file {0}:\n{1}", new Object[]{f.getPath(), line});
                     }
+                    if (secondSemi < 0)
+                        secondSemi = line.length() - 1;
                     String key = line.substring(0, firstSemi).toLowerCase();
                     if (!text.containsKey(key))
                         text.put(key, line.substring(firstSemi + 1, secondSemi));

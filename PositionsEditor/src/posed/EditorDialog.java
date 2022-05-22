@@ -6,6 +6,7 @@
 
 package posed;
 
+import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.ObjectVariable;
 import eug.shared.WritableObject;
@@ -31,7 +32,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import javax.swing.BoxLayout;
@@ -52,6 +57,8 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(EditorDialog.class.getName());
     
+    private static final String EDIT_BUTTON_TEXT = "Edit...";
+    
     private final MapPanel.ProvinceImage image;
     private GenericObject originalPositions;
     private final GenericObject positionTypes;
@@ -61,7 +68,7 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
     private final java.util.Map<String, Object> allFields = new LinkedHashMap<>();
     
     private boolean saveChanges = false;
-    
+
     // Locale.US ensures that decimal points won't be switched to commas
     // so we don't get { x = 1.213,500000 y = 694,000000 }
     private static final NumberFormat sixDigitFormat = NumberFormat.getNumberInstance(Locale.US);
@@ -90,7 +97,7 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         }
         initFields();
         
-        setTitle("Editing " + image.getProvName());
+        setTitle("Editing " + image.getProvName() + " #" + image.getProvId());
         pack();
         setLocationRelativeTo(parent);
     }
@@ -131,15 +138,15 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
                 container.add(label);
 
                 if (var.getValue().equalsIgnoreCase("xy")) {
-                    createXYFields(container, positions, var, registry);
+                    createXYFields(container, positions, var.varname, registry);
                 } else if (var.getValue().equalsIgnoreCase("rotation")) {
-                    createRotationField(container, positions, var, false, registry);
+                    createRotationField(container, positions, var.varname, false, registry);
                 } else if (var.getValue().equalsIgnoreCase("reverserotation")) {
-                    createRotationField(container, positions, var, true, registry);
+                    createRotationField(container, positions, var.varname, true, registry);
                 } else if (var.getValue().equalsIgnoreCase("scale")) {
-                    createNonButtonField(container, positions, var, registry);
+                    createNonButtonField(container, positions, var.varname, registry);
                 } else if (var.getValue().equalsIgnoreCase("nudge")) {
-                    createNonButtonField(container, positions, var, registry);
+                    createNonButtonField(container, positions, var.varname, registry);
                 }
             } else if (wo instanceof GenericObject) {
                 GenericObject obj = (GenericObject) wo;
@@ -156,31 +163,107 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
                 java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<>();
                 registry.put(obj.name, tmpMap);
                 initFields(subContainer, positions.getChild(obj.name), obj, tmpMap);
+            } else if (wo instanceof GenericList) {
+                initListFields((GenericList) wo, positions, registry);
             }
         }
     }
 
-    private void createNonButtonField(JPanel parent, GenericObject positions, ObjectVariable var, java.util.Map<String, Object> registry) {
-        JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        final JTextField scaleField = new JTextField(8);
-        if (positions != null)
-            scaleField.setText(positions.getString(var.varname));
-        middlePanel.add(scaleField);
-        parent.add(middlePanel);
-        parent.add(new JPanel()); // to take the JButton's slot
+    private void initListFields(GenericList defList, GenericObject positions, java.util.Map<String, Object> registry) {
+        if (defList.size() == 0)
+            return;
+        
+        JPanel container = new JPanel();
+        JPanel subContainer = new JPanel();
+        subContainer.setLayout(new BoxLayout(subContainer, BoxLayout.Y_AXIS));
+        container.add(subContainer);
+        positionsPane.add(container, toReadableLabel(defList.getName()));
+        
+        for (int i = 0; i < defList.size(); i++) {
+            String[] varNameType = defList.get(i).split("/");
+            String varName = varNameType[0];
+            String varType = varNameType[1];
+            
+            JPanel fieldContainer = new JPanel(new GridLayout(0, 3, 1, 5));
+            fieldContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            subContainer.add(fieldContainer);
 
-        registry.put(var.varname, scaleField);
+            JLabel label = new JLabel(toReadableLabel(varName));
+            fieldContainer.add(label);
+            
+            GenericList positionsList = positions.getList(defList.getName());
+            
+            switch (varType.toLowerCase()) {
+                case "xy":
+                    createXYFieldsFromList(fieldContainer, positionsList, i, registry);
+                    break;
+                case "rotation":
+                    createRotationFieldFromList(fieldContainer, positionsList, i, varName, false, registry);
+                    break;
+                case "reverserotation":
+                    createRotationFieldFromList(fieldContainer, positionsList, i, varName, true, registry);
+                    break;
+                case "scale":
+                case "nudge":
+                default:
+                    createNonButtonFieldFromList(fieldContainer, positionsList, i, registry);
+                    break;
+            }
+        }
     }
 
-    private void createRotationField(JPanel parent, GenericObject positions, final ObjectVariable var, final boolean reversed, java.util.Map<String, Object> registry) {
+    private void createNonButtonField(JPanel parent, GenericObject positions, String varName, java.util.Map<String, Object> registry) {
+        String value = (positions != null) ? positions.getString(varName) : null;
+        JTextField scaleField = doCreateNonButtonField(parent, value);
+        registry.put(varName, scaleField);
+    }
+
+    private void createNonButtonFieldFromList(JPanel parent, GenericList positionsList, int index, java.util.Map<String, Object> registry) {
+        JTextField scaleField = doCreateNonButtonField(parent, positionsList.get(index));
+
+        // instead of registering the field under its own name, simply add it to the existing registry of the list
+        @SuppressWarnings("unchecked")
+        List<JTextField> tmpList = (List<JTextField>) registry.getOrDefault(positionsList.getName(), new ArrayList<>());
+        tmpList.add(scaleField);
+        registry.put(positionsList.getName(), tmpList);
+    }
+    
+    private JTextField doCreateNonButtonField(JPanel parent, String text) {
+        JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        final JTextField textField = new JTextField(8);
+        textField.setText(text);
+        middlePanel.add(textField);
+        parent.add(middlePanel);
+        parent.add(new JPanel()); // to take the JButton's slot
+        
+        return textField;
+    }
+
+    private void createRotationField(JPanel parent, GenericObject positions, final String varName, final boolean reversed, java.util.Map<String, Object> registry) {
+        String rotation = (positions != null) ? positions.getString(varName) : null;
+        JTextField rotationField = doCreateRotationField(parent, rotation, reversed, varName);
+        registry.put(varName, rotationField);
+    }
+
+    private void createRotationFieldFromList(JPanel parent, GenericList positionsList, int index, final String varName, final boolean reversed, java.util.Map<String, Object> registry) {
+        JTextField rotationField = doCreateRotationField(parent, positionsList.get(index), reversed, varName);
+
+        // instead of registering the field under its own name, simply add it to the existing registry of the list
+        @SuppressWarnings("unchecked")
+        List<JTextField> tmpList = (List<JTextField>) registry.getOrDefault(positionsList.getName(), new ArrayList<>());
+        tmpList.add(rotationField);
+        registry.put(positionsList.getName(), tmpList);
+    }
+    
+    private JTextField doCreateRotationField(JPanel parent, String text, boolean reversed, String name) {
         JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         final JTextField rotationField = new JTextField(8);
-        if (positions != null)
-            rotationField.setText(positions.getString(var.varname));
+        if (text != null)
+            rotationField.setText(text);
         middlePanel.add(rotationField);
         parent.add(middlePanel);
         JPanel rightPanel = new JPanel();
-        JButton editButton = new JButton("Edit...");
+        JButton editButton = new JButton(EDIT_BUTTON_TEXT);
 
         editButton.addActionListener((ActionEvent e) -> {
             double oldRotation = 0.0;
@@ -194,7 +277,7 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
             } catch (NumberFormatException ex) {
             }
             
-            RotationDialog dialog = new RotationDialog(EditorDialog.this, oldRotation, var.varname);
+            RotationDialog dialog = new RotationDialog(EditorDialog.this, oldRotation, name);
             dialog.setVisible(true);
             
             double rotation = dialog.getRotation();
@@ -212,11 +295,40 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
 
         rightPanel.add(editButton);
         parent.add(rightPanel);
-
-        registry.put(var.varname, rotationField);
+        
+        return rotationField;
     }
 
-    private void createXYFields(JPanel parent, GenericObject positions, ObjectVariable var, java.util.Map<String, Object> registry) {
+    private void createXYFields(JPanel parent, GenericObject positions, String varName, java.util.Map<String, Object> registry) {
+        GenericObject position = (positions != null) ? positions.getChild(varName) : null;
+        String x = (position != null) ? position.getString("x") : null;
+        String y = (position != null) ? position.getString("y") : null;
+        List<JTextField> xy = doCreateXYFields(parent, x, y);
+
+        java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<>();
+        tmpMap.put("x", xy.get(0));
+        tmpMap.put("y", xy.get(1));
+        registry.put(varName, tmpMap);
+    }
+    
+    private void createXYFieldsFromList(JPanel parent, GenericList positionsList, int index, java.util.Map<String, Object> registry) {
+        List<JTextField> xy = doCreateXYFields(parent, positionsList.get(index*2), positionsList.get(index*2 + 1));
+
+        // instead of registering each field under its own name, simply add them to the existing registry of the list
+        @SuppressWarnings("unchecked")
+        List<JTextField> tmpList = (List<JTextField>) registry.getOrDefault(positionsList.getName(), new ArrayList<>());
+        tmpList.addAll(xy);
+        registry.put(positionsList.getName(), tmpList);
+    }
+    
+    /**
+     * Does all the work of creating and laying out a pair of text fields for an X and a Y coordinate.
+     * @param parent the panel to add the new fields to
+     * @param xText the text that will initially be in the X text field
+     * @param yText the text that will initially be in the Y text field
+     * @return a list consisting of the created X text field and Y text field
+     */
+    private List<JTextField> doCreateXYFields(JPanel parent, String xText, String yText) {
         JPanel middlePanel = new JPanel(new GridLayout(0, 1));
         JPanel xPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 1));
         xPanel.add(new JLabel("x"));
@@ -226,28 +338,22 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
         yPanel.add(new JLabel("y"));
         final JTextField yField = new JTextField(7);
         yPanel.add(yField);
-        if (positions != null) {
-            GenericObject position = positions.getChild(var.varname);
-            if (position != null) {
-                xField.setText(position.getString("x"));
-                yField.setText(position.getString("y"));
-            }
-        }
+        
+        if (xText != null)
+            xField.setText(xText);
+        if (yText != null)
+            yField.setText(yText);
+            
         middlePanel.add(xPanel);
         middlePanel.add(yPanel);
         parent.add(middlePanel);
         JPanel rightPanel = new JPanel();
-        JButton editButton = new JButton("Edit...");
-        editButton.addActionListener((ActionEvent e) -> {
-            doSetPosition(xField, yField);
-        });
+        JButton editButton = new JButton(EDIT_BUTTON_TEXT);
+        editButton.addActionListener((ActionEvent e) -> doSetPosition(xField, yField));
         rightPanel.add(editButton);
         parent.add(rightPanel);
-
-        java.util.Map<String, Object> tmpMap = new java.util.LinkedHashMap<>();
-        tmpMap.put("x", xField);
-        tmpMap.put("y", yField);
-        registry.put(var.varname, tmpMap);
+        
+        return Arrays.asList(xField, yField);
     }
     
     /** This method is called from within the constructor to
@@ -417,6 +523,14 @@ public class EditorDialog extends javax.swing.JDialog implements ActionListener,
                 doUpdate(tmpPos, tmpMap);
                 if (tmpPos.isEmpty())
                     positions.removeChild(tmpPos);
+            } else if (entry.getValue() instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<JTextField> tmpList = (List<JTextField>) entry.getValue();
+                GenericList tmpPos = positions.createList(entry.getKey());
+                
+                for (JTextField t : tmpList) {
+                    tmpPos.add(t.getText(), false); // false = don't put the value in quotes
+                }
             } else {
                 log.log(Level.WARNING, "Internal error: Unknown positions value {0}, {1}",
                         new Object[] { entry.getKey(), entry.getValue() });

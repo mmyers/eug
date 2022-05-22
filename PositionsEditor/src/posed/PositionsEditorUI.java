@@ -41,7 +41,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(PositionsEditorUI.class.getName());
     
-    private static final String APP_NAME    = "EU3 Positions Editor";
+    private static final String APP_NAME    = "Positions Editor";
     private static final String APP_VERSION = "Beta";
     
     private MapPanel mapPanel;
@@ -93,7 +93,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
         pack();
         setLocationRelativeTo(null);
-        setTitle(APP_NAME + " [" + positionsFile.getPath() + "]");
+        setTitle(gameVersion.getDisplay() + " " + APP_NAME + " [" + positionsFile.getPath() + "]");
         validateFile();
     }
     
@@ -113,7 +113,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         mapScrollPane = new javax.swing.JScrollPane();
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
-        provinceList = new javax.swing.JList<String>();
+        provinceList = new javax.swing.JList<>();
         goToProvButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
@@ -134,7 +134,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
         FormListener formListener = new FormListener();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle(APP_NAME);
+        setTitle(gameVersion.getDisplay() + " " + APP_NAME);
         addWindowListener(formListener);
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -196,12 +196,12 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_EQUALS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_EQUALS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomInMenuItem.setText("Zoom in");
         zoomInMenuItem.addActionListener(formListener);
         viewMenu.add(zoomInMenuItem);
 
-        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomOutMenuItem.setText("Zoom out");
         zoomOutMenuItem.addActionListener(formListener);
         viewMenu.add(zoomOutMenuItem);
@@ -376,7 +376,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
             positionsFile = chooser.getSelectedFile();
             if (!EUGFileIO.save(positions, positionsFile.getAbsolutePath(), EUGFileIO.NO_COMMENT, true, POSITIONS_STYLE))
                 JOptionPane.showMessageDialog(this, "Failed to save", "Error", JOptionPane.ERROR_MESSAGE);
-            setTitle(APP_NAME + " [" + positionsFile.getPath() + "]");
+            setTitle(gameVersion.getDisplay() + " " + APP_NAME + " [" + positionsFile.getPath() + "]");
         }
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
@@ -548,6 +548,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
 
     private static final GenericObject xy = EUGFileIO.loadFromString("x = double y = double");
     private void validateFile() {
+        log.log(Level.INFO, "Validating positions.txt against the position_types definition...");
         for (GenericObject obj : positions.children) {
             if (mapPanel.getMap().isLand(Integer.parseInt(obj.name))) {
                 validateObject(obj.name, obj, gameVersion.getLand());
@@ -555,6 +556,7 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                 validateObject(obj.name, obj, gameVersion.getSea());
             }
         }
+        log.log(Level.INFO, "Done validating positions.txt");
     }
 
     private void validateObject(String name, GenericObject positions, GenericObject validation) {
@@ -580,7 +582,44 @@ public class PositionsEditorUI extends javax.swing.JFrame {
                     log.log(Level.WARNING, "Unknown variable name in {0}: {1}", new Object[]{name, varname});
                 }
             } else if (wo instanceof GenericList) {
-                log.log(Level.WARNING, "Did not expect list: {0}", ((GenericList)wo).getName());
+                String listName = ((GenericList) wo).getName();
+                GenericList valList = validation.getList(listName);
+                
+                if (valList != null)
+                    validateList(name, (GenericList) wo, valList);
+                else
+                    log.log(Level.WARNING, "Did not expect list: {0}", ((GenericList)wo).getName());
+            }
+        }
+    }
+    
+    /**
+     * Validates a list of values against a template list. The items in the
+     * template list must include a slash "/" which separates the entry name
+     * from the entry data type. For example, the item "port/rotation" in the
+     * template list will cause the validation to expect a rotation (radian
+     * value in decimal) in the list being checked. The special data type "/xy"
+     * causes the validation to expect <i>two</i> values, one each for an X and
+     * a Y coordinate.
+     * 
+     * @param objectName the name of the object in which the list is found, for debugging purposes
+     * @param list
+     * @param validationList 
+     */
+    private void validateList(String objectName, GenericList list, GenericList validationList) {
+        // Lists must be in a definite order
+        int i = 0;
+        for (int j = 0; j < validationList.size(); j++) {
+            String val = validationList.get(j);
+            i++;
+            if (i > list.size())
+                log.log(Level.WARNING, "List in province {0} did not have enough elements to match the validation: {1}", new Object[]{ objectName, list.getName() });
+            
+            if (val.contains("/")) {
+                String[] valSplit = val.split("/");
+                String valType = valSplit[1];
+                if (valType.equals("xy"))
+                    i++; // expect two list elements for an X/Y coordinate pair
             }
         }
     }

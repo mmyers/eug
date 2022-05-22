@@ -136,7 +136,7 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="0"/>
     <Property name="title" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-      <Connection code="APP_NAME" type="code"/>
+      <Connection code="gameVersion.getDisplay() + &quot; &quot; + APP_NAME" type="code"/>
     </Property>
   </Properties>
   <SyntheticProperties>

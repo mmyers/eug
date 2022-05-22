@@ -223,3 +223,98 @@ hoi3 = {
 
 }
 
+mote = {
+	display = "March of the Eagles"
+	map_inverted = no
+	has_sea_list = yes
+	land = {
+		position = {
+			garrison_unit/xy
+			unit/xy
+			unknown1/xy
+			unknown2/xy
+			unknown3/xy
+		}
+		rotation = {
+			garrison_unit/rotation
+			unit/rotation
+			unknown1/rotation
+			unknown2/rotation
+			unknown3/rotation
+		}
+		height = {
+			garrison_unit/height
+			unit/height
+			unknown1/height
+			unknown2/height
+			unknown3/height
+		}
+	}
+	sea = {} # don't have any example sea provs to fill this in with
+}
+
+
+ck2 = {
+	display = "Crusader Kings 2"
+	map_inverted = no
+	has_sea_list = yes      # not accurate, but CK2's sea_zones system isn't implemented in this editor
+	land = {
+		position = {
+			city/xy
+			unit/xy
+			councilor/xy
+			text_position/xy
+			port/xy
+			wonder/xy
+			coastal_wonder/xy
+		}
+		rotation = {
+			city/rotation
+			unit/rotation
+			councilor/rotation
+			text/rotation
+			port/rotation
+			wonder/rotation
+			coastal_wonder/rotation
+		}
+		height = {
+			city/height
+			unit/height
+			councilor/height
+			text/height
+			port/height
+			wonder/height
+			coastal_wonder/height
+		}
+	}
+	sea = {    # looks the same as land even though most of the positions aren't used
+		position = {
+			city/xy
+			unit/xy
+			councilor/xy
+			text_position/xy
+			port/xy
+			wonder/xy
+			coastal_wonder/xy
+		}
+		rotation = {
+			city/rotation
+			unit/rotation
+			councilor/rotation
+			text/rotation
+			port/rotation
+			wonder/rotation
+			coastal_wonder/rotation
+		}
+		height = {
+			city/height
+			unit/height
+			councilor/height
+			text/height
+			port/height
+			wonder/height
+			coastal_wonder/height
+		}
+	}
+}
+
