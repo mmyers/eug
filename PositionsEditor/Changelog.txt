@@ -2,6 +2,10 @@
 |=== Changelog ===|
 \=================/
 
+=== May 21, 2022 ===
+
+- Updated to work with newer games that store positions as lists of coordinates.
+
 
 === Beta 6 ===
 
