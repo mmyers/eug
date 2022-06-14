@@ -131,6 +131,24 @@ public class MapPanelDataModel implements java.io.Serializable {
         return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
     }
     
+    public boolean isRhsSet(int provId, String lhsSet, String lhsClear, String rhs) {
+        return ClausewitzHistory.isRhsSet(dataSource.getProvinceHistory(provId), lhsSet, lhsClear, rhs, date);
+    }
+    
+    public boolean isRhsSet(String tag, String lhsSet, String lhsClear, String rhs) {
+        return ClausewitzHistory.isRhsSet(dataSource.getCountryHistory(tag), lhsSet, lhsClear, rhs, date);
+    }
+    
+    public List<String> getRhsSet(int provId, String lhsSet, String lhsClear) {
+        List<String> values = ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(provId), date, lhsSet, lhsClear);
+        return (values == null) ? new ArrayList<>() : values;
+    }
+    
+    public List<String> getRhsSet(String tag, String lhsSet, String lhsClear) {
+        List<String> values = ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), date, lhsSet, lhsClear);
+        return (values == null) ? new ArrayList<>() : values;
+    }
+    
     
     public List<String> getCountries() {
         return getCountries(date);

@@ -234,4 +234,11 @@ public interface ClausewitzDataSource {
      * Preloads all country data (usually into a cache).
      */
     public void preloadCountries();
+    
+    /**
+     * Queries whether this data source is a saved game or history files.
+     * @return <code>true</code> if this data source is a saved game,
+     * <code>false</code> if this data source is the game's history files.
+     */
+    public boolean isSavedGame();
 }

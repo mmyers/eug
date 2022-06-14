@@ -3,6 +3,7 @@
 package eug.specific.clausewitz;
 
 import eug.shared.GenericObject;
+import eug.shared.ObjectVariable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -266,8 +267,6 @@ public final class ClausewitzHistory {
         
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
-                if (!"advisor".equals(dateObj.name) && !"controller".equals(dateObj.name))
-                    System.err.println(dateObj.name + " is not a valid date");
                 continue;
             }
             
@@ -278,6 +277,51 @@ public final class ClausewitzHistory {
         }
         
         return values;
+    }
+    
+    /**
+     * Returns true if the specified right-hand side has been set by the specified
+     * left-hand side without subsequently being cleared by the specified left-hand side.
+     * That is, if <code>lhsSet = rhs</code> has appeared without a subsequent
+     * <code>lhsClear = rhs</code>.
+     * <p>
+     * Mainly used for set_province_flag/clr_province_flag and set_country_flag/clr_country_flag.
+     * @param history
+     * @param lhsSet the left-hand side which sets the flag
+     * @param lhsClear the left-hand side which clears the flag
+     * @param rhs the flag being set (case sensitive)
+     * @param date
+     * @return 
+     */
+    public static boolean isRhsSet(
+            final GenericObject history,
+            final String lhsSet,
+            final String lhsClear,
+            final String rhs,
+            final String date)
+    {
+        if (history == null)
+            return false;
+        
+        boolean isSet = false;
+        
+        for (GenericObject dateObj : history.children) {
+            if (!isDate(dateObj.name)) {
+                continue;
+            }
+            
+            if (DATE_COMPARATOR.compare(dateObj.name, date) <= 0) {
+                for (ObjectVariable variable : dateObj.values) {
+                    if (variable.varname.equalsIgnoreCase(lhsSet) && variable.getValue().equals(rhs)) { // rhs is case sensitive
+                        isSet = true;
+                    } else if (variable.varname.equalsIgnoreCase(lhsClear) && variable.getValue().equals(rhs)) {
+                        isSet = false;
+                    }
+                }
+            }
+        }
+        
+        return isSet;
     }
 
     public static final class DateComparator implements Comparator<String> {

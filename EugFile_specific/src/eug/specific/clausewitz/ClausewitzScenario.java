@@ -435,4 +435,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             ex.printStackTrace();
         }
     }
+
+    public boolean isSavedGame() {
+        return false;
+    }
 }

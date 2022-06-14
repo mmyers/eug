@@ -417,4 +417,7 @@ public class ClausewitzSaveGame extends Scenario implements ClausewitzDataSource
         return diplomacy;
     }
 
+    public boolean isSavedGame() {
+        return true;
+    }
 }
