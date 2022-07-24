@@ -627,6 +627,11 @@ public final class GenericObject implements WritableObject, Cloneable {
         allWritable.add(newVar);
     }
     
+    public void addVariable(ObjectVariable variable) {
+        values.add(variable);
+        allWritable.add(variable);
+    }
+    
     public void addChild(GenericObject newval){
         if (newval == null)
             throw new NullPointerException("Can't add a null child");

@@ -85,7 +85,8 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	base-production
 	base-manpower
 	---
-	revolt-risk
+	#revolt-risk
+	unrest
 	hotspots-owner
 	hotspots-controller
 	natives-menu

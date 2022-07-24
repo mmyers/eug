@@ -164,6 +164,7 @@ public final class EditorUI extends javax.swing.JFrame {
             mapPanel.setDataSource(scen);
             log.log(Level.INFO, "Done.");
             FileEditorDialog.setDataSource(scen);
+            MultiFileEditorDialog.setDataSource(scen);
 
             if (!setStartDateNew(version.getStartDate())) {
                 GenericObject defines =
@@ -212,6 +213,7 @@ public final class EditorUI extends javax.swing.JFrame {
             log.log(Level.INFO, "Done.");
 
             FileEditorDialog.setDataSource(save);
+            MultiFileEditorDialog.setDataSource(save);
 
             String[] date = save.getDate().split("\\.");
             if (date.length != 3) {
@@ -723,9 +725,12 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
-        FileEditorDialog.showDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
-//        mapPanel.getModel().getDataSource().reloadProvince(prov.getId());
-//        mapPanel.repaint();
+        if (currentProvinces.size() == 1) {
+            FileEditorDialog.showDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
+        } else {
+            // multi file dialog is modal -- too confusing if we let there be more than one at a time
+            new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData).setVisible(true);
+        }
     }//GEN-LAST:event_showProvHistButtonActionPerformed
     
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -1125,6 +1130,8 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(new ProvinceFilterAction());
                 } else if (view.equals("countries")) {
                     viewMenu.add(new PoliticalFilterAction());
+                    if (mapPanel.getDataSource().isSavedGame())
+                        viewMenu.add(new PlayerCountriesFilterAction());
                 } else if (view.equals("override-simple-terrain")) {
                     viewMenu.add(new SimpleTerrainFilterAction());
                 } else if (view.equals("history-simple-terrain")) {
@@ -1269,6 +1276,10 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(actn);
                 } else if (view.equals("revolt-risk")) {
                     DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Revolt risk", "revolt_risk", 0, 10, 1);
+                    actn.setStepColors(allColors, view, Color.YELLOW, Color.ORANGE.darker(), Color.RED.darker());
+                    viewMenu.add(actn);
+                } else if (view.equals("unrest")) {
+                    DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Unrest", "unrest", 0, 10, 1);
                     actn.setStepColors(allColors, view, Color.YELLOW, Color.ORANGE.darker(), Color.RED.darker());
                     viewMenu.add(actn);
                 } else if (view.equals("life-rating")) {
@@ -2151,6 +2162,13 @@ public final class EditorUI extends javax.swing.JFrame {
             super("Countries", new PoliticalMode(mapPanel));
             putValue(SHORT_DESCRIPTION, "Countries");
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        }
+    }
+    
+    private class PlayerCountriesFilterAction extends FilterAction {
+        public PlayerCountriesFilterAction() {
+            super("Player countries", new IsPlayerMapMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Countries played by humans");
         }
     }
 

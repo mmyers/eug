@@ -2,8 +2,12 @@
 
 package eug.specific.clausewitz;
 
+import eug.shared.GenericList;
 import eug.shared.GenericObject;
+import eug.shared.HeaderComment;
+import eug.shared.InlineComment;
 import eug.shared.ObjectVariable;
+import eug.shared.WritableObject;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -323,34 +327,116 @@ public final class ClausewitzHistory {
         
         return isSet;
     }
+    
+    /**
+     * Merges the two history objects, overwriting any parts of existing object
+     * that the additions match. The final product is then sorted in the usual
+     * history order (first bare variables, then date objects in order).
+     * <p>
+     * For example, take the object:
+     * <pre>
+     * add_core = SWE
+     * owner = SWE
+     * controller = SWE
+     * culture = swedish
+     * base_tax = 8
+     * 
+     * 1450.1.1 = { base_tax = 10 }
+     * </pre>
+     * And the following additions:
+     * <pre>
+     * hre = no
+     * 1420.1.1 = { controller = REB }
+     * 1550.1.1 = { religion = protestant }
+     * </pre>
+     * 
+     * After invoking this method, the original object would be updated to:
+     * <pre>
+     * add_core = SWE
+     * owner = SWE
+     * controller = SWE
+     * culture = swedish
+     * base_tax = 8
+     * hre = no
+     * 
+     * 1420.1.1 = { controller = REB }
+     * 1450.1.1 = { base_tax = 10 }
+     * 1550.1.1 = { religion = protestant }
+     * </pre>
+     * @param existing the object to add new parts into
+     * @param additions the new parts to add into the existing object
+     */
+    public static void mergeHistObjects(GenericObject existing, GenericObject additions) {
+        for (WritableObject wo : additions.getAllWritable()) {
+            if (wo instanceof ObjectVariable) {
+                // instead of using setString, we do the loop ourselves so we have access to the original ObjectVariable to add any comments
+                ObjectVariable newVar = (ObjectVariable) wo;
+                boolean found = false;
+                for (ObjectVariable oldVar : existing.values) {
+                    if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
+                        found = true;
+                        // copy everything over
+                        // could merge the comments instead of copying, but that would likely result in odd outcomes
+                        oldVar.setHeadComment(newVar.getHeadComment());
+                        oldVar.setValue(newVar.getValue());
+                        oldVar.setInlineComment(newVar.getInlineComment());
+                    }
+                }
+                if (!found) {
+                    existing.addVariable(newVar);
+                }
+            } else if (wo instanceof GenericList) {
+                GenericList newList = (GenericList) wo;
+                GenericList oldList = existing.getList(newList.getName());
+                if (oldList != null) {
+                    // merging lists seems wrong, so let's just overwrite it
+                    oldList.clear();
+                    oldList.addAll(newList);
+                    oldList.setHeaderComment(newList.getHeaderComment());
+                    oldList.setInlineComment(newList.getInlineComment());
+                } else {
+                    existing.addList(newList);
+                }
+            } else if (wo instanceof GenericObject) {
+                GenericObject newObj = (GenericObject) wo;
+                GenericObject oldObj = existing.getChild(newObj.name);
+                if (oldObj != null) {
+                    mergeHistObjects(oldObj, newObj);
+                } else {
+                    existing.addChild(newObj);
+                }
+            } else if (wo instanceof HeaderComment) {
+                existing.addGeneralComment(((HeaderComment) wo).getComment(), true);
+            } else if (wo instanceof InlineComment) {
+                existing.addGeneralComment(((InlineComment) wo).getComment(), false);
+            }
+        }
+        
+        existing.setHeadComment(additions.getHeadComment());
+        existing.setInlineComment(additions.getInlineComment());
+        
+        existing.getAllWritable().sort(new HistoryObjectComparator());
+    }
 
     public static final class DateComparator implements Comparator<String> {
 
         public DateComparator() {
+            // nothing to do here
         }
         
-        private static final Map<String, String[]> splitMap = new HashMap<String, String[]>(100);
-        private static final Pattern dot = Pattern.compile("\\.");
+        private static final Map<String, String[]> splitMap = new HashMap<>(100);
+        private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
 
         private static String[] split(final String s) {
-            String[] split = splitMap.get(s);
-            if (split == null) {
-                split = dot.split(s);
-                splitMap.put(s, split);
-            }
-            return split;
+            return splitMap.computeIfAbsent(s, DOT_PATTERN::split);
         }
-        private static final Map<String, Integer> intMap = new HashMap<String, Integer>(100);
+        private static final Map<String, Integer> intMap = new HashMap<>(100);
 
         private static Integer getInt(final String s) {
-            Integer i = intMap.get(s);
-            if (i == null) {
-                i = Integer.valueOf(s);
-                intMap.put(s, i);
-            }
-            return i;
+            return intMap.computeIfAbsent(s, Integer::valueOf);
         }
 
+        @Override
         public final int compare(final String s1, final String s2) {
             final String[] s1Split = split(s1);
             final String[] s2Split = split(s2);
@@ -372,6 +458,41 @@ public final class ClausewitzHistory {
          */
         public boolean isBefore(final String date1, final String date2) {
             return compare(date1, date2) < 0;
+        }
+    }
+
+    private static class HistoryObjectComparator implements Comparator<WritableObject> {
+
+        private final DateComparator dateComparator;
+        
+        public HistoryObjectComparator() {
+            dateComparator = new DateComparator();
+        }
+
+        @Override
+        public int compare(WritableObject o1, WritableObject o2) {
+            int score1 = objectScore(o1);
+            int score2 = objectScore(o2);
+            if (score1 == score2) {
+                if (o1 instanceof GenericObject) {
+                    GenericObject g1 = (GenericObject) o1;
+                    GenericObject g2 = (GenericObject) o2;
+                    
+                    return dateComparator.compare(g1.name, g2.name);
+                }
+                return 0;
+            }
+            return score1 - score2;
+        }
+        
+        private int objectScore(WritableObject obj) {
+            if (obj instanceof ObjectVariable)
+                return 1;
+            if (obj instanceof GenericList)
+                return 2;
+            if (obj instanceof GenericObject)
+                return 3;
+            return 4;
         }
     }
     
