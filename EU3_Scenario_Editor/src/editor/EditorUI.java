@@ -729,7 +729,9 @@ public final class EditorUI extends javax.swing.JFrame {
             FileEditorDialog.showDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
         } else {
             // multi file dialog is modal -- too confusing if we let there be more than one at a time
-            new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData).setVisible(true);
+            MultiFileEditorDialog dlg = new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData);
+            dlg.setModal(true);
+            dlg.setVisible(true);
         }
     }//GEN-LAST:event_showProvHistButtonActionPerformed
     

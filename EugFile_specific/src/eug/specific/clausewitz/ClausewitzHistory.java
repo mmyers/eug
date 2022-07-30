@@ -30,6 +30,8 @@ public final class ClausewitzHistory {
      */
     public static final DateComparator DATE_COMPARATOR = new DateComparator();
     
+    private static final String DATE_START = "0.0.0";
+    
 //    private static final Pattern DATE_PATTERN =
 //            Pattern.compile("[0-9]{1,4}\\.[0-9]{1,2}\\.[0-9]{1,2}");
 
@@ -73,7 +75,7 @@ public final class ClausewitzHistory {
             return null;
         
         GenericObject value = history.getLastChild(name);
-        String lastDate = "0.0.0";
+        String lastDate = DATE_START;
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
                 continue;
@@ -95,7 +97,7 @@ public final class ClausewitzHistory {
             return null;
         
         GenericObject value = history.getLastChild(name);
-        String lastDate = "0.0.0";
+        String lastDate = DATE_START;
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
                 continue;
@@ -143,7 +145,7 @@ public final class ClausewitzHistory {
             return null;
         
         String value = history.getLastString(name);
-        String lastDate = "0.0.0";
+        String lastDate = DATE_START;
         for (GenericObject date : history.children) {
             if (!isDate(date.name)) {
                 if (!"advisor".equals(date.name) && !"controller".equals(date.name))
@@ -167,7 +169,7 @@ public final class ClausewitzHistory {
             return null;
         
         String value = history.getLastString(name);
-        String lastDate = "0.0.0";
+        String lastDate = DATE_START;
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
                 continue;
@@ -193,7 +195,7 @@ public final class ClausewitzHistory {
         
         // Check both keys and get the last instance of either
         String value = history.getLastString(name1, name2);
-        String lastDate = "0.0.0";
+        String lastDate = DATE_START;
         for (GenericObject dateObj : history.children) {
             if (!isDate(dateObj.name)) {
                 continue;
@@ -369,20 +371,8 @@ public final class ClausewitzHistory {
     public static void mergeHistObjects(GenericObject existing, GenericObject additions) {
         for (WritableObject wo : additions.getAllWritable()) {
             if (wo instanceof ObjectVariable) {
-                // instead of using setString, we do the loop ourselves so we have access to the original ObjectVariable to add any comments
                 ObjectVariable newVar = (ObjectVariable) wo;
-                boolean found = false;
-                for (ObjectVariable oldVar : existing.values) {
-                    if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
-                        found = true;
-                        // copy everything over
-                        // could merge the comments instead of copying, but that would likely result in odd outcomes
-                        oldVar.setHeadComment(newVar.getHeadComment());
-                        oldVar.setValue(newVar.getValue());
-                        oldVar.setInlineComment(newVar.getInlineComment());
-                    }
-                }
-                if (!found) {
+                if (!mergeVariable(existing, newVar)) {
                     existing.addVariable(newVar);
                 }
             } else if (wo instanceof GenericList) {
@@ -416,6 +406,21 @@ public final class ClausewitzHistory {
         existing.setInlineComment(additions.getInlineComment());
         
         existing.getAllWritable().sort(new HistoryObjectComparator());
+    }
+
+    private static boolean mergeVariable(GenericObject existing, ObjectVariable newVar) {
+        // instead of using setString, we do the loop ourselves so we have access to the original ObjectVariable to add any comments
+        for (ObjectVariable oldVar : existing.values) {
+            if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
+                // copy everything over
+                // could merge the comments instead of copying, but that would likely result in odd outcomes
+                oldVar.setHeadComment(newVar.getHeadComment());
+                oldVar.setValue(newVar.getValue());
+                oldVar.setInlineComment(newVar.getInlineComment());
+                return true;
+            }
+        }
+        return false;
     }
 
     public static final class DateComparator implements Comparator<String> {

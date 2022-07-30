@@ -3,12 +3,7 @@ package editor;
 
 import eug.parser.EUGFileIO;
 import eug.shared.FilenameResolver;
-import eug.shared.GenericList;
 import eug.shared.GenericObject;
-import eug.shared.HeaderComment;
-import eug.shared.InlineComment;
-import eug.shared.ObjectVariable;
-import eug.shared.WritableObject;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
