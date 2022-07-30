@@ -163,11 +163,10 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void saveCountry(String tag, String cname, final String data) {
         String filename = resolveCountryHistoryFile(tag);
         if (filename == null) {
-            filename = resolver.resolveDirectory("history/countries") +
-                    tag + " - " + cname + ".txt";
+            filename = resolver.resolveFilenameForWrite("history/countries/" + tag + " - " + cname + ".txt");
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history/countries") + filename;
+            filename = resolver.resolveFilenameForWrite("history/countries" + filename);
         }
         
         final File file = new File(filename);
@@ -184,11 +183,10 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void saveProvince(int id, String pname, final String data) {
         String filename = resolveProvinceHistoryFile(id);
         if (filename == null) {
-            filename = resolver.resolveDirectory("history/provinces") +
-                    id + " - " + pname + ".txt";
+            filename = resolver.resolveFilenameForWrite("history/provinces/" + id + " - " + pname + ".txt");
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history/provinces") + filename;
+            filename = resolver.resolveFilenameForWrite("history/provinces" + filename);
         }
         
         final File file = new File(filename);
@@ -204,7 +202,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     @Override
     public void saveWar(String name, String data) {
         String filename =
-                resolver.resolveFilename("history/wars/" + name + ".txt");
+                resolver.resolveFilenameForWrite("history/wars/" + name + ".txt");
         final File file = new File(filename);
 //        if (!file.exists()) {
 //            // we were given the war name, not the filename
@@ -221,8 +219,9 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         
         if (!file.exists()) {
             // new file
-            filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + "wars/" + filename;
+            // shouldn't need to do anything here now that we use resolveFilenameForWrite rather than resolveDirectory
+            //filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
+            //filename = resolver.resolveFilenameForWrite("history/wars/" + filename);
         } else if (saveBackups) {
             if (!file.renameTo(new File(getBackupFilename(filename))))
                 System.err.println("Backup of " + file.getName() + " failed");
@@ -300,22 +299,18 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     }
     
     private void preloadProvHistory(int start, int end) {
-        GenericObject hist;
         for (int id = start; id < end; id++) {
-            hist = provHistoryCache.get(id);
+            GenericObject hist = provHistoryCache.get(id);
             if (hist == null) {
                 final String[] histFiles = resolveProvinceHistoryFiles(id);
                 
                 if (histFiles == null || histFiles.length == 0 || histFiles[0] == null) {
-//                    System.err.println("Cannot find province history file for ID " + id);
                     continue;
                 }
                 
                 hist = EUGFileIO.loadAll(histFiles, settings);
                 
-                if (hist == null) {
-//                    System.err.println("Failed to load province history file for ID " + id);
-                } else {
+                if (hist != null) {
                     provHistoryCache.put(id, hist);
                 }
             }
@@ -323,21 +318,17 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     }
     
     private void preloadCountryHistory() {
-        GenericObject hist;
-        String tag;
-        
         final GenericObject countries =
                 EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
         
         for (ObjectVariable def : countries.values) {
-            tag = def.varname;
+            String tag = def.varname;
             
-            hist = ctryHistoryCache.get(tag);
+            GenericObject hist = ctryHistoryCache.get(tag);
             if (hist == null) {
                 final String histFile = resolveCountryHistoryFile(tag);
                 
                 if (histFile == null) {
-//                    System.err.println("Cannot find country history file for " + tag);
                     continue;
                 }
                 

@@ -99,11 +99,10 @@ public class CK2Scenario extends ClausewitzScenario implements CK2DataSource {
     public void saveTitle(String title, String data) {
         String filename = resolveTitleHistoryFile(title);
         if (filename == null) {
-            filename = resolver.resolveDirectory("history") + "titles/" +
-                    title + ".txt";
+            filename = resolver.resolveFilenameForWrite("history/titles/" + title + ".txt");
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + "titles/" + filename;
+            filename = resolver.resolveFilenameForWrite("history/titles/" + filename);
         }
 
         final File file = new File(filename);

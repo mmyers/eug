@@ -35,14 +35,13 @@ public class Vic2Scenario extends ClausewitzScenario {
         if (filename == null) {
             // how do we decide which subfolder to put the new file in?
             // just put it in the main provinces directory for now (still works)
-            filename = resolver.resolveDirectory("history") + "provinces/" +
-                    id + " - " + pname + ".txt";
+            filename = resolver.resolveFilenameForWrite("history/provinces/" + id + " - " + pname + ".txt");
         } else {
             String subfolder = new File(filename).getParentFile().getName();
             if (!subfolder.equalsIgnoreCase("provinces"))
                 subfolder = "provinces" + File.separator + subfolder;
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
-            filename = resolver.resolveDirectory("history") + subfolder + filename;
+            filename = resolver.resolveFilenameForWrite("history" + subfolder + filename);
         }
 
         final File file = new File(filename);

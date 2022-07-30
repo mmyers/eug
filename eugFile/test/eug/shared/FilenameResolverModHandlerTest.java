@@ -3,11 +3,14 @@ package eug.shared;
 
 import eug.parser.EUGFileIO;
 import java.io.File;
-import java.util.Arrays;
 import junit.framework.TestCase;
 
 /**
- *
+ * This class tests that the new ModHandler classes behave the same as the old
+ * FilenameResolver.
+ * 
+ * These tests are not marked with @Test because they require a game installation
+ * and therefore can't run on Github.
  * @author Michael
  */
 public class FilenameResolverModHandlerTest extends TestCase {
@@ -26,6 +29,7 @@ public class FilenameResolverModHandlerTest extends TestCase {
         super.tearDown();
     }
 
+/* Removed since resolveDirectory is deprecated
     public void testNoModReturnsSameDirectory() {
         String baseDir = "C:" + File.separator + "testGame";
         String dirPath = "common";
@@ -50,6 +54,7 @@ public class FilenameResolverModHandlerTest extends TestCase {
         
         assertEquals(result1, result4);
     }
+*/
     
     public void testEuropaModReturnsVanillaFileIfNotInMod() {
         String baseDir = "C:" + File.separator + "testGame";

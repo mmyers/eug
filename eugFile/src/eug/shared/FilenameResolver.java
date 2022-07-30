@@ -196,7 +196,9 @@ public final class FilenameResolver {
      * @return the path that the game will look in for the directory. This path
      * will end with the default file separator character.
      * @see resolveFilename(String)
+     * @deprecated Please use {@link resolveFilenameForWrite(String)}
      */
+    @Deprecated
     public String resolveDirectory(String dirName) {
         if (dirName.charAt(0) == '/' || dirName.charAt(0) == '\\')
             dirName = dirName.substring(1);
@@ -310,7 +312,7 @@ public final class FilenameResolver {
      *
      * @param filename the name of the file to resolve the path of.
      * @return the path that the game will look in for the file.
-     * @see resolveDirectory(String)
+     * @see resolveFilenameForWrite(String)
      */
     public String resolveFilename(String filename) {
         if (filename.charAt(0) == '/' || filename.charAt(0) == '\\')
@@ -349,6 +351,55 @@ public final class FilenameResolver {
                 return modDirName + filename;
             else
                 return mainDirName + filename;
+        }
+    }
+    
+    /**
+     * Resolves the name of the given file, creating directories if necessary.
+     * 
+     * @param filename the name of the file to resolve the path of.
+     * @return the path where this file should be saved when modified.
+     * @see resolveFilename(String)
+     */
+    public String resolveFilenameForWrite(String filename) {
+        if (filename.charAt(0) == '/' || filename.charAt(0) == '\\')
+            filename = filename.substring(1);
+        
+        if (!usingMod) {
+            return mainDirName + filename;
+        }
+        
+        final String[] splitPath = splitParent(filename);
+        
+        if (modFile) {
+            // EU3-style mod
+            if (isFileReplaced(splitPath[0], splitPath[1])) {
+                // Case 1: Directory is replaced.
+                // Return the file in the moddir, even if it doesn't exist.
+                return modDirName + filename;
+            } else if (isExtended(splitPath[0])) {
+                // Case 2: Directory is extended.
+                // Check if the file exists in the moddir. If not, create the path.
+                File file = new File(modDirName + filename);
+                
+                if (!file.exists())
+                    file.getParentFile().mkdirs(); // creates all necessary folders
+                
+                return modDirName + filename;
+            } else {
+                // Case 3: Directory is not modded.
+                // Return the file in the main dir.
+                // This probably shouldn't happen when we're writing... unless Paradox uses this tool
+                return mainDirName + filename;
+            }
+        } else {
+            // EU2-style mod
+            File file = new File(modDirName + filename);
+            
+            if (!file.exists())
+                file.getParentFile().mkdirs(); // creates all necessary folders
+            
+            return modDirName + filename;
         }
     }
     
