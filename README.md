@@ -17,6 +17,9 @@ The editor might be compatible with the current versions of all of the above, bu
 
 ### Screenshots
 
+![Demo of multi edit](/multi-edit-demo.gif)
+*Editing multiple province history files at the same time.*
+
 ![Map view](/screenshot.png)
 *Europe map in 1444. Click for larger image*
 
