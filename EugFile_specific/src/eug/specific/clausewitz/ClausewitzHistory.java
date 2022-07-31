@@ -402,8 +402,10 @@ public final class ClausewitzHistory {
             }
         }
         
-        existing.setHeadComment(additions.getHeadComment());
-        existing.setInlineComment(additions.getInlineComment());
+        if (!"".equals(additions.getHeadComment()))
+            existing.setHeadComment(additions.getHeadComment());
+        if (!"".equals(additions.getInlineComment()))
+            existing.setInlineComment(additions.getInlineComment());
         
         existing.getAllWritable().sort(new HistoryObjectComparator());
     }
@@ -414,9 +416,11 @@ public final class ClausewitzHistory {
             if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
                 // copy everything over
                 // could merge the comments instead of copying, but that would likely result in odd outcomes
-                oldVar.setHeadComment(newVar.getHeadComment());
+                if (!"".equals(newVar.getHeadComment()))
+                    oldVar.setHeadComment(newVar.getHeadComment());
                 oldVar.setValue(newVar.getValue());
-                oldVar.setInlineComment(newVar.getInlineComment());
+                if (!"".equals(newVar.getInlineComment()))
+                    oldVar.setInlineComment(newVar.getInlineComment());
                 return true;
             }
         }
