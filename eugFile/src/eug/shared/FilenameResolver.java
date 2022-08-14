@@ -372,13 +372,8 @@ public final class FilenameResolver {
         final String[] splitPath = splitParent(filename);
         
         if (modFile) {
-            // EU3-style mod
-            if (isFileReplaced(splitPath[0], splitPath[1])) {
-                // Case 1: Directory is replaced.
-                // Return the file in the moddir, even if it doesn't exist.
-                return modDirName + filename;
-            } else if (isExtended(splitPath[0])) {
-                // Case 2: Directory is extended.
+            if (isFileReplaced(splitPath[0], splitPath[1]) || isExtended(splitPath[0])) {
+                // Handle "replace", "replace_path", and "extend" all the same:
                 // Check if the file exists in the moddir. If not, create the path.
                 File file = new File(modDirName + filename);
                 
