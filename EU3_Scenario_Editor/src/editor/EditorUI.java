@@ -695,33 +695,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
     
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        Object[] options = { "Visit GitHub project", "Visit EU3 forum thread", "Visit EU4 forum thread", "Close" };
-        
-        String text = "Clausewitz Scenario Editor\nVersion " + Version.getCurrentVersion() + "\nBy MichaelM\n"
-                + "Visit the GitHub project to check for beta releases or to sponsor this project. Or check out\none of the Paradox forum threads below.";
-        
-        int ret = JOptionPane.showOptionDialog(this, text,
-                "About", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[options.length-1]);
-        
-        if (ret >= 3 || ret < 0)
-            return;
-        
-        String githubLink = "https://github.com/mmyers/eug";
-        String eu3Thread = "https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-save-game-and-scenario-editor-viewer.527308/";
-        String eu4Thread = "https://forum.paradoxplaza.com/forum/index.php?threads/announcing-a-scenario-editor-and-map-viewer.707474/";
-        
-        String[] links = { githubLink, eu3Thread, eu4Thread };
-        String thread = links[ret];
-        
-        try {
-            Desktop.getDesktop().browse(new java.net.URI(thread));
-        } catch (URISyntaxException | IOException ex) {
-            log.log(Level.SEVERE, "Could not browse to external URL " + thread, ex);
-
-            JOptionPane.showMessageDialog(this,
-                    "Could not open browser. Please visit " + thread + " in your browser instead.",
-                    "Update failed", JOptionPane.WARNING_MESSAGE);
-        }
+        new AboutDialog(this, true).setVisible(true);
     }//GEN-LAST:event_aboutMenuItemActionPerformed
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
