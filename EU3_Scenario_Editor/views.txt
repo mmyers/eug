@@ -102,6 +102,7 @@ victoria2 = {
 	continents-menu
 	regions-menu
 	---
+	climates-menu
 	country-religions
 	religions-menu
 	#victoria-buildings-menu
@@ -111,7 +112,7 @@ victoria2 = {
 	governments-menu
         capitals
 	life-rating
-	history-simple-terrain
+	#history-simple-terrain
 	wars
 }
 
@@ -156,6 +157,7 @@ ck2 = {
 	provinces
 	titles
 	regions-menu
+	climates-menu
 	new-cultures-menu
 	province-cultures
 	province-religions

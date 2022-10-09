@@ -54,6 +54,7 @@ public final class Text {
     }
     
     private static void processFilesCsv(File[] files) throws FileNotFoundException, IOException {
+        log.log(Level.INFO, "Reading CSV text files");
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -92,6 +93,7 @@ public final class Text {
         // very naive implementation
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
+        log.log(Level.INFO, "Reading YAML text files");
         for (File f : files) {
             if (!f.getName().endsWith(".yml"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -110,7 +112,7 @@ public final class Text {
                 if (!line.startsWith("l_english")) // only read English localizations
                     continue;
                 
-                log.log(Level.INFO, "Reading {0}", f.getName());
+                //log.log(Level.INFO, "Reading {0}", f.getName());
                 
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();

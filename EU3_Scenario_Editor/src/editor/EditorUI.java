@@ -148,6 +148,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private void setDataSource(String saveFile) {
         if (saveFile == null) {
             log.log(Level.INFO, "Loading province history...");
+            long startTime = System.currentTimeMillis();
 
             ClausewitzScenario scen;
             if (version.getSaveType().equalsIgnoreCase("eu3"))
@@ -162,7 +163,7 @@ public final class EditorUI extends javax.swing.JFrame {
             }
 
             mapPanel.setDataSource(scen);
-            log.log(Level.INFO, "Done.");
+            log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
             FileEditorDialog.setDataSource(scen);
             MultiFileEditorDialog.setDataSource(scen);
 
@@ -209,8 +210,9 @@ public final class EditorUI extends javax.swing.JFrame {
             log.log(Level.INFO, "Done.");
 
             log.log(Level.INFO, "Loading province history...");
+            long startTime = System.currentTimeMillis();
             mapPanel.setDataSource(save);
-            log.log(Level.INFO, "Done.");
+            log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
 
             FileEditorDialog.setDataSource(save);
             MultiFileEditorDialog.setDataSource(save);
@@ -1087,6 +1089,8 @@ public final class EditorUI extends javax.swing.JFrame {
             ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
     
     private void addFilters() {
+        log.log(Level.INFO, "Initializing mapmodes...");
+        long startTime = System.currentTimeMillis();
         GenericObject allViews = EUGFileIO.load("views.txt", defaultSettings);
         GenericObject allColors = EUGFileIO.load("colors.txt", defaultSettings);
 
@@ -1303,6 +1307,8 @@ public final class EditorUI extends javax.swing.JFrame {
         viewMenu.add(new JSeparator());
         viewMenu.add(new CustomMapModeAction());
         viewMenu.add(new PaintBordersAction());
+        
+        log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
     }
     
     private GenericObject loadFileOrFolder(String folderName, String fileName) {
@@ -1785,6 +1791,13 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addClimateFilters(JMenu rootMenu) {
+        rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.ALL));
+        if (map.getClimates().keySet().stream().anyMatch(k -> !k.contains("winter") && !k.equalsIgnoreCase("normal")))
+            rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.CLIMATE));
+        if (map.getClimates().keySet().stream().anyMatch(k -> k.contains("winter")))
+            rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.WINTER));
+        if (map.getClimates().keySet().stream().anyMatch(k -> k.contains("monsoon")))
+            rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.MONSOON));
         List<String> climateNames = new ArrayList<>(map.getClimates().keySet());
         Collections.sort(climateNames, new StringComparator());
         for (String climate : climateNames) {
@@ -2316,6 +2329,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public ClimateFilterAction(String name, String climateName) {
             super(name, new ClimateMode(mapPanel, climateName));
             putValue(SHORT_DESCRIPTION, "Provinces with climate " + climateName);
+        }
+    }
+    
+    private class AllClimatesFilterAction extends FilterAction {
+        public AllClimatesFilterAction(AllClimatesMapMode.ClimateType type) {
+            super(type.getReadableName(), new AllClimatesMapMode(mapPanel, type));
+            putValue(SHORT_DESCRIPTION, type.getReadableName());
         }
     }
     

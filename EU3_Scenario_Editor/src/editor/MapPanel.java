@@ -86,8 +86,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         createMapImage(map, resolver);
         
         log.log(Level.INFO, "Reading map from image...");
+        long startTime = System.currentTimeMillis();
         final MapData data = new MapData(scaledMapImage, Integer.parseInt(map.getString("max_provinces")));
-        log.log(Level.INFO, "Done.");
+        log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
         model = new MapPanelDataModel(data, map, provData);
         model.setDate("1453.1.1");
         
@@ -238,7 +239,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     @Override
     public Dimension getPreferredSize() {
         if (scaledMapImage == null) {
-//            log.log(Level.WARNING, "scaledMap == null!");
             return super.getPreferredSize();
         }
         return new Dimension(scaledMapImage.getWidth(), scaledMapImage.getHeight());
@@ -254,20 +254,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         }
     }
     
-    /**
-     * @deprecated As of 0.3, use {@link zoomIn()}, {@link zoomIn(double)},
-     * {@link zoomOut}, or {@link zoomOut(double)} instead.
-     */
-    @Deprecated
-    public void setScaleFactor(double factor) {
-        if (factor < MIN_SCALE)
-            return;
-//        log.log(Level.FINER, "New scale factor: {0}", factor);
-        scaleFactor = factor;
-        rescaleMap();
-//        repaint();
-    }
-    
     public double getScaleFactor() {
         return scaleFactor;
     }
@@ -280,15 +266,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.3pre1 */
     public void zoomIn(double amount) {
         if (scaleFactor <= MAX_SCALE - amount) {
-//            final Point oldPosition = ((JViewport) getParent()).getViewPosition();
-//            final int oldx = (int) (oldPosition.getX() / scaleFactor);
-//            final int oldy = (int) (oldPosition.getY() / scaleFactor);
-            
             scaleFactor += amount;
             scaleFactor = Double.parseDouble(rounder.format(scaleFactor));
             
             rescaleMap();
-//            ((JViewport) getParent()).setViewPosition(new Point((int) (oldx * scaleFactor), (int) (oldy * scaleFactor)));
         }
     }
     
@@ -300,15 +281,10 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.3pre1 */
     public void zoomOut(double amount) {
         if (scaleFactor >= amount + MIN_SCALE) {
-//            final Point oldPosition = ((JViewport) getParent()).getViewPosition();
-//            final int oldx = (int) (oldPosition.getX() / scaleFactor);
-//            final int oldy = (int) (oldPosition.getY() / scaleFactor);
-            
             scaleFactor -= amount;
             scaleFactor = Double.parseDouble(rounder.format(scaleFactor));
             
             rescaleMap();
-//            ((JViewport) getParent()).setViewPosition(new Point((int) (oldx * scaleFactor), (int) (oldy * scaleFactor)));
         }
     }
     

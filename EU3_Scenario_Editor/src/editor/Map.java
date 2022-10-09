@@ -36,6 +36,8 @@ public final class Map {
     
     private GenericObject mapData;
     
+    private int maxProvinces;
+    
     private GenericObject continents;
     private java.util.Map<String, List<String>> contList = null;
     
@@ -117,15 +119,18 @@ public final class Map {
     }
     
     private void loadData() {
-        //log.log(Level.INFO, "Map file is {0}", resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map"));
         String mapFilename = resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map");
-        mapData = EUGFileIO.load(mapFilename, ParserSettings.getQuietSettings());
+        
+        final ParserSettings fastSettings = ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
+        
+        log.log(Level.INFO, "Reading map data from {0}", mapFilename);
+        mapData = EUGFileIO.load(mapFilename, fastSettings);
         if (mapData == null) {
             log.log(Level.SEVERE, "Failed to load map file from {0}", mapFilename); 
             throw new RuntimeException("Failed to load map file " + mapFilename);
         }
         
-        final ParserSettings fastSettings = ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
+        maxProvinces = mapData.getInt("max_provinces");
         
         String contFilename = mapData.getString("continent").replace('\\', '/');
         if (!contFilename.contains("/"))
@@ -135,9 +140,13 @@ public final class Map {
         
         if (version.hasClimateTxt()) {
             String climateFilename = mapData.getString("climate").replace('\\', '/');
-            if (!climateFilename.contains("/"))
+            
+            // Vic2 has climates but doesn't have the path in default.map
+            if (climateFilename.equals(""))
+                climateFilename = MAP_DIR_NAME + File.separator + "climate.txt";
+            else if (!climateFilename.contains("/"))
                 climateFilename = MAP_DIR_NAME + '/' + climateFilename;
-
+            
             climates = EUGFileIO.load(resolver.resolveFilename(climateFilename), fastSettings);
         }
         
@@ -149,7 +158,7 @@ public final class Map {
         if (!terrainFilename.contains("/"))
             terrainFilename = MAP_DIR_NAME + '/' + terrainFilename;
         
-        terrains = EUGFileIO.load(resolver.resolveFilename(terrainFilename));
+        terrains = EUGFileIO.load(resolver.resolveFilename(terrainFilename), fastSettings);
         
         if (version.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
@@ -186,7 +195,7 @@ public final class Map {
         
         if (version.hasLandList()) {
             // Initialize boolean array
-            isLand = new boolean[mapData.getInt("max_provinces")];
+            isLand = new boolean[maxProvinces];
             for (int i = 1; i < isLand.length; i++) {
                 isLand[i] = true;   // unfortunately, the default is false
             }
@@ -208,16 +217,6 @@ public final class Map {
                             }
                         }
                     }
-//                    mapData.getChildren("ocean_region").forEach((region) -> {
-//                        seaZonesLists.addAll(region.lists);
-//                    });
-                    
-//                    for (GenericList list : seaZonesLists) {
-//                        for (String provId : list) {
-//                            int id = Integer.parseInt(provId);
-//                            isLand[id] = false;
-//                        }
-//                    }
                 }
             } else {
                 for (String provId : seaProvs) {
@@ -399,6 +398,7 @@ public final class Map {
                 for (GenericList sr : superRegions.lists) {
                     // at this point, if superregions.txt exists, just assume areas.txt also exists
                     List<String> aggregate = sr.getList().stream()
+                            .filter(region -> !region.equals("restrict_charter")) // EU4 puts this special string in some superregions, but it's not a region
                             .flatMap(region -> getRegion(region).stream()) // list all provinces in each area of each region of the superregion
                             .collect(Collectors.toList());
                     superRegionList.put(sr.getName(), aggregate);
@@ -658,6 +658,10 @@ public final class Map {
         }
     }
     
+    public int getMaxProvinces() {
+        return maxProvinces;
+    }
+    
     private final class INLandProvIterator
             implements Iterable<Integer>, Iterator<Integer> {
 
@@ -665,7 +669,7 @@ public final class Map {
         private int index;
         
         public INLandProvIterator() {
-            this.numProvs = mapData.getInt("max_provinces");
+            this.numProvs = maxProvinces;
             index = 1;
         }
         

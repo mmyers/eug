@@ -190,7 +190,7 @@ public final class Utilities {
         if (colors == null)
             colors = EUGFileIO.loadAll(resolver.listFiles("common/region_colors"), settings);
         if (colors == null || colors.isEmpty())
-            colors = EUGFileIO.load(resolver.resolveFilename("common/cot_colors.txt"));
+            colors = EUGFileIO.load(resolver.resolveFilename("common/cot_colors.txt"), settings);
         if (colors == null) {
             geographyColors.addAll(Arrays.asList(DEFAULT_CULTURE_COLORS));
             return;
@@ -404,6 +404,8 @@ public final class Utilities {
     // Texture handling (striped paints)
     
     private static final java.util.Map<ColorPair, Paint> imgCache = new HashMap<>();
+    private static final java.util.Map<ColorPair, Paint> imgCacheEqual = new HashMap<>();
+    private static final java.util.Map<ColorTriple, Paint> imgCacheTriple = new HashMap<>();
     
     private static final Rectangle imageRect = new Rectangle(0,0,8,8);
     
@@ -456,6 +458,124 @@ public final class Utilities {
         return ret;
     }
     
+    /*
+     * The TexturePaints use 8x8 rectangles like the following (where x is the
+     * background color and o is the foreground color):
+     * 
+     *   01234567
+     * 0 oooxxxxo
+     * 1 ooxxxxoo
+     * 2 oxxxxooo
+     * 3 xxxxoooo
+     * 4 xxxoooox
+     * 5 xxooooxx
+     * 6 xooooxxx
+     * 7 ooooxxxx
+     * 
+     * Tiling this produces diagonally striped paint.
+     */
+    static Paint createEqualPaint(final Color background, final Color foreground) {
+        final ColorPair cp = new ColorPair(background, foreground);
+        Paint ret = imgCacheEqual.get(cp);
+        if (ret == null) {
+            final BufferedImage img = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = img.createGraphics();
+            g.setBackground(background);
+            g.clearRect(0, 0, 8, 8);
+            
+            g.setColor(foreground);
+            //        (x,y) (x,y)  // done left-to-right, top-to-bottom
+            g.drawLine(0,0,  2,0); // upper left corner
+            g.drawLine(7,0,  7,0); // and upper right
+
+            g.drawLine(0,1,  1,1); // second line
+            g.drawLine(6,1,  7,1);
+            
+            g.drawLine(0,2,  0,2); // third line
+            g.drawLine(5,2,  7,2);
+            
+            g.drawLine(4,3,  7,3);
+            g.drawLine(3,4,  6,4);
+            g.drawLine(2,5,  5,5);
+            g.drawLine(1,6,  4,6);
+            g.drawLine(0,7,  3,7);
+            g.dispose();
+            
+            ret = new TexturePaint(img, imageRect);
+            imgCacheEqual.put(cp, ret);
+        }
+        
+        return ret;
+    }
+    
+    /*
+     * The TexturePaints use 9x9 rectangles like the following (where x is the
+     * background color, o is the first foreground color, and z is the second):
+     * 
+     *   012345678
+     * 0 oooxxxzzz
+     * 1 ooxxxzzzo
+     * 2 oxxxzzzoo
+     * 3 xxxzzzooo
+     * 4 xxzzzooox
+     * 5 xzzzoooxx
+     * 6 zzzoooxxx
+     * 7 zzoooxxxz
+     * 8 zoooxxxzz
+     * 
+     * Tiling this produces diagonally striped paint.
+     */
+    static Paint createTricolorPaint(final Color background, final Color foreground1, final Color foreground2) {
+        final ColorTriple ct = new ColorTriple(background, foreground1, foreground2);
+        Paint ret = imgCacheTriple.get(ct);
+        if (ret == null) {
+            final BufferedImage img = new BufferedImage(9, 9, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = img.createGraphics();
+            g.setBackground(background);
+            g.clearRect(0, 0, 9, 9);
+            
+            g.setColor(foreground1);
+            //        (x,y) (x,y)  // done left-to-right, top-to-bottom
+            g.drawLine(0,0,  2,0); // upper left corner
+
+            g.drawLine(0,1,  1,1); // second line
+            g.drawLine(8,1,  8,1);
+            
+            g.drawLine(0,2,  0,2); // third line
+            g.drawLine(7,2,  8,2);
+            
+            g.drawLine(6,3,  8,3);
+            g.drawLine(5,4,  7,4);
+            g.drawLine(4,5,  6,5);
+            g.drawLine(3,6,  5,6);
+            g.drawLine(2,7,  4,7);
+            g.drawLine(1,8,  3,8);
+            
+            g.setColor(foreground2);
+            //        (x,y) (x,y)  // done left-to-right, top-to-bottom
+            g.drawLine(6,0,  8,0);
+            g.drawLine(5,1,  7,1);
+            g.drawLine(4,2,  6,2);
+            g.drawLine(3,3,  5,3);
+            g.drawLine(2,4,  4,4);
+            g.drawLine(1,5,  3,5);
+            g.drawLine(0,6,  2,6);
+            
+            g.drawLine(0,7,  1,7);
+            g.drawLine(8,7,  8,7); // right side
+            
+            g.drawLine(0,8,  0,8);
+            g.drawLine(7,8,  8,8); // right side
+            
+            g.dispose();
+            
+            ret = new TexturePaint(img, imageRect);
+            imgCacheTriple.put(ct, ret);
+        }
+        
+        return ret;
+    }
+    
     private static final class ColorPair {
         private final Color c1;
         private final Color c2;
@@ -475,6 +595,32 @@ public final class Utilities {
             int hash = 7;
             hash = 29 * hash + (this.c1 != null ? this.c1.hashCode() : 0);
             hash = 29 * hash + (this.c2 != null ? this.c2.hashCode() : 0);
+            return hash;
+        }
+    }
+    
+    private static final class ColorTriple {
+        private final Color c1;
+        private final Color c2;
+        private final Color c3;
+        public ColorTriple(Color c1, Color c2, Color c3) {
+            this.c1 = c1;
+            this.c2 = c2;
+            this.c3 = c3;
+        }
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof ColorTriple))
+                return false;
+            final ColorTriple ct = (ColorTriple) other;
+            return c1.equals(ct.c1) && c2.equals(ct.c2) && c3.equals(ct.c3);
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + (this.c1 != null ? this.c1.hashCode() : 0);
+            hash = 29 * hash + (this.c2 != null ? this.c2.hashCode() : 0);
+            hash = 29 * hash + (this.c3 != null ? this.c3.hashCode() : 0);
             return hash;
         }
     }

@@ -62,7 +62,8 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
             
             GenericList provinces = region.getList("provinces");
             if (provinces == null) {
-                log.log(Level.WARNING, "No valid list of provinces found in {0}", region.name);
+                if (!region.name.contains("placeholder"))
+                    log.log(Level.WARNING, "No valid list of provinces found in {0}", region.name);
                 continue;
             }
             

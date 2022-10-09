@@ -28,8 +28,8 @@ public class Version {
     private static final int MINOR = 9;
     private static final int REV = 9;
     
-    private static final String PROJECT_URL = "http://sourceforge.net/projects/eug";
-    private static final String UPDATE_URL = "http://eug.sourceforge.net/version.xml";
+    private static final String PROJECT_URL = "https://sourceforge.net/projects/eug";
+    private static final String UPDATE_URL = "https://eug.sourceforge.net/version.xml";
     
     private static String latestVersion = null;
     private static String latestVersionLink = null;
@@ -37,6 +37,7 @@ public class Version {
     private static Date lastCheck = new Date(0);
     private static final long ONE_HOUR_MS = 3600000;
     
+    private Version () {}
     
     private static boolean fetchLatestVersion() {
         if (new Date().getTime() - lastCheck.getTime() < ONE_HOUR_MS) {

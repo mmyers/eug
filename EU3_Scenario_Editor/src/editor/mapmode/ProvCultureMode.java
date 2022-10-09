@@ -46,11 +46,15 @@ public class ProvCultureMode extends ProvincePaintingMode {
         if (!getMap().isLand(current.getId()))
             return "";
         
-        final String culture = mapPanel.getModel().getHistString(current.getId(), "culture");
-        final String ret = Text.getText(culture);
-        if (ret == null || ret.length() == 0)
+        final String cultureTag = mapPanel.getModel().getHistString(current.getId(), "culture");
+        final String cultureText = Text.getText(cultureTag);
+        if (cultureText == null || cultureText.length() == 0)
             return "";
-        java.awt.Color c = Utilities.getCultureColor(culture);
-        return "Culture: " + ret + " (" + Text.getText(Utilities.getCultureGroup(culture)) + ")\nColor: " + c.getRed() + " " + c.getGreen() + " " + c.getBlue();
+        final String cultureGroupTag = Utilities.getCultureGroup(cultureTag);
+        java.awt.Color c = Utilities.getCultureColor(cultureTag);
+        String ret = "Culture: " + cultureTag + " (" + cultureText + ")<br>";
+        ret += "Group: " + cultureGroupTag + " (" + Text.getText(cultureGroupTag) + ")<br>";
+        ret += "Color: " + c.getRed() + " " + c.getGreen() + " " + c.getBlue();
+        return ret;
     }
 }
