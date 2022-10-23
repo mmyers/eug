@@ -44,7 +44,7 @@ public final class Utilities {
     static boolean isNotACountry(final String tag) {
         // Tested and found that .equals is much faster than .matches, even if
         // it's done several times and .matches is done once.
-        if (tag.length() == 0 || tag.equals("---") ||
+        if (tag == null || tag.length() == 0 || tag.equals("---") ||
                 tag.equalsIgnoreCase("XXX") || tag.equalsIgnoreCase("none"))
             return true;
         return false;

@@ -480,6 +480,11 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         setToolTipText(tooltip.append("</html>").toString());
     }
     
+    @Override
+    public Point getToolTipLocation(java.awt.event.MouseEvent evt) {
+        return evt.getPoint();
+    }
+    
     /** @since 0.4pre4 */
     public void colorProvince(final int provId, final Color color) {
         overrides.put(provId, color);

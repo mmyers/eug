@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 /**
@@ -67,6 +68,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     public void setDate(String date) {
         this.date = date;
+        clearHistoryCaches();
     }
     
     public void setDataSource(ClausewitzDataSource source) {
@@ -93,42 +95,69 @@ public class MapPanelDataModel implements java.io.Serializable {
         return isCoreOf(provId, date);
     }
     
+    private final java.util.Map<Integer, String> provOwnerCache = new HashMap<>();
+    private final java.util.Map<IntStringTuple, String> provHistStringCache = new HashMap<>();
+    private final java.util.Map<IntStringTuple, List<String>> provHistStringsCache = new HashMap<>();
+    private final java.util.Map<IntStringTuple, GenericObject> provHistObjectCache = new HashMap<>();
+    private final java.util.Map<IntStringTuple, List<GenericObject>> provHistObjectsCache = new HashMap<>();
+    
+    private final java.util.Map<StringStringTuple, String> countryHistStringCache = new HashMap<>();
+    private final java.util.Map<StringStringTuple, List<String>> countryHistStringsCache = new HashMap<>();
+    private final java.util.Map<StringStringTuple, GenericObject> countryHistObjectCache = new HashMap<>();
+    private final java.util.Map<StringStringTuple, List<GenericObject>> countryHistObjectsCache = new HashMap<>();
+    
+    private void clearHistoryCaches() {
+        provOwnerCache.clear();
+        provHistStringCache.clear();
+        provHistStringsCache.clear();
+        provHistObjectCache.clear();
+        provHistObjectsCache.clear();
+        
+        countryHistStringCache.clear();
+        countryHistStringsCache.clear();
+        countryHistObjectCache.clear();
+        countryHistObjectsCache.clear();
+    }
+    
     
     /** Special method that treats "owner" and "fake_owner" the same in history files. */
     public String getOwner(int provId) {
-        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date);
+        return provOwnerCache.computeIfAbsent(provId, id -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date));
     }
     
     public String getHistString(int provId, String name) {
-        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), name, date);
+        return provHistStringCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(t.i), t.s, date));
     }
     
     public List<String> getHistStrings(int provId, String name) {
-        return ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(provId), name, date);
+        return provHistStringsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(t.i), t.s, date));
     }
     
     public GenericObject getHistObject(int provId, String name) {
-        return ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(provId), name, date);
+        return provHistObjectCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(t.i), t.s, date));
     }
     
     public List<GenericObject> getHistObjects(int provId, String name) {
-        return ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(provId), name, date);
+        return provHistObjectsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(t.i), t.s, date));
     }
     
     public String getHistString(String tag, String name) {
-        return ClausewitzHistory.getHistString(dataSource.getCountryHistory(tag), name, date);
+        return countryHistStringCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistString(dataSource.getCountryHistory(t.s1), t.s2, date));
     }
     
     public List<String> getHistStrings(String tag, String name) {
-        return ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), name, date);
+        return countryHistStringsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), name, date);
     }
     
     public GenericObject getHistObject(String tag, String name) {
-        return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
+        return countryHistObjectCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObject(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
     }
     
     public List<GenericObject> getHistObjects(String tag, String name) {
-        return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
+        return countryHistObjectsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
     }
     
     public boolean isRhsSet(int provId, String lhsSet, String lhsClear, String rhs) {
@@ -203,4 +232,54 @@ public class MapPanelDataModel implements java.io.Serializable {
             return mapData.getLinesInProv(p.getColor());
     }
     
+    
+    private static final class IntStringTuple {
+        private final int i;
+        private final String s;
+        IntStringTuple(int i, String s) {
+            this.i = i;
+            this.s = s;
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof IntStringTuple) {
+                return i == ((IntStringTuple)o).i
+                        && s.equals(((IntStringTuple)o).s);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 73 * hash + i;
+            hash = 73 * hash + Objects.hashCode(s);
+            return hash;
+        }
+    }
+    
+    private static final class StringStringTuple {
+        private final String s1;
+        private final String s2;
+        StringStringTuple(String s1, String s2) {
+            this.s1 = s1;
+            this.s2 = s2;
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof StringStringTuple) {
+                return s1.equals(((StringStringTuple)o).s1)
+                        && s2.equals(((StringStringTuple)o).s2);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 73 * hash + Objects.hashCode(s1);
+            hash = 73 * hash + Objects.hashCode(s2);
+            return hash;
+        }
+    }
 }

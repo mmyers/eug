@@ -74,6 +74,11 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
             int bl = mix(midBlue, maxBlue, i - middle, middle);
             colors[i] = new Color(red, gr, bl);
         }
+        
+        // sanity in case there are too few colors and we have rounding errors
+        colors[0] = minColor;
+        if (numColors > 0)
+            colors[numColors-1] = maxColor;
     }
     
     private static int mix(int min, int max, int ratio, int maxRatio) {

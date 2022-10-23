@@ -765,6 +765,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private void reloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadMenuItemActionPerformed
         mapPanel.getDataSource().reloadProvinces();
         mapPanel.getDataSource().reloadCountries();
+        mapPanel.getModel().setDate(mapPanel.getModel().getDate());
         repaint();
     }//GEN-LAST:event_reloadMenuItemActionPerformed
 
@@ -1288,6 +1289,14 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(menu);
                 } else if (view.equals("wars")) {
                     viewMenu.add(new WarsAction());
+                } else if (view.equals("modding-menu")) {
+                    JMenu menu = new JMenu("Mod-creating views");
+                    if (!mapPanel.getDataSource().isSavedGame()) {
+                        menu.add(new HistoryExistsFilterAction());
+                        if (!(mapPanel.getDataSource() instanceof CK2DataSource))
+                            menu.add(new CountryHistoryExistsFilterAction());
+                        viewMenu.add(menu);
+                    }
                 } else if (view.equals("---")) {
                     viewMenu.add(new JSeparator());
                 } else {
@@ -1306,6 +1315,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
         viewMenu.add(new JSeparator());
         viewMenu.add(new CustomMapModeAction());
+        viewMenu.add(new CustomScalingMapModeAction());
         viewMenu.add(new PaintBordersAction());
         
         log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
@@ -2024,7 +2034,7 @@ public final class EditorUI extends javax.swing.JFrame {
             
             Province p;
             
-            if (response.matches("[0-9]{1,4}")) {
+            if (response.matches("[0-9]{1,}")) {
                 int prov = Integer.parseInt(response);
                 if (prov <= 0 || prov > maxProv) {
                     JOptionPane.showMessageDialog(EditorUI.this, "Invalid province ID: " + response);
@@ -2408,6 +2418,20 @@ public final class EditorUI extends javax.swing.JFrame {
             putValue(SHORT_DESCRIPTION, "Provinces which have changed hands the most");
         }
     }
+    
+    private class HistoryExistsFilterAction extends FilterAction {
+        public HistoryExistsFilterAction() {
+            super("History files", new HistoryExistsMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Provinces with existing history files");
+        }
+    }
+    
+    private class CountryHistoryExistsFilterAction extends FilterAction {
+        public CountryHistoryExistsFilterAction() {
+            super("Country history files", new CountryHistoryExistsMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Countries with existing history files");
+        }
+    }
 
     private class WarsAction extends AbstractAction {
         public WarsAction() {
@@ -2429,6 +2453,23 @@ public final class EditorUI extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             final MapMode mode = CustomModeDialog.showDialog(EditorUI.this);
+            if (mode != null) {
+                mode.setMapPanel(mapPanel);
+                mapPanel.setMode(mode);
+                viewModeLabel.setText(mode.toString());
+                mapPanel.repaint();
+            }
+        }
+    }
+    
+    private class CustomScalingMapModeAction extends AbstractAction {
+        public CustomScalingMapModeAction() {
+            super("Custom scaling map mode");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final MapMode mode = CustomScalingModeDialog.showDialog(EditorUI.this);
             if (mode != null) {
                 mode.setMapPanel(mapPanel);
                 mapPanel.setMode(mode);
