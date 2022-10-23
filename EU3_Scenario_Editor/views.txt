@@ -22,6 +22,8 @@ eu3 = {
 	revolt-risk
 	natives-menu
 	wars
+	---
+	modding-menu
 }
 
 in_nomine = {
@@ -50,6 +52,8 @@ in_nomine = {
 	revolt-risk
 	natives-menu
 	wars
+	---
+	modding-menu
 }
 
 eu4 = { # mostly In Nomine with trade nodes swapped for COTs
@@ -91,6 +95,8 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	hotspots-controller
 	natives-menu
 	wars
+	---
+	modding-menu
 }
 
 victoria2 = {
@@ -114,6 +120,8 @@ victoria2 = {
 	life-rating
 	#history-simple-terrain
 	wars
+	---
+	modding-menu
 }
 
 rome = {
@@ -136,6 +144,8 @@ rome = {
 	barbarian-power
 	revolt-risk
 	wars
+	---
+	modding-menu
 }
 
 hoi3 = {
@@ -151,6 +161,8 @@ hoi3 = {
 	manpower
 	leadership
 	wars
+	---
+	modding-menu
 }
 
 ck2 = {
@@ -165,4 +177,6 @@ ck2 = {
 	religions-menu
         #capitals
 	history-simple-terrain
+	---
+	modding-menu
 }
