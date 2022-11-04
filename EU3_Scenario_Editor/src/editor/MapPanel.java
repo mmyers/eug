@@ -482,7 +482,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     @Override
     public Point getToolTipLocation(java.awt.event.MouseEvent evt) {
-        return evt.getPoint();
+        Point p = evt.getPoint();
+        p.translate(0, 20); // move 20 px down to avoid the cursor itself
+        return p;
     }
     
     /** @since 0.4pre4 */
