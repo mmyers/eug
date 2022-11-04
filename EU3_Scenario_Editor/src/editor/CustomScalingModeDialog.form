@@ -165,6 +165,12 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Component class="javax.swing.JCheckBox" name="countryCheckBox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Country property?"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Select this box if the property is a country property. Leave unchecked if it is a province property."/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="jPanel11">

@@ -1,6 +1,7 @@
 
 package editor;
 
+import editor.mapmode.DiscreteCountryScalingMapMode;
 import editor.mapmode.DiscreteScalingMapMode;
 import editor.mapmode.MapMode;
 
@@ -46,6 +47,7 @@ public class CustomScalingModeDialog extends javax.swing.JDialog {
         javax.swing.JPanel jPanel9 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         incrementSpinner = new javax.swing.JSpinner();
+        countryCheckBox = new javax.swing.JCheckBox();
         javax.swing.JPanel jPanel11 = new javax.swing.JPanel();
         errorLabel = new javax.swing.JLabel();
         javax.swing.JPanel buttonPanel = new javax.swing.JPanel();
@@ -99,6 +101,10 @@ public class CustomScalingModeDialog extends javax.swing.JDialog {
         jPanel9.add(incrementSpinner);
 
         jPanel2.add(jPanel9);
+
+        countryCheckBox.setText("Country property?");
+        countryCheckBox.setToolTipText("Select this box if the property is a country property. Leave unchecked if it is a province property.");
+        jPanel2.add(countryCheckBox);
 
         jPanel6.add(jPanel2, java.awt.BorderLayout.CENTER);
 
@@ -202,17 +208,20 @@ public class CustomScalingModeDialog extends javax.swing.JDialog {
         int max = (Integer)maxValueSpinner.getValue();
         int step = (Integer)incrementSpinner.getValue();
         
-//        if (countriesCheckBox.isSelected()) {
-//            return new DiscreteScalingMapMode(name, min, max, step);
-//        } else {
+        if (countryCheckBox.isSelected()) {
+            DiscreteCountryScalingMapMode mode = new DiscreteCountryScalingMapMode(name, min, max, step);
+            mode.setName(Text.getText(name));
+            return mode;
+        } else {
             DiscreteScalingMapMode mode = new DiscreteScalingMapMode(name, min, max, step);
             mode.setName(Text.getText(name));
             return mode;
-//        }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JCheckBox countryCheckBox;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JSpinner incrementSpinner;
     private javax.swing.JLabel jLabel1;
