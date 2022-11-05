@@ -1,15 +1,22 @@
 
 package eug.specific.victoria2;
 
+import eug.parser.EUGFileIO;
+import eug.parser.ParserSettings;
 import eug.shared.FilenameResolver;
+import eug.shared.GenericObject;
 import eug.specific.clausewitz.ClausewitzScenario;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Michael
  */
-public class Vic2Scenario extends ClausewitzScenario {
+public class Vic2Scenario extends ClausewitzScenario implements Vic2DataSource {
+    
+    private List<GenericObject> allPops;
 
     public Vic2Scenario(String mainDir, String modDir) {
         super(mainDir, modDir);
@@ -52,6 +59,37 @@ public class Vic2Scenario extends ClausewitzScenario {
         }
 
         saveFile(filename, data);
+    }
+    
+    private void loadPops() {
+        allPops = new ArrayList<>();
+        File[] popsFilesOrFolders = resolver.listFiles("history/pops");
+        for (File f : popsFilesOrFolders) {
+            getPops(f, allPops);
+        }
+    }
+    
+    @Override
+    public List<GenericObject> getPops(int provId) {
+        if (allPops == null)
+            loadPops();
+        
+        String provIdStr = Integer.toString(provId);
+        List<GenericObject> ret = new ArrayList<>();
+        for (GenericObject obj : allPops) {
+            ret.addAll(obj.getChildren(provIdStr));
+        }
+        
+        return ret;
+    }
+    
+    private void getPops(File dir, List<GenericObject> ret) {
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory())
+                getPops(f, ret);
+            else
+                ret.add(EUGFileIO.load(f, ParserSettings.getQuietSettings()));
+        }
     }
 
 }
