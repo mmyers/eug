@@ -76,7 +76,7 @@ rome = {
 
 
 v2 = {
-	display = "Victoria 2"
+	display = "Victoria 2 (not AHD)"
 	#start_date = 1836.1.1
 	map_inverted = yes
 	has_land_list = yes
