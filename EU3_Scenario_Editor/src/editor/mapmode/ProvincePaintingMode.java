@@ -14,15 +14,13 @@ import java.awt.Paint;
  * {@link #paintSeaZone(Graphics2D, int)}. They may also override
  * {@link #paintBackground(Graphics2D)} or
  * {@link #paintTerraIncognita(Graphics2D)} if they wish; the default is to
- * paint the background blue fading to cyan, and terra incognita black.
+ * paint the background blue and terra incognita black.
  * @author Michael Myers
  * @since 0.4pre1
  */
 public abstract class ProvincePaintingMode extends MapMode {
     
-//    protected static final int SEA_STARTS = Integer.parseInt(Main.map.getString("sea_starts"));
     private static final Paint background = new Color(15, 100, 255);
-    // new GradientPaint(0, 0, Color.BLUE.brighter(), 0, mapPanel.getHeight(), Color.CYAN.darker(), true)
     
     protected ProvincePaintingMode() {
     }
@@ -31,6 +29,7 @@ public abstract class ProvincePaintingMode extends MapMode {
         super(panel);
     }
     
+    @Override
     public void paint(final Graphics2D g) {
         paintBackground(g);
         
@@ -40,7 +39,7 @@ public abstract class ProvincePaintingMode extends MapMode {
         paintTerraIncognita(g);
         
         // Now, send the rest to the subclass.
-        int maxProvinces = Integer.parseInt(getMap().getString("max_provinces"));
+        int maxProvinces = getMap().getMaxProvinces();
         for (int i = 1; i < maxProvinces; i++) {
             if (getMap().isLand(i))
                 paintProvince(g, i);
@@ -84,6 +83,7 @@ public abstract class ProvincePaintingMode extends MapMode {
         // do nothing, but allow subclasses to override
     }
 
+    @Override
     public boolean paintsBorders() {
         return true;
     }

@@ -90,10 +90,8 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     @Override
     protected void paintProvince(final Graphics2D g, int provId) {
         String value = mapPanel.getModel().getHistString(provId, prop);
-        if (value == null || value.length() == 0)
-            value = "0";
 
-        if (value.equals("0")) {
+        if (value == null || value.length() == 0 || value.equals("0")) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
             return;
         }
