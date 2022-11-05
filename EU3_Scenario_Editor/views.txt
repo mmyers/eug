@@ -110,6 +110,9 @@ victoria2 = {
 	---
 	climates-menu
 	country-religions
+	pop-religions
+	pop-cultures
+	pop-types
 	religions-menu
 	#victoria-buildings-menu
 	#new-cultures-menu     # would have to read pop history, not prov history

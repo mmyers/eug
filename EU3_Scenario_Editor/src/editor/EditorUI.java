@@ -1171,6 +1171,12 @@ public final class EditorUI extends javax.swing.JFrame {
                     viewMenu.add(new CtryReligionFilterAction());
                 } else if (view.equals("religions")) {
                     viewMenu.add(new ReligionFilterAction());
+                } else if (view.equals("pop-religions")) {
+                    viewMenu.add(new PopReligionFilterAction());
+                } else if (view.equals("pop-cultures")) {
+                    viewMenu.add(new PopCultureFilterAction());
+                } else if (view.equals("pop-types")) {
+                    viewMenu.add(new PopTypeFilterAction());
                 } else if (view.equals("religions-menu")) {
                     JMenu menu = new JMenu("Single religion");
                     addReligionFilters(menu);
@@ -2409,6 +2415,27 @@ public final class EditorUI extends javax.swing.JFrame {
         public PopSplitFilterAction() {
             super("Population split", new PopSplitMapMode(mapPanel));
             putValue(SHORT_DESCRIPTION, "Population split");
+        }
+    }
+    
+    private class PopReligionFilterAction extends FilterAction {
+        public PopReligionFilterAction() {
+            super("Pop religions", new PopReligionMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Majority religion in each province");
+        }
+    }
+    
+    private class PopCultureFilterAction extends FilterAction {
+        public PopCultureFilterAction() {
+            super("Pop cultures", new PopCultureMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Majority culture in each province");
+        }
+    }
+    
+    private class PopTypeFilterAction extends FilterAction {
+        public PopTypeFilterAction() {
+            super("Pop types", new PopTypeMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Majority pop type in each province");
         }
     }
     
