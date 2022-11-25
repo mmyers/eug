@@ -355,6 +355,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
         return resolver.getProvinceHistoryFiles(id);
     }
     
+    private static final GenericObject NO_HISTORY = new GenericObject();
+    
     /** Gets the province history for the given id, using the cache. */
     private GenericObject getProvHistory(final int id) {
         GenericObject hist = provHistoryCache.get(id);
@@ -363,6 +365,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             
             if (histFiles == null || histFiles.length == 0 || histFiles[0] == null) {
                 //System.err.println("Cannot find province history file for ID " + id);
+                provHistoryCache.put(id, NO_HISTORY);
                 return null;
             }
             
@@ -373,6 +376,8 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
             } else {
                 provHistoryCache.put(id, hist);
             }
+        } else if (hist == NO_HISTORY) {
+            return null;
         }
         return hist;
     }
