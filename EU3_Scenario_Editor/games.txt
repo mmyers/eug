@@ -124,3 +124,17 @@ ck2 = {
 	new_style_mod = yes
 	mod_path = "Paradox Interactive/Crusader Kings II"
 }
+
+mote = {
+	display = "March of the Eagles"
+	start_date = 1805.1.1
+	new_style_mod = yes
+	map_inverted = no
+	has_land_list = yes
+	has_regions = yes
+	has_climate_txt = yes
+	has_bookmarks = yes
+	save_type = eu3
+	view_set = mote
+	text = csv
+}

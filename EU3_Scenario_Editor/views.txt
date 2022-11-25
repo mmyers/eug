@@ -183,3 +183,24 @@ ck2 = {
 	---
 	modding-menu
 }
+
+mote = {
+	provinces
+	countries
+	country-menu
+	---
+	province-areas-menu
+	regions-menu
+	climates-menu
+	---
+	old-cultures-menu
+	buildings-menu
+	governments-menu
+	capitals
+	population
+	manpower
+	base-tax
+	wars
+	---
+	modding-menu
+}
