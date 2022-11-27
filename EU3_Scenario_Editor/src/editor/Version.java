@@ -26,7 +26,7 @@ public class Version {
     
     private static final int MAJOR = 0;
     private static final int MINOR = 9;
-    private static final int REV = 9;
+    private static final int REV = 10;
     
     private static final String PROJECT_URL = "https://sourceforge.net/projects/eug";
     private static final String UPDATE_URL = "https://eug.sourceforge.net/version.xml";
@@ -63,7 +63,7 @@ public class Version {
             
             Element release = (Element) doc.getElementsByTagName("release").item(0);
             
-            boolean recommended = Boolean.parseBoolean(release.getElementsByTagName("recommended").item(0).getTextContent());
+            //boolean recommended = Boolean.parseBoolean(release.getElementsByTagName("recommended").item(0).getTextContent());
             String version = release.getElementsByTagName("version").item(0).getTextContent();
             String url = release.getElementsByTagName("url").item(0).getTextContent();
             
@@ -83,7 +83,9 @@ public class Version {
     
     private static boolean isNewVersion(String version) {
         String[] split = version.split("\\.");
-        int major = 0, minor = 0, rev = 0;
+        int major = 0;
+        int minor = 0;
+        int rev = 0;
         if (split.length > 0)
             major = Integer.parseInt(split[0]);
         if (split.length > 1)

@@ -2,6 +2,27 @@
 |=== Changelog ===|
 \=================/
 
+
+=== 0.9.10 ===
+
+New features:
+- New support for March of the Eagles.
+- New modes for viewing which provinces and countries have history files
+  and which don't. Find them under the new "Modding views" submenu.
+- New mode to view all climates at once (with stripes if multiple climate types
+  are active for a province).
+- New dialog for making custom scaling modes for either provinces or countries.
+  Currently only works with integers, so no 0.0-1.0 scaling.
+- New majority pop religion, majority pop culture, and majority pop type mapmodes
+  for Victoria 2.
+
+Bugfixes:
+- Fixed a bug causing pathological behavior during drawing if many land provinces
+  don't have history files. Most noticeable in MotE-EVW.
+- Clarified in game version selection that Victoria 2 and A House Divided
+  are two different things, and the settings for one will not work with the other.
+
+
 === 0.9.9 ===
 
 New features:
