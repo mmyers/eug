@@ -404,7 +404,7 @@ public class Main {
         
         for (File f : mods) {
             GenericObject obj = EUGFileIO.load(f, ParserSettings.getQuietSettings());
-            String modPath = f.getName().substring(0, f.getName().length()-4);
+            String modPath;
             if (obj.contains("path")) {
                 // detect if path is absolute - fixes #28
                 if (new java.io.File(obj.getString("path")).isAbsolute())
@@ -414,7 +414,12 @@ public class Main {
             } else if (obj.contains("archive")) {
                 log.log(Level.INFO, "Archive mods are not yet supported. Mod \"{0}\" skipped.", obj.getString("name"));
                 continue;
+            } else {
+                // if no explicit path, turn /mod/ModName.mod into /mod/ModName
+                String fileNameWithoutExtension = f.getName().substring(0, f.getName().length()-4);
+                modPath = moddir + File.separator + fileNameWithoutExtension;
             }
+            
             Mod mod = new Mod(obj.getString("name"), f.getAbsolutePath(), modPath);
             log.log(Level.INFO, "Mod: {0}; file path: {1}; mod path: {2}", new Object[]{mod.name, mod.modFilePath, mod.modPath});
             ret.add(mod);
