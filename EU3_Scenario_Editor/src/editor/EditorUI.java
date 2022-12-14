@@ -435,8 +435,8 @@ public final class EditorUI extends javax.swing.JFrame {
 
         getContentPane().add(toolBar, java.awt.BorderLayout.NORTH);
 
-        mapPanel.addMouseListener(formListener);
         mapPanel.addMouseMotionListener(formListener);
+        mapPanel.addMouseListener(formListener);
         mapScrollPane.setViewportView(mapPanel);
 
         getContentPane().add(mapScrollPane, java.awt.BorderLayout.CENTER);
@@ -460,7 +460,7 @@ public final class EditorUI extends javax.swing.JFrame {
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
 
-        exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(formListener);
@@ -564,15 +564,9 @@ public final class EditorUI extends javax.swing.JFrame {
         }
 
         public void mousePressed(java.awt.event.MouseEvent evt) {
-            if (evt.getSource() == mapPanel) {
-                EditorUI.this.mapPanelMousePressed(evt);
-            }
         }
 
         public void mouseReleased(java.awt.event.MouseEvent evt) {
-            if (evt.getSource() == mapPanel) {
-                EditorUI.this.mapPanelMouseReleased(evt);
-            }
         }
 
         public void mouseDragged(java.awt.event.MouseEvent evt) {
@@ -615,21 +609,23 @@ public final class EditorUI extends javax.swing.JFrame {
     private void bookmarksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookmarksButtonActionPerformed
         bookmarkMenu.show(bookmarksButton, bookmarksButton.getWidth(), 0);
     }//GEN-LAST:event_bookmarksButtonActionPerformed
-    
-    private void mapPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseReleased
-        if (evt.isPopupTrigger()) {
-            popupTriggered(evt);
-        }
-    }//GEN-LAST:event_mapPanelMouseReleased
-    
-    private void mapPanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMousePressed
-        if (evt.isPopupTrigger()) {
-            popupTriggered(evt);
-        }
-    }//GEN-LAST:event_mapPanelMousePressed
-    
+            
     private void showCountryHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCountryHistButtonActionPerformed
-        FileEditorDialog.showDialog(this, lastCountry, getLastCountryName(), resolver, provinceData);
+        if (!FileEditorDialog.isShowingDialog(lastCountry)) {
+            FileEditorDialog dlg = new FileEditorDialog(EditorUI.this, lastCountry, getLastCountryName(), resolver, provinceData);
+            dlg.registerSaveHandler(new FileEditorDialog.SaveHandler() {
+                @Override
+                public void handleSaveEvent(int provId) {
+                    mapPanel.getModel().clearHistoryCache();
+                }
+
+                @Override
+                public void handleSaveEvent(String tagOrTitle) {
+                    mapPanel.getModel().clearHistoryCache();
+                }
+            });
+            dlg.setVisible(true);
+        }
     }//GEN-LAST:event_showCountryHistButtonActionPerformed
     
     /**
@@ -702,12 +698,27 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void showProvHistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showProvHistButtonActionPerformed
         if (currentProvinces.size() == 1) {
-            FileEditorDialog.showDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
+            if (!FileEditorDialog.isShowingDialog(currentProvinces.get(0).getId())) {
+                FileEditorDialog dlg = new FileEditorDialog(EditorUI.this, currentProvinces.get(0), resolver, provinceData);
+                dlg.registerSaveHandler(new FileEditorDialog.SaveHandler() {
+                    @Override
+                    public void handleSaveEvent(int provId) {
+                        mapPanel.getModel().clearHistoryCache();
+                    }
+
+                    @Override
+                    public void handleSaveEvent(String tagOrTitle) {
+                        mapPanel.getModel().clearHistoryCache();
+                    }
+                });
+                dlg.setVisible(true);
+            }
         } else {
             // multi file dialog is modal -- too confusing if we let there be more than one at a time
             MultiFileEditorDialog dlg = new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData);
             dlg.setModal(true);
             dlg.setVisible(true);
+            mapPanel.getModel().clearHistoryCache();
         }
     }//GEN-LAST:event_showProvHistButtonActionPerformed
     
@@ -730,14 +741,9 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void mapPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseClicked
-        if (evt.isPopupTrigger()) {
-            popupTriggered(evt);
-            return;
-        }
-        
         showProvHistButton.setEnabled(false);
         final int clickCount = evt.getClickCount();
-        final boolean addToSelection = (evt.isControlDown() || evt.isMetaDown());
+        final boolean addToSelection = (evt.isControlDown() || evt.isMetaDown() || SwingUtilities.isRightMouseButton(evt));
         
         java.awt.EventQueue.invokeLater(
                 () -> {
@@ -1037,28 +1043,6 @@ public final class EditorUI extends javax.swing.JFrame {
                 .map(p -> p.getId())
                 .collect(Collectors.toList());
         mapPanel.flashProvinces(provIds, numFlashes, color);
-    }
-    
-    private void popupTriggered(java.awt.event.MouseEvent evt) {
-//        // lastProv stores last province that mouse was on.
-//        // if it's not null, try to make a menu.
-//        if (lastProv == null)
-//            return;
-//
-//        JPopupMenu popup = new JPopupMenu(lastProv.getName());
-//        JMenuItem nameMenuItem = popup.add("<html><b>"+lastProv.getName()+"</b></html>");
-//        nameMenuItem.setEnabled(false);
-//        popup.addSeparator();
-//        JMenuItem setCountryMenuItem = popup.add("Set country...");
-//        JMenuItem setReligionMenuItem = popup.add("Set religion...");
-////        setCountryMenuItem.addActionListener(new ActionListener() {
-////            public void actionPerformed(ActionEvent e) {
-////                String ctry = JOptionPane.showInputDialog(this, "Enter the new country:");
-////
-////            }
-////        });
-//        popup.setLocation(evt.getXOnScreen(), evt.getYOnScreen());
-//        popup.setVisible(true);
     }
     
     

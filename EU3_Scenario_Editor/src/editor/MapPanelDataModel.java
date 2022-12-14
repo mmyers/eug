@@ -68,7 +68,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     public void setDate(String date) {
         this.date = date;
-        clearHistoryCaches();
+        clearHistoryCache();
     }
     
     public void setDataSource(ClausewitzDataSource source) {
@@ -106,7 +106,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     private final java.util.Map<StringStringTuple, GenericObject> countryHistObjectCache = new HashMap<>();
     private final java.util.Map<StringStringTuple, List<GenericObject>> countryHistObjectsCache = new HashMap<>();
     
-    private void clearHistoryCaches() {
+    public void clearHistoryCache() {
         provOwnerCache.clear();
         provHistStringCache.clear();
         provHistStringsCache.clear();
@@ -122,48 +122,48 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     /** Special method that treats "owner" and "fake_owner" the same in history files. */
     public String getOwner(int provId) {
-        //return provOwnerCache.computeIfAbsent(provId, id -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date));
-        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date);
+        return provOwnerCache.computeIfAbsent(provId, id -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date));
+        //return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), "owner", "fake_owner", date);
     }
     
     public String getHistString(int provId, String name) {
-        //return provHistStringCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(t.i), t.s, date));
-        return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), name, date);
+        return provHistStringCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistString(dataSource.getProvinceHistory(t.i), t.s, date));
+        //return ClausewitzHistory.getHistString(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public List<String> getHistStrings(int provId, String name) {
-        //return provHistStringsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(t.i), t.s, date));
-        return ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(provId), name, date);
+        return provHistStringsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(t.i), t.s, date));
+        //return ClausewitzHistory.getHistStrings(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public GenericObject getHistObject(int provId, String name) {
-        //return provHistObjectCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(t.i), t.s, date));
-        return ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(provId), name, date);
+        return provHistObjectCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(t.i), t.s, date));
+        //return ClausewitzHistory.getHistObject(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public List<GenericObject> getHistObjects(int provId, String name) {
-        //return provHistObjectsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(t.i), t.s, date));
-        return ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(provId), name, date);
+        return provHistObjectsCache.computeIfAbsent(new IntStringTuple(provId, name), t -> ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(t.i), t.s, date));
+        //return ClausewitzHistory.getHistObjects(dataSource.getProvinceHistory(provId), name, date);
     }
     
     public String getHistString(String tag, String name) {
-        //return countryHistStringCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistString(dataSource.getCountryHistory(t.s1), t.s2, date));
-        return ClausewitzHistory.getHistString(dataSource.getCountry(tag), name, date);
+        return countryHistStringCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistString(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistString(dataSource.getCountry(tag), name, date);
     }
     
     public List<String> getHistStrings(String tag, String name) {
-        //return countryHistStringsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(t.s1), t.s2, date));
-        return ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), name, date);
+        return countryHistStringsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistStrings(dataSource.getCountryHistory(tag), name, date);
     }
     
     public GenericObject getHistObject(String tag, String name) {
-        //return countryHistObjectCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObject(dataSource.getCountryHistory(t.s1), t.s2, date));
-        return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
+        return countryHistObjectCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObject(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistObject(dataSource.getCountryHistory(tag), name, date);
     }
     
     public List<GenericObject> getHistObjects(String tag, String name) {
-        //return countryHistObjectsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(t.s1), t.s2, date));
-        return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
+        return countryHistObjectsCache.computeIfAbsent(new StringStringTuple(tag, name), t -> ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(t.s1), t.s2, date));
+        //return ClausewitzHistory.getHistObjects(dataSource.getCountryHistory(tag), name, date);
     }
     
     public boolean isRhsSet(int provId, String lhsSet, String lhsClear, String rhs) {

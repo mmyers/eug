@@ -10,7 +10,9 @@ import eug.shared.FilenameResolver;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.victoria2.Vic2Scenario;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -48,6 +50,8 @@ public class FileEditorDialog extends EditorDialog {
      */
     private final boolean isProvince;
     
+    private List<SaveHandler> saveHandlers = new ArrayList<>();
+    
     
     /**
      * Creates new form FileEditorDialog.
@@ -56,7 +60,7 @@ public class FileEditorDialog extends EditorDialog {
      * @param p         the <code>Province</code> that this dialog will display
      *                  the history file for.
      */
-    private FileEditorDialog(java.awt.Frame parent, ProvinceData.Province p, FilenameResolver resolver, ProvinceData data) {
+    public FileEditorDialog(java.awt.Frame parent, ProvinceData.Province p, FilenameResolver resolver, ProvinceData data) {
         super(parent, p.getName(), resolver, data);
         
         this.isProvince = true;
@@ -75,7 +79,7 @@ public class FileEditorDialog extends EditorDialog {
         register(this); // Register last in case exceptions occur
     }
     
-    private FileEditorDialog(java.awt.Frame parent, String countryTag, String countryName, FilenameResolver resolver, ProvinceData data) {
+    public FileEditorDialog(java.awt.Frame parent, String countryTag, String countryName, FilenameResolver resolver, ProvinceData data) {
         super(parent, countryName, resolver, data);
         
         this.isProvince = false;
@@ -146,15 +150,34 @@ public class FileEditorDialog extends EditorDialog {
         if (isProvince) {
             dataSource.saveProvince(id, name, getText());
             dataSource.reloadProvince(id);
+            notifySaveEvent(id);
         } else {
             if (dataSource instanceof CK2DataSource) {
                 ((CK2DataSource) dataSource).saveTitle(tag, getText());
                 ((CK2DataSource) dataSource).reloadTitle(tag);
+                notifySaveEvent(tag);
             } else {
                 dataSource.saveCountry(tag, name, getText());
                 dataSource.reloadCountry(tag);
+                notifySaveEvent(tag);
             }
         }
+    }
+    
+    private void notifySaveEvent(int provId) {
+        for (SaveHandler handler : saveHandlers) {
+            handler.handleSaveEvent(provId);
+        }
+    }
+    
+    private void notifySaveEvent(String tagOrTitle) {
+        for (SaveHandler handler : saveHandlers) {
+            handler.handleSaveEvent(tagOrTitle);
+        }
+    }
+    
+    public void registerSaveHandler(SaveHandler handler) {
+        saveHandlers.add(handler);
     }
     
     // For some reason, overriding hashCode() consistently generates three
@@ -185,6 +208,14 @@ public class FileEditorDialog extends EditorDialog {
     }
     private static void unRegister(FileEditorDialog d) {
         showing.remove(d.id);
+    }
+    
+    public static boolean isShowingDialog(int id) {
+        return showing.get(id) != null;
+    }
+    
+    public static boolean isShowingDialog(String tagOrTitle) {
+        return showing.get(tagOrTitle.hashCode()) != null;
     }
     
     private static ClausewitzDataSource dataSource = null;
@@ -257,4 +288,8 @@ public class FileEditorDialog extends EditorDialog {
         }
     }
     
+    public static interface SaveHandler {
+        void handleSaveEvent(int provId);
+        void handleSaveEvent(String tagOrTitle);
+    }
 }
