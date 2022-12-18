@@ -56,7 +56,6 @@ public class EditorDialog extends JDialog {
     
     private static Font initFont() {
         String fontName = config.getString("editor.font.name");
-        // String style = config.getString("editor.font.style");
         int fontSize = config.getInt("editor.font.size");
         return new Font(fontName, Font.PLAIN, fontSize);
     }
@@ -64,7 +63,6 @@ public class EditorDialog extends JDialog {
     private static void setStaticFont(Font newFont) {
         font = newFont;
         config.setString("editor.font.name", newFont.getFamily(), true);
-//        config.setString("editor.font.style", font.getStyle())
         config.setInt("editor.font.size", newFont.getSize());
     }
     
@@ -252,7 +250,7 @@ public class EditorDialog extends JDialog {
         setBackupFilesCheckBoxMenuItem.addActionListener(formListener);
         fileMenu.add(setBackupFilesCheckBoxMenuItem);
 
-        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeMenuItem.setText("Close");
         closeMenuItem.addActionListener(formListener);
         fileMenu.add(closeMenuItem);
@@ -262,14 +260,14 @@ public class EditorDialog extends JDialog {
         editMenu.setMnemonic('E');
         editMenu.setText("Edit");
 
-        undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         undoMenuItem.setMnemonic('U');
         undoMenuItem.setText("Undo");
         undoMenuItem.setEnabled(false);
         undoMenuItem.addActionListener(formListener);
         editMenu.add(undoMenuItem);
 
-        redoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        redoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         redoMenuItem.setMnemonic('R');
         redoMenuItem.setText("Redo");
         redoMenuItem.setEnabled(false);
@@ -277,21 +275,21 @@ public class EditorDialog extends JDialog {
         editMenu.add(redoMenuItem);
         editMenu.add(jSeparator1);
 
-        cutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        cutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         cutMenuItem.setMnemonic('t');
         cutMenuItem.setText("Cut");
         cutMenuItem.setEnabled(false);
         cutMenuItem.addActionListener(formListener);
         editMenu.add(cutMenuItem);
 
-        copyMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
+        copyMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         copyMenuItem.setMnemonic('C');
         copyMenuItem.setText("Copy");
         copyMenuItem.setEnabled(false);
         copyMenuItem.addActionListener(formListener);
         editMenu.add(copyMenuItem);
 
-        pasteMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
+        pasteMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         pasteMenuItem.setMnemonic('P');
         pasteMenuItem.setText("Paste");
         pasteMenuItem.setEnabled(Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor));
@@ -299,19 +297,19 @@ public class EditorDialog extends JDialog {
         editMenu.add(pasteMenuItem);
         editMenu.add(jSeparator2);
 
-        findMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        findMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         findMenuItem.setMnemonic('F');
         findMenuItem.setText("Find...");
         findMenuItem.addActionListener(formListener);
         editMenu.add(findMenuItem);
 
-        replaceMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        replaceMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         replaceMenuItem.setMnemonic('R');
         replaceMenuItem.setText("Replace...");
         replaceMenuItem.setEnabled(false);
         editMenu.add(replaceMenuItem);
 
-        goToMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        goToMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         goToMenuItem.setMnemonic('G');
         goToMenuItem.setText("Go to...");
         goToMenuItem.addActionListener(formListener);
@@ -356,6 +354,9 @@ public class EditorDialog extends JDialog {
             if (evt.getSource() == closeButton) {
                 EditorDialog.this.closeButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == setBackupFilesCheckBoxMenuItem) {
+                EditorDialog.this.setBackupFilesCheckBoxMenuItemActionPerformed(evt);
+            }
             else if (evt.getSource() == closeMenuItem) {
                 EditorDialog.this.closeMenuItemActionPerformed(evt);
             }
@@ -391,9 +392,6 @@ public class EditorDialog extends JDialog {
             }
             else if (evt.getSource() == setFontMenuItem) {
                 EditorDialog.this.setFontMenuItemActionPerformed(evt);
-            }
-            else if (evt.getSource() == setBackupFilesCheckBoxMenuItem) {
-                EditorDialog.this.setBackupFilesCheckBoxMenuItemActionPerformed(evt);
             }
         }
 
