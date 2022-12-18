@@ -8,6 +8,7 @@
 Bugfixes:
 - Fixed caching behavior. The map now updates correctly when a text editor
   is saved and closed.
+- Mod files without a path = "" entry are now correctly supported again.
 
 
 === 0.9.10 ===
