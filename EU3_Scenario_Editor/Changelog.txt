@@ -3,6 +3,13 @@
 \=================/
 
 
+=== 0.9.11 ===
+
+Bugfixes:
+- Fixed caching behavior. The map now updates correctly when a text editor
+  is saved and closed.
+
+
 === 0.9.10 ===
 
 New features:
