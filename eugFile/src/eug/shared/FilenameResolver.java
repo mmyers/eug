@@ -157,6 +157,8 @@ public final class FilenameResolver {
 
             if (file.exists())
                 setModFileName(modDirName + ".mod");
+        } else {
+            modDirName = mainDirName + modPrefix + modDirName;
         }
         
         if (!(modDirName.endsWith("/") || modDirName.endsWith("\\"))) {
@@ -257,7 +259,7 @@ public final class FilenameResolver {
                 if (files != null) {
                     for (File file : files) {
                         String filename = file.getName().toLowerCase();
-                        if (ignoreFileTypes.stream().anyMatch(ext -> filename.endsWith(ext)))
+                        if (ignoreFileTypes.stream().anyMatch(filename::endsWith))
                             continue;
                         ret.put(filename, file);
                     }
@@ -268,7 +270,7 @@ public final class FilenameResolver {
                     // only add files which don't use the same name
                     for (File f : moddedDir.listFiles()) {
                         String filename = f.getName().toLowerCase();
-                        if (ignoreFileTypes.stream().anyMatch(ext -> filename.endsWith(ext)))
+                        if (ignoreFileTypes.stream().anyMatch(filename::endsWith))
                             continue;
                         ret.put(filename, f); // overwrites
                     }
