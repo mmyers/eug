@@ -94,6 +94,9 @@ public class Main {
     
     private void showDialog() {
         final JComboBox<Mod> modBox = new JComboBox<>(); // referenced in several places
+        
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        final JComboBox<GameVersion> gameBox = new JComboBox<>(new Vector<>(GameVersion.getGameVersions()));
 
         final JDialog dialog = new JDialog((java.awt.Frame)null, "Choose game", true);
         dialog.setLayout(new BorderLayout());
@@ -102,7 +105,7 @@ public class Main {
         filePanel.setLayout(new GridLayout(0, 1));
 
         JPanel gameDirPanel = new JPanel();
-        gameDirPanel.setBorder(BorderFactory.createTitledBorder("Game folder"));
+        gameDirPanel.setBorder(BorderFactory.createTitledBorder("Game folder (NOT mod folder)"));
         final JTextField gameDirField = new JTextField();
         gameDirField.setPreferredSize(new Dimension(400, 24));
         JButton browseButton = new JButton("Browse...");
@@ -132,6 +135,11 @@ public class Main {
                     
                     @SuppressWarnings("UseOfObsoleteCollectionType")
                     Vector<Mod> mods = listMods(new File(modPath), true);
+                    GameVersion version = (GameVersion)gameBox.getSelectedItem();
+                    if (version != null && version.getModPath() != null) {
+                        File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
+                        mods.addAll(listMods(new File(documents.getAbsolutePath() + File.separator + version.getModPath() + File.separator + "mod"), false));
+                    }
                     modBox.setModel(new DefaultComboBoxModel<>(mods));
                 }
             }
@@ -192,9 +200,6 @@ public class Main {
         JPanel topPanel = new JPanel(new BorderLayout());
         JPanel gameTypePanel = new JPanel();
         
-        @SuppressWarnings("UseOfObsoleteCollectionType")
-        final JComboBox<GameVersion> gameBox = new JComboBox<>(new Vector<>(GameVersion.getGameVersions()));
-        
         gameBox.addItemListener((ItemEvent e) -> {
             if (e.getStateChange() == ItemEvent.DESELECTED)
                 return;
@@ -203,9 +208,9 @@ public class Main {
             gameDirField.setText("");
             saveGameField.setText("");
             
-            if (config.getChild("paths") != null) {
+            if (config.getChild(PATHS_KEY) != null) {
                 GameVersion version = (GameVersion) e.getItem();
-                GenericObject saved = config.getChild("paths").getChild(version.getName());
+                GenericObject saved = config.getChild(PATHS_KEY).getChild(version.getName());
                 if (saved != null && saved.size() > 0) {
                     String mainDir = saved.getString("main");
                     gameDirField.setText(mainDir);
@@ -215,20 +220,20 @@ public class Main {
                         Vector<Mod> mods = listMods(new File(modPath), true);
                         if (version.getModPath() != null) {
                             File documents = new javax.swing.JFileChooser().getFileSystemView().getDefaultDirectory();
-                            mods.addAll(listMods(new File(documents.getAbsolutePath() + "/" + version.getModPath() + "/mod"), false));
+                            mods.addAll(listMods(new File(documents.getAbsolutePath() + File.separator + version.getModPath() + File.separator + "mod"), false));
                         }
                         modBox.setModel(new DefaultComboBoxModel<>(mods));
                         
-                        if (!saved.getString("lastmod").isEmpty()) {
+                        if (!saved.getString(LAST_MOD_KEY).isEmpty()) {
                             for (Mod mod : mods) {
-                                if (mod.getName().equals(saved.getString("lastmod"))) {
+                                if (mod.getName().equals(saved.getString(LAST_MOD_KEY))) {
                                     modBox.setSelectedItem(mod);
                                     break;
                                 }
                             }
                         }
                         
-                        saveGameField.setText(saved.getString("recent"));
+                        saveGameField.setText(saved.getString(RECENT_KEY));
                     }
                 }
             }
@@ -245,9 +250,9 @@ public class Main {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 saveGameField.setText("");
-                if (config.getChild("recent") != null) {
+                if (config.getChild(RECENT_KEY) != null) {
                     GameVersion version = (GameVersion) e.getItem();
-                    GenericList recent = config.getChild("recent").getList(version.getName());
+                    GenericList recent = config.getChild(RECENT_KEY).getList(version.getName());
                     if (recent != null && recent.size() > 0)
                         gameDirField.setText(recent.get(0));
                 }
@@ -282,20 +287,20 @@ public class Main {
                 GameVersion version = (GameVersion) gameBox.getSelectedItem();
                 config.setString("game", version.getName());
 
-                GenericObject paths = config.getChild("paths");
+                GenericObject paths = config.getChild(PATHS_KEY);
                 if (paths == null)
-                    paths = config.createChild("paths");
+                    paths = config.createChild(PATHS_KEY);
                 GenericObject game = paths.getChild(version.getName());
                 if (game == null)
                     game = paths.createChild(version.getName());
 
                 game.setString("main", gameDirField.getText(), true);
                 if (saveFile != null)
-                    game.setString("recent", saveFile, true);
+                    game.setString(RECENT_KEY, saveFile, true);
                 else
-                    game.setString("recent", "", true);
+                    game.setString(RECENT_KEY, "", true);
                 Mod mod = (Mod) modBox.getSelectedItem();
-                game.setString("lastmod", mod.getName().equals("None") ? "" : mod.getName(), true);
+                game.setString(LAST_MOD_KEY, mod.getName().equals("None") ? "" : mod.getName(), true);
 
                 EUGFileIO.save(config, "config.txt", null, true, Style.AGCEEP);
 
@@ -351,6 +356,9 @@ public class Main {
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
     }
+    private static final String RECENT_KEY = "recent";
+    private static final String LAST_MOD_KEY = "lastmod";
+    private static final String PATHS_KEY = "paths";
 
     private void startEditor(String saveFile, GameVersion version, FilenameResolver resolver, boolean checkUpdates) {
         try {
