@@ -52,7 +52,7 @@ public class Vic2Scenario extends ClausewitzScenario implements Vic2DataSource {
         }
 
         final File file = new File(filename);
-        if (file.exists()) {
+        if (saveBackups && file.exists()) {
             final String backupFilename = getBackupFilename(filename);
             if (!file.renameTo(new File(backupFilename)))
                 System.err.println("Backup of " + file.getName() + " failed");
