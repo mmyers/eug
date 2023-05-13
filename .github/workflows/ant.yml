@@ -51,22 +51,22 @@ jobs:
       
     # Artifact upload
     - name: Upload EugFile artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: EugFile
         path: eugFile/dist/eugFile.jar
     - name: Upload EugFile_specific artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: EugFile_specific
         path: EugFile_specific/dist/EugFile_specific.jar
     - name: Upload EugSyntax artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: EugSyntax
         path: EugSyntax/dist/EugSyntax.jar
     - name: Upload scenario editor snapshot artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Scenario_Editor
         path: EU3_Scenario_Editor/Scenario_Editor.zip
