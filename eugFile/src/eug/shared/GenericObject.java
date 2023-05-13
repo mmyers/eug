@@ -63,6 +63,8 @@ public final class GenericObject implements WritableObject, Cloneable {
     private List<Comment> generalComments;  // comments that are not attached to a node
     public String name;
     
+    private static final String GLOBAL_ROOT_NAME = "__global_root__";
+    
     /**
      * List of every child of this object so that the order is preserved.
      */
@@ -77,7 +79,7 @@ public final class GenericObject implements WritableObject, Cloneable {
      * non-root objects.
      */
     public GenericObject() {
-        this(null, "root");
+        this(null, GLOBAL_ROOT_NAME);
     }
     
     private GenericObject(GenericObject par, String t) {
@@ -836,7 +838,7 @@ public final class GenericObject implements WritableObject, Cloneable {
     @Override
     public void toFileString(final BufferedWriter bw, int depth, Style style) throws IOException {
         
-        if (name.equals("root")) {
+        if (name.equals(GLOBAL_ROOT_NAME)) {
             toFileString(bw, style);
             return;
         }
