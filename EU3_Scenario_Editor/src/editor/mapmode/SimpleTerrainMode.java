@@ -25,7 +25,10 @@ public class SimpleTerrainMode extends ProvincePaintingMode {
         provTerrains = new HashMap<>();
         for (editor.Map.Terrain terr : terrains.values()) {
             for (String strId : terr.getOverrides()) {
-                provTerrains.put(Integer.parseInt(strId), terr.getName());
+                int id = Integer.parseInt(strId);
+                if (provTerrains.get(id) != null)
+                    log.log(java.util.logging.Level.WARNING, "Province {0} is defined in multiple terrain_override lists", strId);
+                provTerrains.put(id, terr.getName());
             }
         }
     }
