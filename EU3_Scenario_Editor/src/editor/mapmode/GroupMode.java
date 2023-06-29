@@ -9,9 +9,7 @@ package editor.mapmode;
 import editor.MapPanel;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  *
@@ -20,20 +18,18 @@ import java.util.logging.Level;
  */
 public class GroupMode extends ProvincePaintingMode {
     
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(GroupMode.class.getName());
-    
     protected List<Integer> provIds;
     
     protected Color foundColor = Color.GREEN;
     protected Color notFoundColor = new Color(100, 100, 100); // darker than GRAY, lighter than DARK_GRAY
     
-    public GroupMode(List<String> provIds) {
-        this.provIds = makeIntList(provIds);
+    public GroupMode(List<Integer> provIds) {
+        this.provIds = provIds;
     }
     
-    public GroupMode(MapPanel panel, List<String> provIds) {
+    public GroupMode(MapPanel panel, List<Integer> provIds) {
         super(panel);
-        this.provIds = makeIntList(provIds);
+        this.provIds = provIds;
     }
 
     protected GroupMode() {
@@ -58,20 +54,4 @@ public class GroupMode extends ProvincePaintingMode {
             mapPanel.paintProvince(g, id, foundColor);
         }
     }
-    
-    protected final List<Integer> makeIntList(List<String> provIds) {
-        final List<Integer> ret = new ArrayList<>(provIds.size());
-        for (String id : provIds) {
-            if (id.equals("peace") || id.equals("ai_prio"))
-                continue;
-            
-            try {
-                ret.add(Integer.parseInt(id));
-            } catch (NumberFormatException ex) {
-                log.log(Level.WARNING, "Expected province ID but found {0}; list was {1}", new Object[]{id, provIds});
-            }
-        }
-        return ret;
-    }
-    
 }

@@ -13,7 +13,7 @@ public class ProvinceGroupMode extends GroupMode {
     
     public ProvinceGroupMode(MapPanel panel, String group) {
         super(panel);
-        provIds = makeIntList(getMap().getProvinceGroup(group));
+        provIds = getMap().getProvinceGroup(group);
     }
     
     @Override

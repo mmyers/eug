@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -39,25 +40,25 @@ public final class Map {
     private int maxProvinces;
     
     private GenericObject continents;
-    private java.util.Map<String, List<String>> contList = null;
+    private java.util.Map<String, List<Integer>> contList = null;
     
     private GenericObject climates;
-    private java.util.Map<String, List<String>> climateList = null;
+    private java.util.Map<String, List<Integer>> climateList = null;
     
     private GenericObject natives;
-    private java.util.Map<String, List<String>> nativeList = null;
+    private java.util.Map<String, List<Integer>> nativeList = null;
     
     private GenericObject areas;
-    private java.util.Map<String, List<String>> areaList = null;
+    private java.util.Map<String, List<Integer>> areaList = null;
     
     private GenericObject regions;
-    private java.util.Map<String, List<String>> regionList = null;
+    private java.util.Map<String, List<Integer>> regionList = null;
     
     private GenericObject superRegions;
-    private java.util.Map<String, List<String>> superRegionList = null;
+    private java.util.Map<String, List<Integer>> superRegionList = null;
     
     private GenericObject provinceGroups;
-    private java.util.Map<String, List<String>> provinceGroupList = null;
+    private java.util.Map<String, List<Integer>> provinceGroupList = null;
     
     private GenericObject terrains;
     private java.util.Map<String, Color> terrainColorsList = null;
@@ -248,30 +249,57 @@ public final class Map {
         }
     }
     
-    public java.util.Map<String, List<String>> getContinents() {
+    /**
+     * Converts a list of Strings to a list of Integers. If an element of the
+     * list cannot be converted to integer, this method will print a warning
+     * and skip it.
+     * @param stringList the list to convert
+     * @param name the name of the list, for debug error messages
+     * @return the list of integers, not including any invalid strings
+     */
+    private static List<Integer> convertToIntList(List<String> stringList, String name) {
+        // Performance is not critical in this method, since it is only called a few times on startup and never again
+        List<Integer> ret = new ArrayList<>(stringList.size());
+        for (int i = 0; i < stringList.size(); i++) {
+            String next = stringList.get(i);
+            try {
+                int test = Integer.parseInt(next);
+                ret.add(test);
+            } catch (NumberFormatException ex) {
+                log.log(Level.WARNING, "Expected {0} list to have only province ID numbers, but found {1}", new Object[] { name, next });
+            }
+        }
+        return ret;
+    }
+    
+    public java.util.Map<String, List<Integer>> getContinents() {
         if (contList == null) {
             contList = new HashMap<>(continents.size());
             if (!continents.lists.isEmpty()) {
                 for (GenericList cont : continents.lists) {
-                    contList.put(cont.getName(), cont.getList());
+                    contList.put(cont.getName(), convertToIntList(cont.getList(), "continent"));
                 }
             } else {
                 // should have continent = { provinces = { 1 2 3 } }
                 for (GenericObject cont : continents.children) {
                     if (cont.containsList("provinces"))
-                        contList.put(cont.name, cont.getList("provinces").getList());
+                        contList.put(cont.name, convertToIntList(cont.getList("provinces").getList(), "continent"));
                 }
             }
         }
         return contList;
     }
     
-    public List<String> getContinent(String name) {
+    public List<Integer> getContinent(String name) {
         return getContinents().get(name);
     }
     
     public String getContinentOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : getContinents().entrySet()) {
+        return getContinentOfProv(Integer.parseInt(provId));
+    }
+    
+    public String getContinentOfProv(int provId) {
+        for (java.util.Map.Entry<String, List<Integer>> entry : getContinents().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
@@ -279,11 +307,7 @@ public final class Map {
         return "(none)";
     }
     
-    public String getContinentOfProv(int provId) {
-        return getContinentOfProv(Integer.toString(provId));
-    }
-    
-    public java.util.Map<String, List<String>> getClimates() {
+    public java.util.Map<String, List<Integer>> getClimates() {
         if (climateList == null) {
             if (climates == null) {
                 climateList = new HashMap<>();
@@ -291,20 +315,19 @@ public final class Map {
             }
             
             climateList = new HashMap<>(climates.size()+1);
-            final List<String> usedIds = new ArrayList<>(1000);
+            final List<Integer> usedIds = new ArrayList<>(1000);
             for (GenericList climate : climates.lists) {
-                final List<String> ids = climate.getList();
+                final List<Integer> ids = convertToIntList(climate.getList(), "climate");
                 usedIds.addAll(ids);
                 climateList.put(climate.getName(), ids);
             }
             Collections.sort(usedIds);
             
-            final List<String> unusedIds = new ArrayList<>();
+            final List<Integer> unusedIds = new ArrayList<>();
             for (int i : getLandProvs()) {
-                final String sid = Integer.toString(i);
-                final int idx = Collections.binarySearch(usedIds, sid);
+                final int idx = Collections.binarySearch(usedIds, i);
                 if (idx < 0) {
-                    unusedIds.add(sid);
+                    unusedIds.add(i);
                 }
             }
             climateList.put("normal", unusedIds);
@@ -312,12 +335,16 @@ public final class Map {
         return climateList;
     }
     
-    public List<String> getClimate(String name) {
+    public List<Integer> getClimate(String name) {
         return getClimates().get(name);
     }
     
     public String getClimateOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : getClimates().entrySet()) {
+        return getClimateOfProv(Integer.parseInt(provId));
+    }
+    
+    public String getClimateOfProv(int provId) {
+        for (java.util.Map.Entry<String, List<Integer>> entry : getClimates().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
@@ -325,21 +352,17 @@ public final class Map {
         return "(none)";
     }
     
-    public String getClimateOfProv(int provId) {
-        return getClimateOfProv(Integer.toString(provId));
-    }
-    
     public boolean isWasteland(int provId) {
-        List<String> wasteland = getClimates().get("impassable");
-        return wasteland != null && wasteland.contains(Integer.toString(provId));
+        List<Integer> wasteland = getClimates().get("impassable");
+        return wasteland != null && wasteland.contains(provId);
     }
     
-    public java.util.Map<String, List<String>> getAreas() {
+    public java.util.Map<String, List<Integer>> getAreas() {
         if (areaList == null) {
             areaList = new HashMap<>(areas.size());
             
             areas.lists.stream()
-                    .forEach((area) -> areaList.put(area.getName(), area.getList()));
+                    .forEach((area) -> areaList.put(area.getName(), convertToIntList(area.getList(), "area")));
 
             // empty lists are parsed as objects, so convert them
             areas.children.stream()
@@ -349,7 +372,7 @@ public final class Map {
         return areaList;
     }
     
-    public java.util.Map<String, List<String>> getRegions() {
+    public java.util.Map<String, List<Integer>> getRegions() {
         if (regionList == null) {
             regionList = new HashMap<>(regions.size());
             
@@ -361,16 +384,16 @@ public final class Map {
             // france = { areas = { brittany_area normandy_area provence_area } }
             // either way, it's easier to deal with later if we just flatten it all out now
             if (!regions.lists.isEmpty()) {
-                for (GenericList cont : regions.lists) {
+                for (GenericList reg : regions.lists) {
                     if (areas != null) {
                         // areas.txt exists, so assume regions are lists of areas (EU4 1.14)
-                        List<String> aggregate = cont.getList().stream()
+                        List<Integer> aggregate = reg.getList().stream()
                                 .flatMap(area -> getArea(area).stream()) // list all provinces in each area of the region
                                 .collect(Collectors.toList());
-                        regionList.put(cont.getName(), aggregate);
+                        regionList.put(reg.getName(), aggregate);
                     } else {
                         // france = { 0 1 2 }
-                        regionList.put(cont.getName(), cont.getList());
+                        regionList.put(reg.getName(), convertToIntList(reg.getList(), "region"));
                     }
                 }
             } else {
@@ -378,12 +401,12 @@ public final class Map {
                 // or france = { areas = { brittany_area normandy_area provence_area } }
                 for (GenericObject reg : regions.children) {
                     if (reg.containsList("areas")) {
-                        List<String> aggregate = reg.getList("areas").getList().stream()
+                        List<Integer> aggregate = reg.getList("areas").getList().stream()
                                 .flatMap(area -> getArea(area).stream()) // list all provinces in each area of the region
                                 .collect(Collectors.toList());
                         regionList.put(reg.name, aggregate);
                     } else if (reg.containsList("provinces")) {
-                        regionList.put(reg.name, reg.getList("provinces").getList());
+                        regionList.put(reg.name, convertToIntList(reg.getList("provinces").getList(), "region"));
                     }
                 }
             }
@@ -391,13 +414,13 @@ public final class Map {
         return regionList;
     }
     
-    public java.util.Map<String, List<String>> getSuperRegions() {
+    public java.util.Map<String, List<Integer>> getSuperRegions() {
         if (superRegionList == null) {
             superRegionList = new HashMap<>(superRegions.size());
             if (!superRegions.lists.isEmpty()) {
                 for (GenericList sr : superRegions.lists) {
                     // at this point, if superregions.txt exists, just assume areas.txt also exists
-                    List<String> aggregate = sr.getList().stream()
+                    List<Integer> aggregate = sr.getList().stream()
                             .filter(region -> !region.equals("restrict_charter")) // EU4 puts this special string in some superregions, but it's not a region
                             .flatMap(region -> getRegion(region).stream()) // list all provinces in each area of each region of the superregion
                             .collect(Collectors.toList());
@@ -408,21 +431,21 @@ public final class Map {
         return superRegionList;
     }
     
-    public java.util.Map<String, List<String>> getProvinceGroups() {
+    public java.util.Map<String, List<Integer>> getProvinceGroups() {
         // exactly like areas.txt
         if (provinceGroupList == null) {
             provinceGroupList = new HashMap<>(provinceGroups.size());
             if (!provinceGroups.lists.isEmpty()) {
                 for (GenericList group : provinceGroups.lists) {
-                    provinceGroupList.put(group.getName(), group.getList());
+                    provinceGroupList.put(group.getName(), convertToIntList(group.getList(), "province group"));
                 }
             }
         }
         return provinceGroupList;
     }
     
-    public List<String> getArea(String name) {
-        List<String> ret = getAreas().get(name);
+    public List<Integer> getArea(String name) {
+        List<Integer> ret = getAreas().get(name);
         if (ret == null) {
             log.log(Level.WARNING, "Area {0} is not defined in the map files", name);
             ret = new ArrayList<>();
@@ -431,8 +454,8 @@ public final class Map {
         return ret;
     }
     
-    public List<String> getRegion(String name) {
-        List<String> ret = getRegions().get(name);
+    public List<Integer> getRegion(String name) {
+        List<Integer> ret = getRegions().get(name);
         if (ret == null) {
             log.log(Level.WARNING, "Region {0} is not defined in the map files", name);
             ret = new ArrayList<>();
@@ -441,8 +464,8 @@ public final class Map {
         return ret;
     }
     
-    public List<String> getSuperRegion(String name) {
-        List<String> ret = getSuperRegions().get(name);
+    public List<Integer> getSuperRegion(String name) {
+        List<Integer> ret = getSuperRegions().get(name);
         if (ret == null) {
             log.log(Level.WARNING, "Super region {0} is not defined in the map files", name);
             ret = new ArrayList<>();
@@ -451,8 +474,8 @@ public final class Map {
         return ret;
     }
     
-    public List<String> getProvinceGroup(String name) {
-        List<String> ret = getProvinceGroups().get(name);
+    public List<Integer> getProvinceGroup(String name) {
+        List<Integer> ret = getProvinceGroups().get(name);
         if (ret == null) {
             log.log(Level.WARNING, "Province group {0} is not defined in the map files", name);
             ret = new ArrayList<>();
@@ -462,41 +485,29 @@ public final class Map {
     }
     
     public List<String> getAreasOfProv(String provId) {
-        List<String> ret = getAreas().entrySet().stream()
-                .filter(entry -> entry.getValue().contains(provId))
-                .map(entry -> entry.getKey())
-                .collect(Collectors.toList());
-        
-        if (ret.isEmpty())
-            ret.add("(none)");
-        
-        return ret;
+        return getAreasOfProv(Integer.parseInt(provId));
     }
     
     public List<String> getAreasOfProv(int provId) {
-        return getAreasOfProv(Integer.toString(provId));
+        List<String> ret = getAreas().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(provId))
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
     }
     
     public List<String> getRegionsOfProv(String provId) {
-        List<String> ret = getRegions().entrySet().stream()
-                .filter((entry) -> (entry.getValue().contains(provId)))
-                .map(entry -> entry.getKey())
-                .collect(Collectors.toList());
-        
-        if (ret.isEmpty())
-            ret.add("(none)");
-        
-        return ret;
+        return getRegionsOfProv(Integer.parseInt(provId));
     }
     
     public List<String> getRegionsOfProv(int provId) {
-        return getRegionsOfProv(Integer.toString(provId));
-    }
-    
-    public List<String> getSuperRegionsOfProv(String provId) {
-        List<String> ret = getSuperRegions().entrySet().stream()
-                .filter(entry -> entry.getValue().contains(provId))
-                .map(entry -> entry.getKey())
+        List<String> ret = getRegions().entrySet().stream()
+                .filter((entry) -> (entry.getValue().contains(provId)))
+                .map(Entry::getKey)
                 .collect(Collectors.toList());
         
         if (ret.isEmpty())
@@ -505,26 +516,38 @@ public final class Map {
         return ret;
     }
     
+    public List<String> getSuperRegionsOfProv(String provId) {
+        return getSuperRegionsOfProv(Integer.parseInt(provId));
+    }
+    
     public List<String> getSuperRegionsOfProv(int provId) {
-        return getSuperRegionsOfProv(Integer.toString(provId));
+        List<String> ret = getSuperRegions().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(provId))
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
     }
     
     /** Returns all province groups (from provincegroup.txt) that this province is in. */
     public List<String> getGroupsOfProv(String provId) {
+        return getGroupsOfProv(Integer.parseInt(provId));
+    }
+    
+    /** Returns all province groups (from provincegroup.txt) that this province is in. */
+    public List<String> getGroupsOfProv(int provId) {
         List<String> ret = getProvinceGroups().entrySet().stream()
                 .filter(entry -> entry.getValue().contains(provId))
-                .map(entry -> entry.getKey())
+                .map(Entry::getKey)
                 .collect(Collectors.toList());
         
         if (ret.isEmpty())
             ret.add("(none)");
         
         return ret;
-    }
-    
-    /** Returns all province groups (from provincegroup.txt) that this province is in. */
-    public List<String> getGroupsOfProv(int provId) {
-        return getGroupsOfProv(Integer.toString(provId));
     }
 
     public void setNatives(GenericObject natives) {
@@ -532,23 +555,22 @@ public final class Map {
         this.nativeList = null;
     }
     
-    public java.util.Map<String, List<String>> getNatives() {
+    public java.util.Map<String, List<Integer>> getNatives() {
         if (nativeList == null) {
             nativeList = new HashMap<>(natives.size()+1);
-            final List<String> usedIds = new ArrayList<>(1000);
+            final List<Integer> usedIds = new ArrayList<>(1000);
             for (GenericObject nativeGroup : natives.children) {
-                final List<String> ids = nativeGroup.getList("provinces").getList();
+                final List<Integer> ids = convertToIntList(nativeGroup.getList("provinces").getList(), "natives");
                 usedIds.addAll(ids);
                 nativeList.put(nativeGroup.name, ids);
             }
             Collections.sort(usedIds);
             
-            final List<String> unusedIds = new ArrayList<>();
+            final List<Integer> unusedIds = new ArrayList<>();
             for (int i : getLandProvs()) {
-                final String sid = Integer.toString(i);
-                final int idx = Collections.binarySearch(usedIds, sid);
+                final int idx = Collections.binarySearch(usedIds, i);
                 if (idx < 0) {
-                    unusedIds.add(sid);
+                    unusedIds.add(i);
                 }
             }
             nativeList.put("normal", unusedIds);
@@ -556,21 +578,21 @@ public final class Map {
         return nativeList;
     }
     
-    public List<String> getNatives(String name) {
+    public List<Integer> getNatives(String name) {
         return getNatives().get(name);
     }
     
     public String getNativeTypeOfProv(String provId) {
-        for (java.util.Map.Entry<String, List<String>> entry : getNatives().entrySet()) {
+        return getNativeTypeOfProv(Integer.parseInt(provId));
+    }
+    
+    public String getNativeTypeOfProv(int provId) {
+        for (java.util.Map.Entry<String, List<Integer>> entry : getNatives().entrySet()) {
             if (entry.getValue().contains(provId)) {
                 return entry.getKey();
             }
         }
         return "(none)";
-    }
-    
-    public String getNativeTypeOfProv(int provId) {
-        return getNativeTypeOfProv(Integer.toString(provId));
     }
     
     public java.util.Map<String, Color> getTerrainColors() {

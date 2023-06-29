@@ -12,7 +12,7 @@ public class SingleAreaMode extends GroupMode {
     
     public SingleAreaMode(MapPanel panel, String area) {
         super(panel);
-        provIds = makeIntList(getMap().getArea(area));
+        provIds = getMap().getArea(area);
     }
     
     @Override

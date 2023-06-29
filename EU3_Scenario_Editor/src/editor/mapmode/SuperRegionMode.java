@@ -12,7 +12,7 @@ public class SuperRegionMode extends GroupMode {
     
     public SuperRegionMode(MapPanel panel, String superRegion) {
         super(panel);
-        provIds = makeIntList(getMap().getSuperRegion(superRegion));
+        provIds = getMap().getSuperRegion(superRegion);
     }
     
     @Override

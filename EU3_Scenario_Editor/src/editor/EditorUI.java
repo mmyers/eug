@@ -1806,7 +1806,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addAreaFilters(JMenu rootMenu) {
-        java.util.Map<String, List<String>> areas = map.getAreas();
+        java.util.Map<String, List<Integer>> areas = map.getAreas();
         List<String> areaNames = new ArrayList<>(areas.keySet());
         Collections.sort(areaNames, new StringComparator());
         
@@ -1821,7 +1821,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addRegionFilters(JMenu rootMenu) {
-        java.util.Map<String, List<String>> regions = map.getRegions();
+        java.util.Map<String, List<Integer>> regions = map.getRegions();
         List<String> regionNames = new ArrayList<>(regions.keySet());
         Collections.sort(regionNames, new StringComparator());
         
@@ -1835,7 +1835,7 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     private void addSuperRegionFilters(JMenu rootMenu) {
-        java.util.Map<String, List<String>> superRegions = map.getSuperRegions();
+        java.util.Map<String, List<Integer>> superRegions = map.getSuperRegions();
         List<String> superRegionNames = new ArrayList<>(superRegions.keySet());
         Collections.sort(superRegionNames, new StringComparator());
         
@@ -1850,7 +1850,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void addProvinceGroupFilters(JMenu rootMenu) {
-        java.util.Map<String, List<String>> groups = map.getProvinceGroups();
+        java.util.Map<String, List<Integer>> groups = map.getProvinceGroups();
         List<String> groupNames = new ArrayList<>(groups.keySet());
         Collections.sort(groupNames, new StringComparator());
         

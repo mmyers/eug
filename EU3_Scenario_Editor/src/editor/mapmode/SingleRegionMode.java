@@ -19,19 +19,19 @@ public class SingleRegionMode extends GroupMode {
     
     /** Creates a new instance of RegionsMode */
     public SingleRegionMode(String region) {
-        provIds = makeIntList(getMap().getRegion(region));
+        provIds = getMap().getRegion(region);
     }
     
-    public SingleRegionMode(List<String> continent) {
+    public SingleRegionMode(List<Integer> continent) {
         super(continent);
     }
     
     public SingleRegionMode(MapPanel panel, String region) {
         super(panel);
-        provIds = makeIntList(getMap().getRegion(region));
+        provIds = getMap().getRegion(region);
     }
     
-    public SingleRegionMode(MapPanel panel, List<String> region) {
+    public SingleRegionMode(MapPanel panel, List<Integer> region) {
         super(panel, region);
     }
     

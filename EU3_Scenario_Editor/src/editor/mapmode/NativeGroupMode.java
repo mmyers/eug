@@ -18,19 +18,19 @@ import java.util.List;
 public class NativeGroupMode extends GroupMode {
     
     public NativeGroupMode(String nativeGroup) {
-        provIds = makeIntList(getMap().getNatives(nativeGroup));
+        provIds = getMap().getNatives(nativeGroup);
     }
     
-    public NativeGroupMode(List<String> nativeGroup) {
+    public NativeGroupMode(List<Integer> nativeGroup) {
         super(nativeGroup);
     }
     
     public NativeGroupMode(MapPanel panel, String nativeGroup) {
         super(panel);
-        provIds = makeIntList(getMap().getNatives(nativeGroup));
+        provIds = getMap().getNatives(nativeGroup);
     }
     
-    public NativeGroupMode(MapPanel panel, List<String> nativeGroup) {
+    public NativeGroupMode(MapPanel panel, List<Integer> nativeGroup) {
         super(panel, nativeGroup);
     }
     

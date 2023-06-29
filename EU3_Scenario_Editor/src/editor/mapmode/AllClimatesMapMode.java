@@ -59,11 +59,11 @@ public class AllClimatesMapMode extends ProvincePaintingMode {
         initProvinceColors();
     }
     
-    private static void prepareGeography(java.util.Map<String, List<String>> climates) {
+    private static void prepareGeography(java.util.Map<String, List<Integer>> climates) {
         List<Color> colors = Utilities.getGeographyColors();
         
         int colorIdx = Math.min(15, colors.size()-1);
-        for (java.util.Map.Entry<String, List<String>> climate : climates.entrySet()) {
+        for (java.util.Map.Entry<String, List<Integer>> climate : climates.entrySet()) {
             String climateTag = climate.getKey();
             
             java.util.Map<Integer, String> climateMap = provinceClimates;
@@ -73,9 +73,8 @@ public class AllClimatesMapMode extends ProvincePaintingMode {
                 climateMap = provinceMonsoons;
             }
             
-            List<String> areaProvIds = climate.getValue();
-            for (String provIdStr : areaProvIds) {
-                Integer provId = Integer.valueOf(provIdStr);
+            List<Integer> areaProvIds = climate.getValue();
+            for (Integer provId : areaProvIds) {
                 climateMap.put(provId, climateTag);
             }
             climateColors.put(climateTag, colors.get(colorIdx++));

@@ -41,7 +41,7 @@ public class AllAreasMapMode extends ProvincePaintingMode {
         areaColors = new HashMap<>();
         
         this.type = type;
-        java.util.Map<String, List<String>> geography = null;
+        java.util.Map<String, List<Integer>> geography = null;
         switch (type) {
             case AREAS: geography = mapPanel.getMap().getAreas(); break;
             case REGIONS: geography = mapPanel.getMap().getRegions(); break;
@@ -51,16 +51,15 @@ public class AllAreasMapMode extends ProvincePaintingMode {
         prepareGeography(geography);
     }
     
-    private void prepareGeography(java.util.Map<String, List<String>> areas) {
+    private void prepareGeography(java.util.Map<String, List<Integer>> areas) {
         List<Color> colors = Utilities.getGeographyColors();
         // The color index does not begin at 0 simply because EU4's colors are in such an
         // order that Europe and Africa would be nearly indistinguishable in continent mode
         int colorIdx = Math.min(15, colors.size()-1);
-        for (java.util.Map.Entry<String, List<String>> area : areas.entrySet()) {
+        for (java.util.Map.Entry<String, List<Integer>> area : areas.entrySet()) {
             String areaTag = area.getKey();
-            List<String> areaProvIds = area.getValue();
-            for (String provIdStr : areaProvIds) {
-                Integer provId = Integer.valueOf(provIdStr);
+            List<Integer> areaProvIds = area.getValue();
+            for (Integer provId : areaProvIds) {
                 provinceAreas.put(provId, areaTag);
             }
             areaColors.put(areaTag, colors.get(colorIdx++));

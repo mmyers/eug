@@ -19,19 +19,19 @@ public class ContinentMode extends GroupMode {
     
     /** Creates a new instance of ContinentMode */
     public ContinentMode(String continent) {
-        provIds = makeIntList(getMap().getContinent(continent));
+        provIds = getMap().getContinent(continent);
     }
     
-    public ContinentMode(List<String> continent) {
+    public ContinentMode(List<Integer> continent) {
         super(continent);
     }
     
     public ContinentMode(MapPanel panel, String continent) {
         super(panel);
-        provIds = makeIntList(getMap().getContinent(continent));
+        provIds = getMap().getContinent(continent);
     }
     
-    public ContinentMode(MapPanel panel, List<String> continent) {
+    public ContinentMode(MapPanel panel, List<Integer> continent) {
         super(panel, continent);
     }
     

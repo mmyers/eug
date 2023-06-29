@@ -19,19 +19,19 @@ public class ClimateMode extends GroupMode {
     
     /** Creates a new instance of ClimateMode */
     public ClimateMode(String climate) {
-        provIds = makeIntList(getMap().getClimate(climate));
+        provIds = getMap().getClimate(climate);
     }
     
-    public ClimateMode(List<String> climate) {
+    public ClimateMode(List<Integer> climate) {
         super(climate);
     }
     
     public ClimateMode(MapPanel panel, String climate) {
         super(panel);
-        provIds = makeIntList(getMap().getClimate(climate));
+        provIds = getMap().getClimate(climate);
     }
     
-    public ClimateMode(MapPanel panel, List<String> climate) {
+    public ClimateMode(MapPanel panel, List<Integer> climate) {
         super(panel, climate);
     }
     
