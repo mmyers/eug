@@ -22,11 +22,6 @@ import javax.swing.table.DefaultTableModel;
  */
 public class WarsDialog extends javax.swing.JDialog {
 
-    private static final double javaVersion =
-            Double.parseDouble(System.getProperty("java.version").substring(0, 3));
-    private static final boolean supportsRowSorter =
-            (javaVersion >= 1.6);
-
     private List<GenericObject> wars;
 
     /** Creates new form WarsDialog */
@@ -59,9 +54,7 @@ public class WarsDialog extends javax.swing.JDialog {
             ((DefaultTableModel)warTable.getModel()).addRow(row);
         }
 
-        if (supportsRowSorter) {
-            warTable.setAutoCreateRowSorter(true);
-        }
+        warTable.setAutoCreateRowSorter(true);
         
         warTable.addMouseListener(new MouseAdapter() {
 
@@ -69,8 +62,7 @@ public class WarsDialog extends javax.swing.JDialog {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     int row = warTable.rowAtPoint(e.getPoint());
-                    if (supportsRowSorter)
-                        row = warTable.convertRowIndexToModel(row);
+                    row = warTable.convertRowIndexToModel(row);
                     Integer index = (Integer) warTable.getModel().getValueAt(row, 0); // the table might have been sorted and names aren't necessarily unique, so how to find which war to edit?
                     GenericObject war = wars.get(index-1);
                     EditorDialog ed = new EditorDialog(parent, war.getString("name"), war.toString(Style.EU3_SAVE_GAME), resolver, data);
@@ -163,11 +155,5 @@ public class WarsDialog extends javax.swing.JDialog {
     private javax.swing.JTable warTable;
     // End of variables declaration//GEN-END:variables
 
-//    private class War {
-//        private GenericObject data;
-//
-//        War(GenericObject data) {
-//            this.data = data;
-//        }
-//    }
+
 }
