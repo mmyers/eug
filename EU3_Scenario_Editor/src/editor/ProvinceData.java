@@ -87,6 +87,9 @@ public final class ProvinceData {
                 if (id == null) {
                     log.log(Level.WARNING, "Failed to read province id in definition line: {0}", line);
                     continue;
+                } else if (id >= numProvs) {
+                    log.log(Level.WARNING, "Found province id {0} in definition.csv, which is greater than or equal to max_provinces", id);
+                    continue;
                 }
                 if (r == null) {
                     log.log(Level.WARNING, "Failed to read province red in definition line: {0}", line);
