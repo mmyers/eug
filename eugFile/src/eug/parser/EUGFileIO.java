@@ -16,6 +16,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -76,6 +78,14 @@ public final class EUGFileIO {
     
     public static GenericObject load(File file, ParserSettings settings) {
         return load(file.getAbsolutePath(), settings);
+    }
+    
+    public static GenericObject loadUTF8(File file, ParserSettings settings) {
+        try {
+            return loadFromString(Files.readString(file.toPath()), settings);
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     /**
@@ -190,11 +200,15 @@ public final class EUGFileIO {
     }
     
     public static boolean save(final GenericObject obj, String filename, String comment, boolean overwrite, Style style) {
+        return save(obj, filename, comment, overwrite, style, ParserSettings.getQuietSettings());
+    }
+    
+    public static boolean save(final GenericObject obj, String filename, String comment, boolean overwrite, Style style, ParserSettings settings) {
         //error check
         if (obj == null)
             return false;
         
-//        long startTime = System.nanoTime();
+        long startTime = System.nanoTime();
         
         try {
             if (comment == null || comment.length() == 0)
@@ -225,8 +239,42 @@ public final class EUGFileIO {
             return false;
         }
         
-//        if (CWordFile.timingInfo)
-//            System.out.println("Saving took " + (System.nanoTime()-startTime) + " ns.\n");
+        if (settings.isPrintTimingInfo())
+            System.out.println("Saving took " + (System.nanoTime()-startTime) + " ns.\n");
+        
+        return true;
+    }
+    
+    public static boolean saveUTF8(final GenericObject obj, String filename, boolean overwrite, Style style, ParserSettings settings) {
+        if (obj == null)
+            return false;
+        
+        long startTime = System.nanoTime();
+        
+        if (!overwrite && new File(filename).canRead()) {
+            try (BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, true), StandardCharsets.UTF_8))) {
+                w.write(obj.toString(style));
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+                return false;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        } else {
+            try (BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8))) {
+                w.write(obj.toString(style));
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+                return false;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        }
+        
+        if (settings.isPrintTimingInfo())
+            System.out.println("Saving took " + (System.nanoTime()-startTime) + " ns.\n");
         
         return true;
     }
