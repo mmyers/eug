@@ -73,7 +73,7 @@ public class Main {
         
         File configFile = new File("config.txt");
         GenericObject config =
-                EUGFileIO.load(configFile, ParserSettings.getDefaults().setPrintTimingInfo(false));
+                EUGFileIO.loadUTF8(configFile, ParserSettings.getDefaults().setPrintTimingInfo(false));
         if (config == null)
             config = new GenericObject(); // don't crash if no config.txt present
         
@@ -107,7 +107,7 @@ public class Main {
         JPanel gameDirPanel = new JPanel();
         gameDirPanel.setBorder(BorderFactory.createTitledBorder("Game folder (NOT mod folder)"));
         final JTextField gameDirField = new JTextField();
-        gameDirField.setPreferredSize(new Dimension(400, 24));
+        gameDirField.setPreferredSize(new Dimension(500, 24));
         JButton browseButton = new JButton("Browse...");
         browseButton.addActionListener(new ActionListener() {
             @Override
@@ -168,7 +168,7 @@ public class Main {
         JPanel saveGamePanel = new JPanel();
         saveGamePanel.setBorder(BorderFactory.createTitledBorder("Saved Game"));
         final JTextField saveGameField = new JTextField();
-        saveGameField.setPreferredSize(new Dimension(400, 24));
+        saveGameField.setPreferredSize(new Dimension(500, 24));
         JButton browseSaveButton = new JButton("Browse...");
         browseSaveButton.addActionListener(new ActionListener() {
             @Override
@@ -302,8 +302,8 @@ public class Main {
                 Mod mod = (Mod) modBox.getSelectedItem();
                 game.setString(LAST_MOD_KEY, mod.getName().equals("None") ? "" : mod.getName(), true);
 
-                EUGFileIO.save(config, "config.txt", null, true, Style.AGCEEP);
-
+                EUGFileIO.saveUTF8(config, "config.txt", true, Style.AGCEEP, ParserSettings.getQuietSettings());
+                
                 dialog.dispose();
 
                 log.log(Level.INFO, "Loading {0}. Mod: {1}", new Object[]{version.getDisplay(), mod.getName()});
