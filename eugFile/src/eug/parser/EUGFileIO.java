@@ -82,7 +82,7 @@ public final class EUGFileIO {
     
     public static GenericObject loadUTF8(File file, ParserSettings settings) {
         try {
-            return loadFromString(Files.readString(file.toPath()), settings);
+            return loadFromString(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8), settings);
         } catch (IOException ex) {
             return null;
         }
