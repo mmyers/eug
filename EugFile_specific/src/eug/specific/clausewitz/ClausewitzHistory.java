@@ -447,6 +447,19 @@ public final class ClausewitzHistory {
 
         @Override
         public final int compare(final String s1, final String s2) {
+            if (!Character.isDigit(s1.charAt(0))) {
+                if (!Character.isDigit((s2.charAt(0)))) {
+                    // neither numeric, sort lexically
+                    return s1.compareTo(s2);
+                } else {
+                    // s2 numeric, sort s1 first
+                    return -1;
+                }
+            } else if (!Character.isDigit((s2.charAt(0)))) {
+                // s1 numeric but s2 is not, sort s2 first
+                return 1;
+            }
+            
             final String[] s1Split = split(s1);
             final String[] s2Split = split(s2);
 
