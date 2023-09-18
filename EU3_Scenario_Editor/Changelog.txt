@@ -3,6 +3,24 @@
 \=================/
 
 
+=== 0.9.12 ===
+
+New features:
+- Added a bunch of new warnings for problems in map files.
+- Added support for non-ASCII characters in mod path.
+- Minor improvements to the startup screen, including a wider window and the
+  ability to automatically populate the mod menu when the game directory
+  is pasted in rather than being typed or browsed.
+
+Bugfixes:
+- Fixed issue with objects named "root" in CK2 save files.
+- Fixed a crash in the wars dialog under certain version of Java.
+- Fixed issue causing backup files to be saved in Victoria 2 history folders
+  even if "Save Backup Files" was disabled in the history editor menu.
+- Fixed issue with multi-editing provinces if one or more of the province
+  history files contained objects that are not dates, e.g. "add_permanent_province_modifier".
+
+
 === 0.9.11 ===
 
 Bugfixes:
