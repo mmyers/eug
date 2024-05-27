@@ -632,7 +632,7 @@ public final class EditorUI extends javax.swing.JFrame {
      * Cache the last province that the mouse was on, to keep from constantly
      * setting tooltip text.
      */
-    private transient ProvinceData.Province lastProv = null;
+    private transient ProvinceData.Province lastProvRolledOver = null;
     
     /**
      * Cache the last point, also.
@@ -645,9 +645,13 @@ public final class EditorUI extends javax.swing.JFrame {
     private transient String lastCountry = null;
 
     private String getLastCountryName() {
-        if (mapPanel.getDataSource() instanceof CK2DataSource)
-            return TitleMode.getTitleName(lastCountry, lastProv);
-        else {
+        if (mapPanel.getDataSource() instanceof CK2DataSource) {
+            if (!currentProvinces.isEmpty()) {
+                Province lastClickedProv = currentProvinces.get(currentProvinces.size()-1);
+                return TitleMode.getTitleName(lastCountry, lastClickedProv);
+            }
+            return "";
+        } else {
             String name = Text.getText(lastCountry);
             if (name.equals(lastCountry)) { // no text?
                 name = mapPanel.getDataSource().getCountry(lastCountry).getString("name");
@@ -666,24 +670,24 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void updateMapTooltip(final Point mousePt) {
         if (mapPanel.getPreferredSize().height < mousePt.y || mapPanel.getPreferredSize().width < mousePt.x) {
-            lastProv = null;
+            lastProvRolledOver = null;
             mapPanel.setToolTipText(null);
             return;
         }
         
         final ProvinceData.Province prov = mapPanel.getProvinceAt(mousePt);
         
-        if (prov == lastProv) {
+        if (prov == lastProvRolledOver) {
             // no need to update anything
             return;
         }
         
-        lastProv = prov;
+        lastProvRolledOver = prov;
         
-        if (lastProv == null) {
+        if (lastProvRolledOver == null) {
             mapPanel.setToolTipText(null);
         } else {
-            mapPanel.setToolTipTextForProv(lastProv);
+            mapPanel.setToolTipTextForProv(lastProvRolledOver);
         }
         lastPt = mousePt;
     }
@@ -747,7 +751,7 @@ public final class EditorUI extends javax.swing.JFrame {
         
         java.awt.EventQueue.invokeLater(
                 () -> {
-                    doMouseClick(lastProv, addToSelection);
+                    doMouseClick(lastProvRolledOver, addToSelection);
                     
                     // If it was a double click, go ahead and show an editor.
                     if (clickCount > 1 && !addToSelection) {
@@ -960,49 +964,49 @@ public final class EditorUI extends javax.swing.JFrame {
             // Do some neat stuff if we're viewing a land province
             //if (Main.map.isLand(lastProv.getId())) {
                 if (mode instanceof ContinentMode) {
-                    String cont = map.getContinentOfProv(lastProv.getId());
+                    String cont = map.getContinentOfProv(lastProvRolledOver.getId());
                     if (!cont.equals("(none)")) {
                         mapPanel.setMode(new ContinentMode(mapPanel, cont));
                         viewModeLabel.setText("Provinces in " + cont);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof SingleAreaMode) {
-                    String area = map.getAreasOfProv(lastProv.getId()).get(0);
+                    String area = map.getAreasOfProv(lastProvRolledOver.getId()).get(0);
                     if (!area.equals("(none)")) {
                         mapPanel.setMode(new SingleAreaMode(mapPanel, area));
                         viewModeLabel.setText("Provinces in " + area);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof SingleRegionMode) {
-                    String reg = map.getRegionsOfProv(lastProv.getId()).get(0);
+                    String reg = map.getRegionsOfProv(lastProvRolledOver.getId()).get(0);
                     if (!reg.equals("(none)")) {
                         mapPanel.setMode(new SingleRegionMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof SuperRegionMode) {
-                    String reg = map.getSuperRegionsOfProv(lastProv.getId()).get(0);
+                    String reg = map.getSuperRegionsOfProv(lastProvRolledOver.getId()).get(0);
                     if (!reg.equals("(none)")) {
                         mapPanel.setMode(new SuperRegionMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof ProvinceGroupMode) {
-                    String group = map.getGroupsOfProv(lastProv.getId()).get(0);
+                    String group = map.getGroupsOfProv(lastProvRolledOver.getId()).get(0);
                     if (!group.equals("(none)")) {
                         mapPanel.setMode(new ProvinceGroupMode(mapPanel, group));
                         viewModeLabel.setText("Provinces in " + group);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof ClimateMode) {
-                    String climate = map.getClimateOfProv(lastProv.getId());
+                    String climate = map.getClimateOfProv(lastProvRolledOver.getId());
                     if (!climate.equals("(none)")) {
                         mapPanel.setMode(new ClimateMode(mapPanel, climate));
                         viewModeLabel.setText("Provinces with climate " + climate);
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof NativeGroupMode) {
-                    String nativeType = map.getNativeTypeOfProv(lastProv.getId());
+                    String nativeType = map.getNativeTypeOfProv(lastProvRolledOver.getId());
                     if (!nativeType.equals("(none)")) {
                         mapPanel.setMode(new NativeGroupMode(mapPanel, nativeType));
                         viewModeLabel.setText("Provinces with " + nativeType + " natives");
@@ -1066,7 +1070,7 @@ public final class EditorUI extends javax.swing.JFrame {
         currentProvinces = new ArrayList<>();
         lastCountry = null;
         lastPt = null;
-        lastProv = null;
+        lastProvRolledOver = null;
 //        lastClick = null;
     }
     
