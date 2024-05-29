@@ -31,14 +31,14 @@ public final class ProvinceData {
     
     
     public ProvinceData(Map map, FilenameResolver resolver) {
-        final int numProvs = Integer.parseInt(map.getString("max_provinces"));
-        
+        final int numProvs = map.getMaxProvinces();
+
         rgbMap = new HashMap<>(numProvs);
         allProvs = new Province[numProvs];
         
         String defFileName = map.getString("definitions").replace('\\', '/');
         if (!defFileName.contains("/"))
-            defFileName = "map/" + defFileName;
+            defFileName = map.getMapPath() + "/" + defFileName;
         if (defFileName.startsWith(".."))
             defFileName = "mod/" + defFileName;
         
@@ -71,6 +71,8 @@ public final class ProvinceData {
                 String line;
                 if ((line = reader.readLine()) == null)
                     break;
+                if (line.startsWith("#"))
+                    continue;
                 
                 String[] arr = SEMICOLON.split(line);
             

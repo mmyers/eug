@@ -34,7 +34,8 @@ public class GameVersion {
     private String viewSet;
 
     private boolean newStyleMod;
-    private String modPath;
+    private String modPath = "mod";
+    private String mapPath = "map";
     
     private GameVersion() {
     }
@@ -63,6 +64,7 @@ public class GameVersion {
                     newVersion.viewSet = old.viewSet;
                     newVersion.newStyleMod = old.newStyleMod;
                     newVersion.modPath = old.modPath;
+                    newVersion.mapPath = old.mapPath;
                 } else {
                     log.log(Level.WARNING, "Invalid ''inherit'' directive: ''{0}''", version.getString("inherit"));
                 }
@@ -110,6 +112,8 @@ public class GameVersion {
                 newVersion.newStyleMod = version.getBoolean("new_style_mod");
             if (version.hasString("mod_path"))
                 newVersion.modPath = version.getString("mod_path");
+            if (version.hasString("map_path"))
+                newVersion.mapPath = version.getString("map_path");
 
             gameVersions.add(newVersion);
         }
@@ -197,6 +201,10 @@ public class GameVersion {
 
     public String getModPath() {
         return modPath;
+    }
+    
+    public String getMapPath() {
+        return mapPath;
     }
 
     @Override

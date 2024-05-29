@@ -12,7 +12,10 @@ import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +37,7 @@ public final class Map {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Map.class.getName());
     
-    private static final String MAP_DIR_NAME = "/map";
+    private String mapDirName;
     
     private GenericObject mapData;
     
@@ -75,6 +79,15 @@ public final class Map {
     public Map(FilenameResolver resolver, GameVersion version) {
         this.resolver = resolver;
         this.version = version;
+        if (version.getMapPath() != null) {
+            mapDirName = version.getMapPath().replace('\\', '/').replace('/', File.separatorChar);
+            if (!mapDirName.startsWith(File.separator))
+                mapDirName = File.separator + mapDirName;
+            if (mapDirName.endsWith(File.separator))
+                mapDirName = mapDirName.substring(0, mapDirName.length() - 1);
+        } else {
+            mapDirName = "/map";
+        }
 //        try {
             loadData();
 //        } catch (FileNotFoundException ex) {
@@ -120,7 +133,7 @@ public final class Map {
     }
     
     private void loadData() {
-        String mapFilename = resolver.resolveFilename(MAP_DIR_NAME + File.separator + "default.map");
+        String mapFilename = resolver.resolveFilename(mapDirName + File.separator + "default.map");
         
         final ParserSettings fastSettings = ParserSettings.getNoCommentSettings().setPrintTimingInfo(false);
         
@@ -132,10 +145,17 @@ public final class Map {
         }
         
         maxProvinces = mapData.getInt("max_provinces");
+        if (maxProvinces <= 0) {
+            String definitionFilename = mapData.getString("definitions");
+            if (!definitionFilename.contains("/"))
+                definitionFilename = mapDirName + '/' + definitionFilename;
+            
+            maxProvinces = readLastProvID(resolver.resolveFilename(definitionFilename));
+        }
         
         String contFilename = mapData.getString("continent").replace('\\', '/');
         if (!contFilename.contains("/"))
-            contFilename = MAP_DIR_NAME + '/' + contFilename;
+            contFilename = mapDirName + '/' + contFilename;
         
         continents = EUGFileIO.load(resolver.resolveFilename(contFilename), fastSettings);
         
@@ -144,9 +164,9 @@ public final class Map {
             
             // Vic2 has climates but doesn't have the path in default.map
             if (climateFilename.equals(""))
-                climateFilename = MAP_DIR_NAME + File.separator + "climate.txt";
+                climateFilename = mapDirName + File.separator + "climate.txt";
             else if (!climateFilename.contains("/"))
-                climateFilename = MAP_DIR_NAME + '/' + climateFilename;
+                climateFilename = mapDirName + '/' + climateFilename;
             
             climates = EUGFileIO.load(resolver.resolveFilename(climateFilename), fastSettings);
         }
@@ -157,14 +177,14 @@ public final class Map {
         
         String terrainFilename = mapData.getString("terrain_definition").replace('\\', '/');
         if (!terrainFilename.contains("/"))
-            terrainFilename = MAP_DIR_NAME + '/' + terrainFilename;
+            terrainFilename = mapDirName + '/' + terrainFilename;
         
         terrains = EUGFileIO.load(resolver.resolveFilename(terrainFilename), fastSettings);
         
         if (version.hasRegions()) {
             String regFilename = mapData.getString("region").replace('\\', '/');
             if (!regFilename.contains("/"))
-                regFilename = MAP_DIR_NAME + '/' + regFilename;
+                regFilename = mapDirName + '/' + regFilename;
 
             String regionText = stripColors(readFile(resolver.resolveFilename(regFilename)));
             regions = EUGFileIO.loadFromString(regionText, fastSettings);
@@ -172,7 +192,7 @@ public final class Map {
             if (mapData.hasString("area")) {
                 String areaFilename = mapData.getString("area").replace('\\', '/');
                 if (!areaFilename.contains("/"))
-                    areaFilename = MAP_DIR_NAME + '/' + areaFilename;
+                    areaFilename = mapDirName + '/' + areaFilename;
                 
                 String areaText = stripColors(readFile(resolver.resolveFilename(areaFilename)));
                 areas = EUGFileIO.loadFromString(areaText, fastSettings);
@@ -180,7 +200,7 @@ public final class Map {
             if (mapData.hasString("superregion")) {
                 String srFilename = mapData.getString("superregion").replace('\\', '/');
                 if (!srFilename.contains("/"))
-                    srFilename = MAP_DIR_NAME + '/' + srFilename;
+                    srFilename = mapDirName + '/' + srFilename;
                 
                 String srText = stripColors(readFile(resolver.resolveFilename(srFilename)));
                 superRegions = EUGFileIO.loadFromString(srText, fastSettings);
@@ -188,7 +208,7 @@ public final class Map {
             if (mapData.hasString("provincegroup")) {
                 String pgFilename = mapData.getString("provincegroup").replace('\\', '/');
                 if (!pgFilename.contains("/"))
-                    pgFilename = MAP_DIR_NAME + '/' + pgFilename;
+                    pgFilename = mapDirName + '/' + pgFilename;
                 
                 provinceGroups = EUGFileIO.load(resolver.resolveFilename(pgFilename), fastSettings);
             }
@@ -269,6 +289,29 @@ public final class Map {
                 log.log(Level.WARNING, "Expected {0} list to have only province ID numbers, but found {1}", new Object[] { name, next });
             }
         }
+        return ret;
+    }
+    
+    private static int readLastProvID(String definitionsFileName) {
+        log.log(Level.INFO, "No max_provinces in default.map. Attempting to deduce it from definition.csv...");
+        int ret = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(definitionsFileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isEmpty() || line.startsWith("#"))
+                    continue;
+                int semicolon = line.indexOf(';');
+                if (semicolon < 0)
+                    continue;
+                String strInt = line.substring(0, semicolon);
+                int id = Integer.parseInt(strInt);
+                if (id > ret)
+                    ret = id;
+            }
+        } catch (FileNotFoundException ex) {
+        } catch (IOException ex) {
+        }
+        log.log(Level.INFO, "{0} provinces", ret);
         return ret;
     }
     
@@ -682,6 +725,10 @@ public final class Map {
     
     public int getMaxProvinces() {
         return maxProvinces;
+    }
+    
+    public String getMapPath() {
+        return version.getMapPath();
     }
     
     private final class INLandProvIterator

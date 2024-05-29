@@ -411,6 +411,11 @@ public final class ClausewitzHistory {
     }
 
     private static boolean mergeVariable(GenericObject existing, ObjectVariable newVar) {
+        // hack: discovered_by is frequently used in history files and
+        //       is not unique, so DON'T merge it.
+        if (newVar.varname.equalsIgnoreCase("discovered_by"))
+            return false;
+        
         // instead of using setString, we do the loop ourselves so we have access to the original ObjectVariable to add any comments
         for (ObjectVariable oldVar : existing.values) {
             if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
