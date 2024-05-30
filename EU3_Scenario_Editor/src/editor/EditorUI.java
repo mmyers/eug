@@ -834,7 +834,7 @@ public final class EditorUI extends javax.swing.JFrame {
             flashCurrentProvinces(3, Color.WHITE);
             provNameLabel.setText("Copied " + sb.toString().trim() + "!");
         } catch (IllegalStateException ex) {
-            log.log(Level.WARNING, "Couldn't copy province IDs for some reason. Ids were \"{0}\"", sb.toString().trim());
+            log.log(Level.WARNING, "Couldn''t copy province IDs for some reason. Ids were \"{0}\"", sb.toString().trim());
             log.log(Level.WARNING, "Actual exception is: ", ex);
             JTextField textField = new JTextField("Selected province IDs are: " + sb.toString().trim());
             textField.setEditable(false);

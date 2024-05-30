@@ -222,8 +222,11 @@ public final class Utilities {
         if (color.get(0).contains(".") || color.get(1).contains(".") || color.get(2).contains("."))
             return new Color(r, g, b);
         
-        if (r > 1 || g > 1 || b > 1) // assume [0, 255] scale if any value is outside [0, 1]
-            return new Color((int) r, (int) g, (int) b);
+        if (r > 1 || g > 1 || b > 1) { // assume [0, 255] scale if any value is outside [0, 1]
+            if (r > 255 || g > 255 || b > 255)
+                log.log(Level.WARNING, "Color value is outside of the expected range: {0} = '{' {1} {2} {3} '}'", new Object[] { color.getName(), r, g, b });
+            return new Color((int) Math.min(r, 255), (int) Math.min(g, 255), (int) Math.min(b, 255));
+        }
         return new Color(r, g, b);
     }
 
