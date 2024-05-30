@@ -78,17 +78,24 @@ public final class Utilities {
     static final Color COLOR_NO_CULTURE = Color.BLACK;
     
     private static final Color[] DEFAULT_CULTURE_COLORS = {
-        Color.BLUE.darker().darker(),
-        Color.GRAY,
-        Color.RED.darker().darker(),
-        Color.CYAN.darker().darker(),
-        Color.PINK.darker().darker(),
-        Color.GREEN.darker().darker(),
-        Color.YELLOW.darker().darker(),
-        Color.MAGENTA.darker().darker(),
-        new Color(108, 70, 220), // purple
-        new Color(38, 180, 210), // light grayish blue
-        new Color(250, 125, 0),  // orange
+        // These are the 12 basic RGB colors, plus a couple extras, shuffled around a bit so that adjacent culture groups don't get too similar colors (much).
+        // Most of them have also been slightly modified by boosting values of 0 up to 10 to give a slightly brighter base color before we darken them.
+        new Color( 10,  10, 255), // blue
+        new Color( 10, 255, 255), // cyan
+        new Color(192, 192, 192), // light gray
+        new Color( 10, 255, 127),
+        new Color( 10, 255,  10), // green
+        new Color(255, 255,  10), // yellow
+        new Color(255, 127,  10),
+        new Color(127,  10, 255),
+        new Color( 10, 127, 255),
+        new Color(255,  10,  10), // red
+        new Color(255,  10, 127),
+        new Color(255,  10, 255), // magenta
+        new Color(127, 255,  10),
+        new Color(210, 180, 140), // tan
+        new Color(210,  92,  92), // dusky red
+        new Color(140, 180, 210), // steel blue
     };
     
     /* Settings used when loading all data files in this class. */
@@ -134,6 +141,8 @@ public final class Utilities {
         religions = EUGFileIO.load(resolver.resolveFilename("common/religion.txt"), settings);
         if (religions == null)
             religions = EUGFileIO.loadAll(resolver.listFiles("common/religions"), settings);
+        if (religions == null)
+            religions = EUGFileIO.loadAll(resolver.listFiles("common/religion/religions"), settings);
     }
     
     private static void initTitles() {
@@ -148,6 +157,8 @@ public final class Utilities {
         cultures = EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"), settings);
         if (cultures == null)
             cultures = EUGFileIO.loadAll(resolver.listFiles("common/cultures"), settings);
+        if (cultures == null)
+            cultures = EUGFileIO.loadAll(resolver.listFiles("common/culture/cultures"), settings);
         
         // go ahead and set up the colors here since we need to keep track of
         // which color each culture group is
@@ -162,17 +173,32 @@ public final class Utilities {
 
                 int colorModIdx = 0;
 
+                int numColors = group.children.size(); // shouldn't include male_names, female_names, or dynasty_names since those are lists and not children
+                
+                double redFactor   = baseColor.getRed()   / (numColors+1.0);
+                double greenFactor = baseColor.getGreen() / (numColors+1.0);
+                double blueFactor  = baseColor.getBlue()  / (numColors+1.0);
+                
+                Color[] colors = new Color[numColors];
+                colors[0] = baseColor;
+                for (int i = 1; i < numColors; i++) {
+                    colors[i] = new Color(
+                                    (int)(Math.max(colors[0].getRed()   - i*redFactor,   0)),
+                                    (int)(Math.max(colors[0].getGreen() - i*greenFactor, 0)),
+                                    (int)(Math.max(colors[0].getBlue()  - i*blueFactor,  0)));
+                }
+                int i = 0;
                 for (GenericObject cul : group.children) {
-                    Color modColor = baseColor;
-                    if (colorModIdx % 2 == 0) {
-                        for (int i = 0; i < colorModIdx / 2; i++) {
-                            modColor = modColor.darker();
-                        }
-                    } else {
-                        for (int i = 0; i < colorModIdx / 2 + 1; i++) {
-                            modColor = modColor.brighter();
-                        }
-                    }
+                    if (cul.name.equals("country") || cul.name.equals("province")) // special stuff Paradox decided should go into cultures.txt
+                        continue;
+                    
+                    int index;
+                    if (colorModIdx % 2 == 0) // alternate light and dark shades since cultures are usually defined in geographically sequential order
+                        index = i;
+                    else
+                        index = (int)(numColors/2.0 + 0.5) + i++; // use ceiling to avoid off-by-one when we have an odd number. Then post-increment i to avoid a different off-by-one.
+                    
+                    Color modColor = colors[index];
                     colorModIdx++;
                     cultureColorCache.put(cul.name, modColor);
 
@@ -371,12 +397,14 @@ public final class Utilities {
         return ret;
     }
     
-    static String getCultureGroup(String culture) {
+    public static String getCultureGroup(String culture) {
+        if (cultureGroups.isEmpty())
+            initCultures();
         return cultureGroups.get(culture);
     }
     
     static List<Color> getGeographyColors() {
-        if (geographyColors.size() == 0) {
+        if (geographyColors.isEmpty()) {
             initGeographyColors();
         }
         return geographyColors;
@@ -387,15 +415,15 @@ public final class Utilities {
     // assumes that only ASCII characters are used, so a faster algorithm can be
     // used.
     
-    private static final int diff = 'A' - 'a';
+    private static final int ASCII_CASE_DIFF = 'A' - 'a';
     
     private static String toUpperCase(final String st) {
         final char[] cArr = st.toCharArray();
         boolean change = false;
         for (int i = 0; i < cArr.length; i++) {
-            int c = (int) cArr[i];
+            int c = cArr[i];
             if (c >= 'a' && c <= 'z') {
-                cArr[i] = (char) (c+diff);
+                cArr[i] = (char) (c+ASCII_CASE_DIFF);
                 change = true;
             }
         }
