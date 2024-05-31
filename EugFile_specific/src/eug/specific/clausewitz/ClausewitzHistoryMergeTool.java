@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -59,7 +60,7 @@ public class ClausewitzHistoryMergeTool {
         ADD,
         
         /**
-         * Merges the two history objects, overwriting any parts of existing object
+         * Mode to merge the two history objects, overwriting any parts of existing object
          * that the additions match. The final product is then sorted in the usual
          * history order (first bare variables, then date objects in order).
          * <p>
@@ -97,7 +98,7 @@ public class ClausewitzHistoryMergeTool {
         OVERWRITE,
         
         /**
-         * Merges the two objects, overwriting any parts of the existing object
+         * Mode to merge the two objects, overwriting any parts of the existing object
          * that the additions match, except for ObjectVariables whose name is
          * in the set of elements not to merge.
          * <p>
@@ -138,6 +139,12 @@ public class ClausewitzHistoryMergeTool {
          * @see initAutoMergeList
          */
         AUTO,
+        
+        /**
+         * Mode to merge the two objects, deleting any parts of the existing object that
+         * the modifications match. A date object will not be deleted unless all
+         * its contents have been deleted.
+         */
         DELETE
     }
     
@@ -158,7 +165,7 @@ public class ClausewitzHistoryMergeTool {
      * Reads province history files from the given data source in an attempt to
      * deduce which items may appear more than once and which can only appear
      * once. This information is used when merging objects with
-     * {@link MergeMode.AUTO}.
+     * {@code MergeMode.AUTO}.
      * @param data 
      */
     public void initAutoMergeList(ClausewitzDataSource data) {
@@ -184,7 +191,7 @@ public class ClausewitzHistoryMergeTool {
     }
     
     public void initAutoMergeList(Collection<String> notToMerge) {
-        elementsToNotMerge.addAll(notToMerge);
+        elementsToNotMerge.addAll(notToMerge.stream().map(String::toLowerCase).collect(Collectors.toList()));
     }
     
     public void mergeHistObjects(GenericObject existing, GenericObject modifications) {
