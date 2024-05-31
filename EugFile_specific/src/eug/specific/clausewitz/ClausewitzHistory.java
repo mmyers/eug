@@ -4,8 +4,6 @@ package eug.specific.clausewitz;
 
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
-import eug.shared.HeaderComment;
-import eug.shared.InlineComment;
 import eug.shared.ObjectVariable;
 import eug.shared.WritableObject;
 import java.util.Comparator;
@@ -35,7 +33,7 @@ public final class ClausewitzHistory {
 //    private static final Pattern DATE_PATTERN =
 //            Pattern.compile("[0-9]{1,4}\\.[0-9]{1,2}\\.[0-9]{1,2}");
 
-    private static boolean isDate(final String str) {
+    static boolean isDate(final String str) {
         // As it turns out, a regex is simple but rather slow for this.
         // Instead, this method uses a handcrafted validator.
 //        return DATE_PATTERN.matcher(str).matches();
@@ -329,108 +327,6 @@ public final class ClausewitzHistory {
         
         return isSet;
     }
-    
-    /**
-     * Merges the two history objects, overwriting any parts of existing object
-     * that the additions match. The final product is then sorted in the usual
-     * history order (first bare variables, then date objects in order).
-     * <p>
-     * For example, take the object:
-     * <pre>
-     * add_core = SWE
-     * owner = SWE
-     * controller = SWE
-     * culture = swedish
-     * base_tax = 8
-     * 
-     * 1450.1.1 = { base_tax = 10 }
-     * </pre>
-     * And the following additions:
-     * <pre>
-     * hre = no
-     * 1420.1.1 = { controller = REB }
-     * 1550.1.1 = { religion = protestant }
-     * </pre>
-     * 
-     * After invoking this method, the original object would be updated to:
-     * <pre>
-     * add_core = SWE
-     * owner = SWE
-     * controller = SWE
-     * culture = swedish
-     * base_tax = 8
-     * hre = no
-     * 
-     * 1420.1.1 = { controller = REB }
-     * 1450.1.1 = { base_tax = 10 }
-     * 1550.1.1 = { religion = protestant }
-     * </pre>
-     * @param existing the object to add new parts into
-     * @param additions the new parts to add into the existing object
-     */
-    public static void mergeHistObjects(GenericObject existing, GenericObject additions) {
-        for (WritableObject wo : additions.getAllWritable()) {
-            if (wo instanceof ObjectVariable) {
-                ObjectVariable newVar = (ObjectVariable) wo;
-                if (!mergeVariable(existing, newVar)) {
-                    existing.addVariable(newVar);
-                }
-            } else if (wo instanceof GenericList) {
-                GenericList newList = (GenericList) wo;
-                GenericList oldList = existing.getList(newList.getName());
-                if (oldList != null) {
-                    // merging lists seems wrong, so let's just overwrite it
-                    oldList.clear();
-                    oldList.addAll(newList);
-                    oldList.setHeaderComment(newList.getHeaderComment());
-                    oldList.setInlineComment(newList.getInlineComment());
-                } else {
-                    existing.addList(newList);
-                }
-            } else if (wo instanceof GenericObject) {
-                GenericObject newObj = (GenericObject) wo;
-                GenericObject oldObj = existing.getChild(newObj.name);
-                if (oldObj != null) {
-                    mergeHistObjects(oldObj, newObj);
-                } else {
-                    existing.addChild(newObj);
-                }
-            } else if (wo instanceof HeaderComment) {
-                existing.addGeneralComment(((HeaderComment) wo).getComment(), true);
-            } else if (wo instanceof InlineComment) {
-                existing.addGeneralComment(((InlineComment) wo).getComment(), false);
-            }
-        }
-        
-        if (!"".equals(additions.getHeadComment()))
-            existing.setHeadComment(additions.getHeadComment());
-        if (!"".equals(additions.getInlineComment()))
-            existing.setInlineComment(additions.getInlineComment());
-        
-        existing.getAllWritable().sort(new HistoryObjectComparator());
-    }
-
-    private static boolean mergeVariable(GenericObject existing, ObjectVariable newVar) {
-        // hack: discovered_by is frequently used in history files and
-        //       is not unique, so DON'T merge it.
-        if (newVar.varname.equalsIgnoreCase("discovered_by"))
-            return false;
-        
-        // instead of using setString, we do the loop ourselves so we have access to the original ObjectVariable to add any comments
-        for (ObjectVariable oldVar : existing.values) {
-            if (oldVar.varname.equalsIgnoreCase(newVar.varname)) {
-                // copy everything over
-                // could merge the comments instead of copying, but that would likely result in odd outcomes
-                if (!"".equals(newVar.getHeadComment()))
-                    oldVar.setHeadComment(newVar.getHeadComment());
-                oldVar.setValue(newVar.getValue());
-                if (!"".equals(newVar.getInlineComment()))
-                    oldVar.setInlineComment(newVar.getInlineComment());
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static final class DateComparator implements Comparator<String> {
 
@@ -488,7 +384,7 @@ public final class ClausewitzHistory {
         }
     }
 
-    private static class HistoryObjectComparator implements Comparator<WritableObject> {
+    static class HistoryObjectComparator implements Comparator<WritableObject> {
 
         private final DateComparator dateComparator;
         

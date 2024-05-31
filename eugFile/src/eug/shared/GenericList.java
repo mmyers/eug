@@ -101,6 +101,10 @@ public final class GenericList
         return list.remove(val);
     }
     
+    public boolean deleteAll(GenericList other) {
+        return list.removeAll(other.list);
+    }
+    
     public void clear() {
         list.clear();
     }
