@@ -19,6 +19,7 @@ import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck2.CK2SaveGame;
 import eug.specific.ck2.CK2Scenario;
 import eug.specific.clausewitz.ClausewitzHistory;
+import eug.specific.clausewitz.ClausewitzHistoryMergeTool;
 import eug.specific.clausewitz.ClausewitzSaveGame;
 import eug.specific.clausewitz.ClausewitzScenario;
 import eug.specific.eu3.EU3SaveGame;
@@ -70,6 +71,8 @@ public final class EditorUI extends javax.swing.JFrame {
     private FilenameResolver resolver;
     private Map map;
     private ProvinceData provinceData;
+    
+    private ClausewitzHistoryMergeTool provinceHistoryMergeTool; // only initialized if the user wants to do a multi-file edit
     
     /**
      * Creates new form EditorUI.
@@ -718,8 +721,12 @@ public final class EditorUI extends javax.swing.JFrame {
                 dlg.setVisible(true);
             }
         } else {
+            if (provinceHistoryMergeTool == null) {
+                provinceHistoryMergeTool = new ClausewitzHistoryMergeTool();
+                provinceHistoryMergeTool.initAutoMergeList(mapPanel.getDataSource());
+            }
             // multi file dialog is modal -- too confusing if we let there be more than one at a time
-            MultiFileEditorDialog dlg = new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData);
+            MultiFileEditorDialog dlg = new MultiFileEditorDialog(this, currentProvinces, resolver, provinceData, provinceHistoryMergeTool);
             dlg.setModal(true);
             dlg.setVisible(true);
             mapPanel.getModel().clearHistoryCache();

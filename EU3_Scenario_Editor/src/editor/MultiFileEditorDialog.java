@@ -7,10 +7,16 @@ import eug.shared.GenericObject;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
+import eug.specific.clausewitz.ClausewitzHistoryMergeTool;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 /**
  * Dialog to edit multiple provinces or countries at the same time. To allow
@@ -91,9 +97,18 @@ public class MultiFileEditorDialog extends EditorDialog {
     private final List<ProvinceData.Province> provinces;
     private final List<String> countryTags;
     private final List<String> countryNames;
+    
+    private final ClausewitzHistoryMergeTool mergeTool;
+    
+    JRadioButton addModeButton;
+    JRadioButton overwriteModeButton;
+    JRadioButton autoModeButton;
+    JRadioButton deleteModeButton;
 
-    public MultiFileEditorDialog(Frame parent, List<ProvinceData.Province> provinces, FilenameResolver resolver, ProvinceData data) {
+    public MultiFileEditorDialog(Frame parent, List<ProvinceData.Province> provinces, FilenameResolver resolver, ProvinceData data, ClausewitzHistoryMergeTool mergeTool) {
         super(parent, String.join(", ", provinces.stream().map(p -> p.getName()).collect(Collectors.toList())), resolver, data);
+        
+        this.mergeTool = mergeTool;
         
         // don't need to do much else here, since we don't open files till we finish this dialog
         this.provinces = provinces;
@@ -101,10 +116,15 @@ public class MultiFileEditorDialog extends EditorDialog {
         this.countryNames = null;
         
         setOriginalContents("# Anything typed here will be added to all selected province history files");
+        
+        createTopBar();
     }
 
-    public MultiFileEditorDialog(Frame parent, List<String> countryTags, List<String> countryNames, String contents, FilenameResolver resolver, ProvinceData data) {
+    // this constructor is private for now until better implemented and tested
+    private MultiFileEditorDialog(Frame parent, List<String> countryTags, List<String> countryNames, String contents, FilenameResolver resolver, ProvinceData data, ClausewitzHistoryMergeTool mergeTool) {
         super(parent, String.join(", ", countryTags), contents, resolver, data);
+        
+        this.mergeTool = mergeTool;
         
         // don't need to do much else here, since we don't open files till we finish this dialog
         this.provinces = null;
@@ -112,8 +132,54 @@ public class MultiFileEditorDialog extends EditorDialog {
         this.countryNames = countryNames;
         
         setOriginalContents("# Anything typed here will be added to all selected country history files");
+        
+        createTopBar();
     }
     
+    private void createTopBar() {
+        JPanel settingsPanel = new JPanel(new FlowLayout());
+        settingsPanel.add(new JLabel("Choose mode:"));
+        
+        ButtonGroup settingsGroup = new ButtonGroup();
+        
+        addModeButton = new JRadioButton("Always add");
+        overwriteModeButton = new JRadioButton("Overwrite if existing");
+        autoModeButton = new JRadioButton("Automatically choose add/overwrite");
+        deleteModeButton = new JRadioButton("<html><p style='color:darkred'>Delete if existing</p></html>");
+        
+        addModeButton.setToolTipText("If selected, all text in the editor will be added to the selected files, even if there are already matching statements in the files (useful for add_core or discovered_by)");
+        overwriteModeButton.setToolTipText("If selected, all text in the editor will be added to the selected files and overwrite any matching statements in the files (useful for owner or controller)");
+        autoModeButton.setToolTipText("If selected, the editor will attempt to guess which parts of the text should be added and which should overwrite existing statements");
+        deleteModeButton.setToolTipText("If selected, all text in the editor (excluding comments) will be DELETED from the selected files. Use with caution!");
+        
+        settingsGroup.add(addModeButton);
+        settingsGroup.add(overwriteModeButton);
+        settingsGroup.add(autoModeButton);
+        settingsGroup.add(deleteModeButton);
+        
+        settingsPanel.add(addModeButton);
+        settingsPanel.add(overwriteModeButton);
+        settingsPanel.add(autoModeButton);
+        settingsPanel.add(deleteModeButton);
+        
+        addModeButton.setSelected(true);
+        
+        super.setTopBar(settingsPanel);
+        pack();
+    }
+    
+    private ClausewitzHistoryMergeTool.MergeMode getMergeMode() {
+        if (addModeButton.isSelected())
+            return ClausewitzHistoryMergeTool.MergeMode.ADD;
+        else if (overwriteModeButton.isSelected())
+            return ClausewitzHistoryMergeTool.MergeMode.OVERWRITE;
+        else if (autoModeButton.isSelected())
+            return ClausewitzHistoryMergeTool.MergeMode.AUTO;
+        else if (deleteModeButton.isSelected())
+            return ClausewitzHistoryMergeTool.MergeMode.DELETE;
+        
+        return ClausewitzHistoryMergeTool.MergeMode.AUTO;
+    }
     
     @Override
     protected void close() {
@@ -151,7 +217,7 @@ public class MultiFileEditorDialog extends EditorDialog {
         for (ProvinceData.Province p : provinces) {
             GenericObject oldProvince = dataSource.getProvince(p.getId());
             
-            ClausewitzHistory.mergeHistObjects(oldProvince, created);
+            mergeTool.mergeHistObjects(oldProvince, created, getMergeMode());
             
             dataSource.saveProvince(p.getId(), p.getName(), oldProvince.toString());
             dataSource.reloadProvince(p.getId());
@@ -164,7 +230,7 @@ public class MultiFileEditorDialog extends EditorDialog {
         for (String titleStr : countryTags) {
             GenericObject oldTitle = ((CK2DataSource)dataSource).getTitle(titleStr);
             
-            ClausewitzHistory.mergeHistObjects(oldTitle, created);
+            mergeTool.mergeHistObjects(oldTitle, created, getMergeMode());
             
             ((CK2DataSource)dataSource).saveTitle(titleStr, oldTitle.toString());
             ((CK2DataSource)dataSource).reloadTitle(titleStr);
@@ -177,7 +243,7 @@ public class MultiFileEditorDialog extends EditorDialog {
         for (String tagStr : countryTags) {
             GenericObject oldCountry = dataSource.getCountry(tagStr);
             
-            ClausewitzHistory.mergeHistObjects(oldCountry, created);
+            mergeTool.mergeHistObjects(oldCountry, created, getMergeMode());
             
             dataSource.saveCountry(tagStr, tagStr, oldCountry.toString()); // TODO: need to get the country name
             dataSource.reloadCountry(tagStr);

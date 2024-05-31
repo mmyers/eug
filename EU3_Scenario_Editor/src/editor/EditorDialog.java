@@ -506,6 +506,15 @@ public class EditorDialog extends JDialog {
     }//GEN-LAST:event_setBackupFilesCheckBoxMenuItemActionPerformed
     
     
+    /**
+     * Sets a component to be above the text area and below the menu bar.
+     * Useful for the MultiFileEditorDialog to include settings.
+     * @param topBar 
+     */
+    protected void setTopBar(java.awt.Component topBar) {
+        this.add(topBar, BorderLayout.NORTH);
+    }
+    
     private void updateUndoStates() {
         undoMenuItem.setEnabled(undo.canUndo());
         if (undo.canUndo())
