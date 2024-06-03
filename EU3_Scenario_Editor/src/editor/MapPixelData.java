@@ -1,5 +1,5 @@
 /*
- * MapData.java
+ * MapPixelData.java
  *
  * Moved out of MapPanel.java in 0.4pre1
  */
@@ -13,7 +13,7 @@ import java.util.List;
 
 
 /** @since 0.3pre1 */
-public final class MapData {
+public final class MapPixelData {
     
     /**
      * Mapping of rgb value to a list of horizontal lines in the province.
@@ -31,10 +31,9 @@ public final class MapData {
     
     private static final int BLACK = 0xFF000000; // java.awt.Color.BLACK.getRGB();
     
-    public MapData(final BufferedImage img, final int numProvs) {
-        provLines = new HashMap<Integer, List<Integer[]>>(numProvs);
-        final java.util.Map<Integer[], Object> tmpBorders =
-                new HashMap<Integer[], Object>(numProvs*32);
+    public MapPixelData(final BufferedImage img, final int numProvs) {
+        provLines = new HashMap<>(numProvs);
+        java.util.Map<Integer[], Object> tmpBorders = new HashMap<>(numProvs*32);
         
         int rgb;
         
@@ -48,7 +47,7 @@ public final class MapData {
                 rgb = rgbLine[x];
                 
                 if (provLines.get(rgb) == null)
-                    provLines.put(rgb, new ArrayList<Integer[]>(100));
+                    provLines.put(rgb, new ArrayList<>(100));
                 
                 Integer[] points = new Integer[3];
                 
@@ -88,7 +87,7 @@ public final class MapData {
             }
         }
         
-        borders = new ArrayList<Integer[]>(tmpBorders.keySet());
+        borders = new ArrayList<>(tmpBorders.keySet());
     }
     
     public List<Integer[]> getLinesInProv(int rgb) {

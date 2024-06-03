@@ -87,7 +87,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         log.log(Level.INFO, "Reading map from image...");
         long startTime = System.currentTimeMillis();
-        final MapData data = new MapData(scaledMapImage, map.getMaxProvinces());
+        final MapPixelData data = new MapPixelData(scaledMapImage, map.getMaxProvinces());
         log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
         model = new MapPanelDataModel(data, map, provData);
         model.setDate("1453.1.1");

@@ -30,7 +30,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     private final ProvinceData provinceData;
     
-    private final MapData mapData;
+    private final MapPixelData mapData;
     
     private final Map map;
     
@@ -39,7 +39,7 @@ public class MapPanelDataModel implements java.io.Serializable {
     
     private String date;
     
-    public MapPanelDataModel(MapData data, Map map, ProvinceData pData) {
+    public MapPanelDataModel(MapPixelData data, Map map, ProvinceData pData) {
         //this(data, null, pData);
         this.mapData = data;
         this.map = map;
@@ -47,7 +47,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         this.dataSource = null;
     }
     
-//    private MapPanelDataModel(MapData data, ClausewitzDataSource source, ProvinceData provinceData) {
+//    private MapPanelDataModel(MapPixelData data, ClausewitzDataSource source, ProvinceData provinceData) {
 //        this.provinceData = provinceData;
 //        mapData = data;
 //        dataSource = source;
@@ -58,7 +58,7 @@ public class MapPanelDataModel implements java.io.Serializable {
         return provinceData;
     }
     
-    public MapData getMapData() {
+    public MapPixelData getMapData() {
         return mapData;
     }
     
