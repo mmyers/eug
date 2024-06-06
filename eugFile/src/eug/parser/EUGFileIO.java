@@ -128,6 +128,25 @@ public final class EUGFileIO {
         return root;
     }
 
+    /**
+     * Loads all files into a single GenericObject.
+     * Meant to be used with FilenameResolver.listFiles().
+     */
+    public static GenericObject loadAllUTF8(File[] files, ParserSettings settings) {
+        if (files == null)
+            return null;
+        if (files.length == 1)
+            return loadUTF8(files[0], settings);
+        
+        GenericObject root = new GenericObject();
+        for (java.io.File file : files) {
+            GenericObject obj = loadUTF8(file, settings);
+            if (obj != null)
+                root.addAllChildren(obj);
+        }
+        return root;
+    }
+
     public static GenericObject loadAll(String[] files) {
         if (files == null)
             return null;
