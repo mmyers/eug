@@ -40,6 +40,8 @@ public final class Text {
      */
     public static void initText(FilenameResolver resolver, GameVersion version) throws FileNotFoundException, IOException {
         File[] files = resolver.listFiles("localisation");
+        if (files == null)
+            files = resolver.listFiles("localization/english"); // CK3/V3 switched to American spelling and put each language in a separate folder
         if (files == null) {
             log.log(Level.WARNING, "Could not find localization files");
             return;
@@ -47,14 +49,16 @@ public final class Text {
         
         Arrays.sort(files);
 
-        if (version.getTextFormat().equals("yaml"))
+        if (version.getTextFormat().equals("yaml")) {
+            log.log(Level.INFO, "Reading YAML text files");
             processFilesYaml(files);
-        else
+        } else {
+            log.log(Level.INFO, "Reading CSV text files");
             processFilesCsv(files);
+        }
     }
     
     private static void processFilesCsv(File[] files) throws FileNotFoundException, IOException {
-        log.log(Level.INFO, "Reading CSV text files");
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -93,8 +97,12 @@ public final class Text {
         // very naive implementation
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
-        log.log(Level.INFO, "Reading YAML text files");
         for (File f : files) {
+            if (f.isDirectory()) {
+                processFilesYaml(f.listFiles());
+                continue;
+            }
+            
             if (!f.getName().endsWith(".yml"))
                 continue;   // Could use a FileFilter or FilenameFilter
 
