@@ -82,7 +82,9 @@ public final class EUGFileIO {
     
     public static GenericObject loadUTF8(File file, ParserSettings settings) {
         try {
-            return loadFromString(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8), settings);
+            String fileContents = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            fileContents = fileContents.replace("\uFEFF", ""); // remove BOM if present
+            return loadFromString(fileContents, settings);
         } catch (IOException ex) {
             return null;
         }
