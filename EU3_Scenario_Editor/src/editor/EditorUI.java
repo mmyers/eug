@@ -1129,8 +1129,15 @@ public final class EditorUI extends javax.swing.JFrame {
                 } else if (view.equals("history-simple-terrain")) {
                     viewMenu.add(new HistorySimpleTerrainFilterAction());
                 } else if (view.equals("titles")) {
+                    JMenu menu = new JMenu("Titles");
                     for (TitleMode.TitleType t : TitleMode.TitleType.values())
                         viewMenu.add(new TitleFilterAction(t));
+                    viewMenu.add(menu);
+                } else if (view.equals("de-jure-titles")) {
+                    JMenu menu = new JMenu("De Jure Titles");
+                    for (DeJureTitleMode.TitleType t : DeJureTitleMode.TitleType.values())
+                        menu.add(new DeJureTitleFilterAction(t));
+                    viewMenu.add(menu);
                 } else if (view.equals("country-menu")) {
                     JMenu menu = new JMenu("Single country");
                     addCountryFilters(menu);
@@ -2205,6 +2212,13 @@ public final class EditorUI extends javax.swing.JFrame {
     private class TitleFilterAction extends FilterAction {
         public TitleFilterAction(TitleMode.TitleType type) {
             super(type.getName() + " Titles", new TitleMode(mapPanel, type));
+            putValue(SHORT_DESCRIPTION, type.getName() + " Titles");
+        }
+    }
+    
+    private class DeJureTitleFilterAction extends FilterAction {
+        public DeJureTitleFilterAction(DeJureTitleMode.TitleType type) {
+            super(type.getName() + " Titles", new DeJureTitleMode(mapPanel, type));
             putValue(SHORT_DESCRIPTION, type.getName() + " Titles");
         }
     }
