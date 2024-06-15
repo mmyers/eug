@@ -29,7 +29,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     protected FilenameResolver resolver;
     
     private final Map<String, GenericObject> ctryHistoryCache;
-    private final Map<Integer, GenericObject> provHistoryCache;
+    protected final Map<Integer, GenericObject> provHistoryCache;
     
     protected Style saveStyle = Style.EU3_SAVE_GAME;
     
@@ -266,7 +266,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void reloadCountries() {
         ctryHistoryCache.clear();
         resolver.reset();
-        preloadCountries();
+        //preloadCountries();
     }
     
     @Override
@@ -285,7 +285,7 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     public void reloadProvinces() {
         provHistoryCache.clear();
         resolver.reset();
-        preloadProvinces(2000); // no way to know what a sensible number is here, and it won't matter much.
+        //preloadProvinces(2000); // no way to know what a sensible number is here, and it won't matter much.
     }
     
     @Override
