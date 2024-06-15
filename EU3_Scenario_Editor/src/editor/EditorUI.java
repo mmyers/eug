@@ -787,10 +787,11 @@ public final class EditorUI extends javax.swing.JFrame {
         showProvHistButton.setEnabled(false);
         final int clickCount = evt.getClickCount();
         final boolean addToSelection = (evt.isControlDown() || evt.isMetaDown() || SwingUtilities.isRightMouseButton(evt));
+        final Province selectedProv = lastProvRolledOver;
         
         java.awt.EventQueue.invokeLater(
                 () -> {
-                    doMouseClick(lastProvRolledOver, addToSelection);
+                    doMouseClick(selectedProv, addToSelection);
                     
                     // If it was a double click, go ahead and show an editor.
                     if (clickCount > 1 && !addToSelection) {
@@ -916,7 +917,7 @@ public final class EditorUI extends javax.swing.JFrame {
         else
             currentProvinces.add(p);
         
-        if (p != null && p.getId() != 0) {
+        if (p != null && p.getId() != 0 && !currentProvinces.isEmpty()) {
             flashCurrentProvinces(1, Color.WHITE);
         } else { // (p == null)
             provNameLabel.setText("Click to select a province; right-click or hold <ctrl> to select multiple provinces");
