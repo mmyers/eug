@@ -301,7 +301,7 @@ public final class FilenameResolver {
                     filteredFiles.add(f);
             }
         }
-        return filteredFiles.toArray(new File[filteredFiles.size()]);
+        return filteredFiles.toArray(new File[0]);
     }
     
     /**
