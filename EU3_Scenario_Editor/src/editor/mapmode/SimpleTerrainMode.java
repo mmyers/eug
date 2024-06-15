@@ -16,12 +16,15 @@ public class SimpleTerrainMode extends ProvincePaintingMode {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(SimpleTerrainMode.class.getName());
     private final Map<Integer, String> provTerrains;
-    private final Map<String, editor.Map.Terrain> terrains;
+    private Map<String, editor.Map.Terrain> terrains;
     
     public SimpleTerrainMode(MapPanel panel) {
         super(panel);
         
         terrains = panel.getMap().getTerrainOverrides();
+        if (terrains == null)
+            terrains = panel.getMap().getTerrainOverridesCK3();
+        
         provTerrains = new HashMap<>();
         for (editor.Map.Terrain terr : terrains.values()) {
             for (String strId : terr.getOverrides()) {
