@@ -205,7 +205,7 @@ package eug.parser;
 
 %standalone
 
-ALPHA                       = [[:letter:]_\[\]\-',\u00B4\u00A8\u2010-\u2019\:@]
+ALPHA                       = [[:letter:]_\[\]\-',\u00B4\u00A8\u2010-\u2019\:@&]
 DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
 
