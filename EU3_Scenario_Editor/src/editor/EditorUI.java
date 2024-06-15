@@ -815,7 +815,7 @@ public final class EditorUI extends javax.swing.JFrame {
         mapPanel.getDataSource().reloadProvinces();
         mapPanel.getDataSource().reloadCountries();
         mapPanel.getModel().setDate(mapPanel.getModel().getDate());
-        repaint();
+        mapPanel.refresh();
     }//GEN-LAST:event_reloadMenuItemActionPerformed
 
     private void scaleColorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleColorsButtonActionPerformed
@@ -2137,7 +2137,7 @@ public final class EditorUI extends javax.swing.JFrame {
             log.log(Level.FINE, "Setting date to {0}", date);
             mapPanel.getModel().setDate(date);
 //            ((ProvinceEditorPanel)innerProvincePanel).setDate(date);
-            mapPanel.repaint();
+            mapPanel.refresh();
         }
     }
     
@@ -2623,7 +2623,7 @@ public final class EditorUI extends javax.swing.JFrame {
             ((SpinnerNumberModel)monthSpinner.getModel()).setValue(Integer.parseInt(splitDate[1]));
             ((SpinnerNumberModel)daySpinner.getModel()).setValue(Integer.parseInt(splitDate[2]));
             mapPanel.getModel().setDate(date);
-            mapPanel.repaint();
+            mapPanel.refresh();
         }
     }
     

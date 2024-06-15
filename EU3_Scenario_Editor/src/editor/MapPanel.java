@@ -37,6 +37,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     private transient BufferedImage mapImage;
     private transient BufferedImage scaledMapImage;
+    private transient BufferedImage backBufferImage;
     
     private double scaleFactor = DEFAULT_SCALE_FACTOR;
     public static final double DEFAULT_SCALE_FACTOR = 1.0; //0.8; //0.7;
@@ -50,6 +51,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     /** @since 0.4pre1 */
     private transient MapMode mode;
+    
+    private boolean isDirty = true;
     
     /**
      * Mapping which allows this class to override the color the
@@ -138,22 +141,38 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         if (scaledMapImage == null) {
             super.paintComponent(g);
         } else {
-            try {
-                mode.paint(g);
-
-                for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
-                    paintProvince((Graphics2D) g, override.getKey(), override.getValue());
-                }
-
-                if (paintBorders && mode.paintsBorders()) {
-                    paintBorders((Graphics2D) g);
-                }
-            } catch (RuntimeException ex) {
-                // can't pop up a message box from inside paintComponent, but the problem will probably be obvious anyway
-                log.log(Level.SEVERE, "Error while coloring the map! Current map mode is {0}", mode.getClass().getName());
-                log.log(Level.SEVERE, "The exception was: ", ex);
+            if (isDirty || backBufferImage == null)
+                paintBuffer();
+            
+            g.drawImage(backBufferImage, 0, 0, null);
+            
+            for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
+                paintProvince((Graphics2D) g, override.getKey(), override.getValue());
             }
         }
+    }
+    
+    private void paintBuffer() {
+        if (backBufferImage != null)
+            backBufferImage.flush();
+        
+        backBufferImage = new BufferedImage(scaledMapImage.getWidth(), scaledMapImage.getHeight(), scaledMapImage.getType());
+        
+        Graphics g = backBufferImage.getGraphics();
+        
+        try {
+            mode.paint(g);
+
+            if (paintBorders && mode.paintsBorders()) {
+                paintBorders((Graphics2D) g);
+            }
+        } catch (RuntimeException ex) {
+            // can't pop up a message box from inside paintComponent, but the problem will probably be obvious anyway
+            log.log(Level.SEVERE, "Error while coloring the map! Current map mode is {0}", mode.getClass().getName());
+            log.log(Level.SEVERE, "The exception was: ", ex);
+        }
+        
+        isDirty = false;
     }
     
     /**
@@ -199,8 +218,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         int x1,  x2,  y1,  y2;
         double y;
         
-        final Rectangle visibleRect = getVisibleRect();
-        
         for(Integer[] line : lines) {
             x1 = (int) Math.round(((double) line[1]) * scale);
             x2 = (int) Math.round(((double) line[2]) * scale);
@@ -211,9 +228,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             y1 = Math.max((int) Math.round(y - scale), 0);
             y = ((double) (line[0])) * scale;
             y2 = Math.min((int) Math.round(y + scale), maxY);
-            
-            if (!visibleRect.contains(x1, y1) && !visibleRect.contains(x2, y2))
-                continue;
             
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
@@ -230,15 +244,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         int x1, x2, y1, y2;
         double x, y;
         
-        final Rectangle visibleRect = getVisibleRect();
-        
         for (Integer[] pt : model.getMapData().getBorderPixels()) {
             x = ((double) pt[0]) * scale;
             y = ((double) pt[1]) * scale;
-            
-            if (!visibleRect.contains(x, y)) {
-                continue;
-            }
             
             x1 = Math.max((int) Math.round(x - halfScale), 0);
             x2 = Math.min((int) Math.round(x + halfScale), maxX);
@@ -246,13 +254,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             y2 = Math.min((int) Math.round(y + halfScale), maxY);
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
-    }
-    
-    public boolean shouldPaintProvince(int provId) {
-        Rectangle r = getProvinceBoundingRect(provId);
-        if (r == null)
-            return false;
-        return getVisibleRect().intersects(getProvinceBoundingRect(provId));
     }
     
     @Override
@@ -346,6 +347,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         }
         
         scaledMapImage.createGraphics().drawImage(mapImage, transform, 0, scaledMapImage.getHeight());
+        
+        isDirty = true;
     }
     
     public ProvinceData.Province getProvinceAt(final Point pt) {
@@ -482,6 +485,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.3pre1 */
     public void setMode(MapMode mode) {
         this.mode = mode;
+        isDirty = true;
     }
     
     /** @since 0.4pre1 */
@@ -575,6 +579,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.5pre3 */
     public void setPaintBorders(boolean paintBorders) {
         this.paintBorders = paintBorders;
+        isDirty = true;
+    }
+    
+    public void refresh() {
+        isDirty = true;
+        repaint();
     }
 
     /** @since 0.7.5 */
