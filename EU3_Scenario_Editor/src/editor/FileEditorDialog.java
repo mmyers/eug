@@ -8,6 +8,8 @@ package editor;
 
 import eug.shared.FilenameResolver;
 import eug.specific.ck2.CK2DataSource;
+import eug.specific.ck3.CK3DataSource;
+import eug.specific.ck3.CK3Scenario;
 import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.victoria2.Vic2Scenario;
 import java.util.ArrayList;
@@ -52,6 +54,8 @@ public class FileEditorDialog extends EditorDialog {
     
     private List<SaveHandler> saveHandlers = new ArrayList<>();
     
+    private String fileName;
+    
     
     /**
      * Creates new form FileEditorDialog.
@@ -66,15 +70,21 @@ public class FileEditorDialog extends EditorDialog {
         this.isProvince = true;
         this.id = p.getId();
         this.name = p.getName();
-        readFile(p.getId(), p.getName());
+        readFileText(p.getId(), p.getName());
         if (dataSource instanceof Vic2Scenario) {
-            String file = resolver.getVic2ProvinceHistoryFile(p.getId());
-            if (file != null)
-                setTitle(getTitle() + " (" + file + ")");
+            fileName = resolver.getVic2ProvinceHistoryFile(p.getId());
+            if (fileName != null)
+                setTitle(getTitle() + " (" + fileName + ")");
+        } else if (dataSource instanceof CK3Scenario) {
+            fileName = ((CK3Scenario)dataSource).getProvinceHistoryFileName(id);
+            if (fileName != null)
+                setTitle(getTitle() + " (" + fileName + ")");
+            
+            scrollToTextAtLineStart(id + " = {");
         } else {
-            String[] files = resolver.getProvinceHistoryFiles(p.getId());
-            if (files.length > 0 && files[0] != null)
-                setTitle(getTitle() + " (" + files[0] + ")");
+            String[] fileNames = resolver.getProvinceHistoryFiles(p.getId());
+            if (fileNames.length > 0 && fileNames[0] != null)
+                setTitle(getTitle() + " (" + fileNames[0] + ")");
         }
         register(this); // Register last in case exceptions occur
     }
@@ -86,10 +96,12 @@ public class FileEditorDialog extends EditorDialog {
         this.id = countryTag.hashCode();
         this.tag = countryTag;
         this.name = countryName;
-        readFile(countryTag, countryName);
+        readFileText(countryTag, countryName);
         String[] files = resolver.getCountryHistoryFiles(countryTag); // TODO: Doesn't work with Vic 2
-        if (files.length > 0 && files[0] != null)
-            setTitle(getTitle() + " (" + files[0] + ")");
+        if (files.length > 0 && files[0] != null) {
+            fileName = files[0];
+            setTitle(getTitle() + " (" + fileName + ")");
+        }
         register(this); // Register last in case exceptions occur
     }
     
@@ -98,7 +110,7 @@ public class FileEditorDialog extends EditorDialog {
      * @param pid   the province's ID number.
      * @param pname the province's name.
      */
-    private void readFile(int pid, String pname) {
+    private void readFileText(int pid, String pname) {
         final String data = dataSource.getProvinceAsStr(pid);
         
         if (data == null) {
@@ -113,8 +125,8 @@ public class FileEditorDialog extends EditorDialog {
      * @param tag   the country's tag.
      * @param cname the country's name.
      */
-    private void readFile(String tag, String cname) {
-        String data = null;
+    private void readFileText(String tag, String cname) {
+        String data;
         if (dataSource instanceof CK2DataSource)
             data = ((CK2DataSource)dataSource).getTitleAsStr(tag);
         else

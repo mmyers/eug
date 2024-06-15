@@ -185,6 +185,56 @@ public class EditorDialog extends JDialog {
         });
     }
     
+    protected boolean scrollToText(String text) {
+        return scrollToText(text, 0, true, false);
+    }
+    
+    protected boolean scrollToTextAtLineStart(String text) {
+        return scrollToText(text, 0, true, true);
+    }
+    
+    private boolean scrollToText(String findText, int searchStart, boolean matchCase, boolean mustStartLine) {
+        final int lineCount = getLineCount();
+        Segment textSegment = new Segment();
+        
+        for (int lineNum = 0; lineNum < lineCount; lineNum++) {
+            int lineStart = getLineStartOffset(lineNum);
+            if (lineNum < lineCount-1 && getLineStartOffset(lineNum+1) < searchStart)
+                continue;
+
+            getLineText(lineNum, textSegment);
+            String lineText = textSegment.toString();
+            if (!matchCase)
+                lineText = lineText.toLowerCase();
+            if (mustStartLine) {
+                if (lineText.startsWith(findText)
+                        || (!matchCase && lineText.startsWith(findText.toLowerCase()))) {
+                    textPane.setCaretPosition(lineStart);
+                    textPane.select(lineStart, lineStart + findText.length());
+                    return true;
+                }
+            } else if (lineText.contains(findText)) {
+                // try to figure out where it is
+                for (int i = 0; i < textSegment.count; i++) {
+                    if (lineStart + i < searchStart)
+                        continue;
+
+                    String remainder = new String(textSegment.array, textSegment.offset+i, textSegment.count-i);
+                    if (!matchCase)
+                        remainder = remainder.toLowerCase();
+                    int idx = remainder.indexOf(findText);
+                    if (idx >= 0) {
+                        idx += lineStart + i;
+                        textPane.setCaretPosition(idx);
+                        textPane.select(idx, idx + findText.length());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1024,40 +1074,10 @@ public class EditorDialog extends JDialog {
                     findText = findText.toLowerCase();
                 
                 if (forwardButton.isSelected()) {
-                    for (int lineNum = 0; lineNum < lineCount; lineNum++) {
-                        int lineStart = getLineStartOffset(lineNum);
-                        if (lineNum < lineCount-1 && getLineStartOffset(lineNum+1) < textPane.getCaretPosition())
-                            continue;
-
-                        getLineText(lineNum, textSegment);
-                        String lineText = textSegment.toString();
-                        if (!matchCase)
-                            lineText = lineText.toLowerCase();
-                        if (lineText.contains(findText)) {
-                            // try to figure out where it is
-                            for (int i = 0; i < textSegment.count; i++) {
-                                if (lineStart + i < textPane.getCaretPosition())
-                                    continue;
-
-                                String remainder = new String(textSegment.array, textSegment.offset+i, textSegment.count-i);
-                                if (!matchCase)
-                                    remainder = remainder.toLowerCase();
-                                int idx = remainder.indexOf(findText);
-                                if (idx >= 0) {
-                                    idx += lineStart + i;
-                                    textPane.setCaretPosition(idx);
-                                    textPane.select(idx, idx + findText.length());
-                                    return;
-                                }
-                            }
-//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
-                        }
-                    }
+                    if (scrollToText(findText, textPane.getCaretPosition(), matchCase, false))
+                        return;
                 } else {
                     // Backwards
-//                    JOptionPane.showMessageDialog(EditorDialog.FindDialog.this,
-//                            "Backwards search not yet supported.");
-                    
                     lineLoop:
                         for (int line = lineCount-1; line >= 0; line--) {
                             // loop until the line start is before the caret
@@ -1082,11 +1102,9 @@ public class EditorDialog extends JDialog {
                                         idx += lineStart + i;
                                         textPane.setCaretPosition(idx);
                                         textPane.select(idx, idx + findText.length());
-//                                    break lineLoop;
                                         return;
                                     }
                                 }
-//                            log.log(Level.WARNING, "Something is wrong in FindDialog");
                             }
                         }
                 }
