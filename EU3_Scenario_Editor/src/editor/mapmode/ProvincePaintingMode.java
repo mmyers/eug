@@ -41,10 +41,12 @@ public abstract class ProvincePaintingMode extends MapMode {
         // Now, send the rest to the subclass.
         int maxProvinces = getMap().getMaxProvinces();
         for (int i = 1; i < maxProvinces; i++) {
-            if (getMap().isLand(i))
-                paintProvince(g, i);
-            else
-                paintSeaZone(g, i);
+            if (mapPanel.shouldPaintProvince(i)) {
+                if (getMap().isLand(i))
+                    paintProvince(g, i);
+                else
+                    paintSeaZone(g, i);
+            }
         }
         
         paintingEnded(g);

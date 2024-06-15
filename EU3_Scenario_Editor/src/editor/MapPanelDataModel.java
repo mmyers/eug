@@ -229,10 +229,14 @@ public class MapPanelDataModel implements java.io.Serializable {
         return list;
     }
     
+    private List<Integer> warnedAbout = new ArrayList<>();
     public List<Integer[]> getLinesInProv(int provId) {
         ProvinceData.Province p = provinceData.getProvByID(provId);
         if (p == null) {
-            log.log(Level.WARNING, "Unknown province {0}", provId);
+            if (!warnedAbout.contains(provId)) {
+                warnedAbout.add(provId);
+                log.log(Level.WARNING, "Unknown province {0}", provId);
+            }
             return Collections.emptyList();
         } else
             return mapData.getLinesInProv(p.getColor());

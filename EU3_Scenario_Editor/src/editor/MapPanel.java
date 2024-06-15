@@ -199,6 +199,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         int x1,  x2,  y1,  y2;
         double y;
         
+        final Rectangle visibleRect = getVisibleRect();
+        
         for(Integer[] line : lines) {
             x1 = (int) Math.round(((double) line[1]) * scale);
             x2 = (int) Math.round(((double) line[2]) * scale);
@@ -209,6 +211,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             y1 = Math.max((int) Math.round(y - scale), 0);
             y = ((double) (line[0])) * scale;
             y2 = Math.min((int) Math.round(y + scale), maxY);
+            
+            if (!visibleRect.contains(x1, y1) && !visibleRect.contains(x2, y2))
+                continue;
             
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
@@ -225,15 +230,29 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         int x1, x2, y1, y2;
         double x, y;
         
+        final Rectangle visibleRect = getVisibleRect();
+        
         for (Integer[] pt : model.getMapData().getBorderPixels()) {
             x = ((double) pt[0]) * scale;
+            y = ((double) pt[1]) * scale;
+            
+            if (!visibleRect.contains(x, y)) {
+                continue;
+            }
+            
             x1 = Math.max((int) Math.round(x - halfScale), 0);
             x2 = Math.min((int) Math.round(x + halfScale), maxX);
-            y = ((double) pt[1]) * scale;
             y1 = Math.max((int) Math.round(y - halfScale), 0);
             y2 = Math.min((int) Math.round(y + halfScale), maxY);
             g.fillRect(x1, y1, x2-x1, y2-y1);
         }
+    }
+    
+    public boolean shouldPaintProvince(int provId) {
+        Rectangle r = getProvinceBoundingRect(provId);
+        if (r == null)
+            return false;
+        return getVisibleRect().intersects(getProvinceBoundingRect(provId));
     }
     
     @Override
@@ -370,14 +389,21 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private java.util.Map<Integer, Rectangle> boundsCache = new java.util.HashMap<>();
-    private Point getCenterPoint(int provId) {
+    private Rectangle getProvinceBoundingRect(int provId) {
         Rectangle r = boundsCache.get(provId);
             
         if (r == null) {
-            r = calculateBounds(model.getMapData().getLinesInProv(model.getProvinceData().getProvByID(provId).getColor()));
+            ProvinceData.Province p = model.getProvinceData().getProvByID(provId);
+            if (p == null)
+                return null;
+            r = calculateBounds(model.getMapData().getLinesInProv(p.getColor()));
             boundsCache.put(provId, r);
         }
         
+        return r;
+    }
+    private Point getCenterPoint(int provId) {
+        Rectangle r = getProvinceBoundingRect(provId);
         if (r == null) // province does not appear on the map
             return null;
 
