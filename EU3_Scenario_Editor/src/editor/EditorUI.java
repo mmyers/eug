@@ -1131,7 +1131,7 @@ public final class EditorUI extends javax.swing.JFrame {
                 } else if (view.equals("titles")) {
                     JMenu menu = new JMenu("Titles");
                     for (TitleMode.TitleType t : TitleMode.TitleType.values())
-                        viewMenu.add(new TitleFilterAction(t));
+                        menu.add(new TitleFilterAction(t));
                     viewMenu.add(menu);
                 } else if (view.equals("de-jure-titles")) {
                     JMenu menu = new JMenu("De Jure Titles");
