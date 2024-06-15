@@ -1019,6 +1019,16 @@ public final class EditorUI extends javax.swing.JFrame {
                         viewModeLabel.setText("Provinces with " + nativeType + " natives");
                         mapPanel.repaint();
                     }
+                } else if (mode instanceof CultureGroupMode) {
+                        String culture = mapPanel.getModel().getHistString(p.getId(), "culture");
+                        if (culture != null && !culture.isEmpty()) {
+                            String group = Utilities.getCultureGroup(culture);
+                            if (group != null) {
+                                mapPanel.setMode(new CultureGroupMode(mapPanel, group));
+                                viewModeLabel.setText(Text.getText(group) + " culture group");
+                                mapPanel.repaint();
+                            }
+                        }
                 } else if (mode instanceof CustomMode && !(mode instanceof AdvancedCustomMode)) {
                     String name = ((CustomMode)mode).getName();
                     if (name.equals("trade_goods")) {
@@ -2452,6 +2462,13 @@ public final class EditorUI extends javax.swing.JFrame {
         public CountryHistoryExistsFilterAction() {
             super("Country history files", new CountryHistoryExistsMode(mapPanel));
             putValue(SHORT_DESCRIPTION, "Countries with existing history files");
+        }
+    }
+    
+    private class CultureGroupFilterAction extends FilterAction {
+        public CultureGroupFilterAction(String name, String cultureGroup) {
+            super(name, new CultureGroupMode(mapPanel, cultureGroup));
+            putValue(SHORT_DESCRIPTION, name + " culture group");
         }
     }
 
