@@ -18,6 +18,8 @@ import eug.shared.Style;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck2.CK2SaveGame;
 import eug.specific.ck2.CK2Scenario;
+import eug.specific.ck3.CK3DataSource;
+import eug.specific.ck3.CK3Scenario;
 import eug.specific.clausewitz.ClausewitzHistory;
 import eug.specific.clausewitz.ClausewitzHistoryMergeTool;
 import eug.specific.clausewitz.ClausewitzSaveGame;
@@ -160,11 +162,13 @@ public final class EditorUI extends javax.swing.JFrame {
                 scen = new Vic2Scenario(resolver);
             else if (version.getSaveType().equalsIgnoreCase("ck2"))
                 scen = new CK2Scenario(resolver);
+            else if (version.getSaveType().equalsIgnoreCase("ck3"))
+                scen = new CK3Scenario(resolver);
             else {
                 log.log(Level.WARNING, "Unknown or missing scenario type specified by config (\"{0}\"). Defaulting to EU3/EU4.", version.getSaveType());
                 scen = new EU3Scenario(resolver);
             }
-
+            
             mapPanel.setDataSource(scen);
             log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
             FileEditorDialog.setDataSource(scen);
@@ -275,7 +279,9 @@ public final class EditorUI extends javax.swing.JFrame {
     }
     
     private void readBookmarks() {
-        final GenericObject bookmarks = loadFileOrFolder("common/bookmarks", "common/bookmarks.txt");
+        GenericObject bookmarks = loadFileOrFolder("common/bookmarks", "common/bookmarks.txt");
+        if (bookmarks == null)
+            bookmarks = loadFolderUTF8("common/bookmarks/bookmarks");
         
         if (bookmarks != null)
         {
@@ -1345,13 +1351,24 @@ public final class EditorUI extends javax.swing.JFrame {
         }
     }
     
+    private GenericObject loadFolderUTF8(String folderName) {
+        java.io.File folder = new java.io.File(resolver.resolveFilename(folderName));
+        if (folder.exists() && folder.isDirectory()) {
+            return EUGFileIO.loadAllUTF8(resolver.listFiles(folderName), defaultSettings);
+        }
+        return null;
+    }
+    
     private static final int MAX_PER_SUBMENU = 30;
     
     private void addReligionFilters(JMenu rootMenu) {
-        final GenericObject religions = loadFileOrFolder("common/religions", "common/religion.txt");
+        GenericObject religions = loadFileOrFolder("common/religions", "common/religion.txt");
         
-        if (religions == null)
-            return;
+        if (religions == null) {
+            religions = loadFolderUTF8("common/religion/religions"); // CK3
+            if (religions == null)
+                return;
+        }
 
         Collections.sort(religions.children, new ObjectComparator());
         
@@ -1596,10 +1613,13 @@ public final class EditorUI extends javax.swing.JFrame {
     }
 
     private void addNewCultureFilters(JMenu rootMenu) { // In Nomine and newer, and also Victoria 2
-        final GenericObject cultures = loadFileOrFolder("common/cultures", "common/cultures.txt");
+        GenericObject cultures = loadFileOrFolder("common/cultures", "common/cultures.txt");
         
-        if (cultures == null)
-            return;
+        if (cultures == null) {
+            cultures = loadFolderUTF8("common/culture/cultures"); // CK3
+            if (cultures == null)
+                return;
+        }
 
         final ObjectComparator comp = new ObjectComparator();
         Collections.sort(cultures.children, comp);
@@ -1623,7 +1643,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 pattern.deleteCharAt(pattern.length()-1); // get rid of the last '|'
                 pattern.append(')');
 
-                groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
+                //groupMenu.add(new MultiFilterAction("All " + Text.getText(group.name), "culture", pattern.toString()));
+                groupMenu.add(new CultureGroupFilterAction(Text.getText(group.name), group.name));
             }
 
             rootMenu.add(groupMenu);
@@ -2032,10 +2053,9 @@ public final class EditorUI extends javax.swing.JFrame {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            final int maxProv = Integer.parseInt(map.getString("max_provinces")) - 1;
             String response =
                     JOptionPane.showInputDialog(EditorUI.this,
-                    "Enter a province ID number (between 1 and " + maxProv +
+                    "Enter a province ID number (between 1 and " + map.getMaxProvinces() +
                     ") or a province name:",
                     currentProvinces.isEmpty() ? null : currentProvinces.get(0).getId());
             
@@ -2047,7 +2067,7 @@ public final class EditorUI extends javax.swing.JFrame {
             
             if (response.matches("[0-9]{1,}")) {
                 int prov = Integer.parseInt(response);
-                if (prov <= 0 || prov > maxProv) {
+                if (prov <= 0 || prov > map.getMaxProvinces()) {
                     JOptionPane.showMessageDialog(EditorUI.this, "Invalid province ID: " + response);
                     return;
                 }

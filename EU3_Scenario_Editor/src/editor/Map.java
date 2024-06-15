@@ -11,6 +11,8 @@ import eug.parser.ParserSettings;
 import eug.shared.FilenameResolver;
 import eug.shared.GenericList;
 import eug.shared.GenericObject;
+import eug.shared.ObjectVariable;
+import eug.shared.WritableObject;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -68,7 +70,15 @@ public final class Map {
     private java.util.Map<String, Color> terrainColorsList = null;
     private java.util.Map<String, Terrain> terrainOverridesList = null;
     
+    // This is not exactly map data, but CK regions are based on de jure holdings
+    // so we need access to this data here
+    private GenericObject titles; // CK2 and CK3
+    private java.util.Map<String, List<Integer>> allTitleHoldings;
+    private java.util.Map<String, String> titleHierarchy;
+    
     private boolean[] isLand = null;   // for In Nomine mainly
+    
+    private boolean[] isWasteland = null;
 
     private final FilenameResolver resolver;
     private final GameVersion version;
@@ -182,59 +192,64 @@ public final class Map {
         terrains = EUGFileIO.load(resolver.resolveFilename(terrainFilename), fastSettings);
         
         if (version.hasRegions()) {
-            String regFilename = mapData.getString("region").replace('\\', '/');
-            if (!regFilename.contains("/"))
-                regFilename = mapDirName + '/' + regFilename;
-
-            String regionText = stripColors(readFile(resolver.resolveFilename(regFilename)));
-            regions = EUGFileIO.loadFromString(regionText, fastSettings);
-            
-            if (mapData.hasString("area")) {
-                String areaFilename = mapData.getString("area").replace('\\', '/');
-                if (!areaFilename.contains("/"))
-                    areaFilename = mapDirName + '/' + areaFilename;
-                
-                String areaText = stripColors(readFile(resolver.resolveFilename(areaFilename)));
-                areas = EUGFileIO.loadFromString(areaText, fastSettings);
-            }
-            if (mapData.hasString("superregion")) {
-                String srFilename = mapData.getString("superregion").replace('\\', '/');
-                if (!srFilename.contains("/"))
-                    srFilename = mapDirName + '/' + srFilename;
-                
-                String srText = stripColors(readFile(resolver.resolveFilename(srFilename)));
-                superRegions = EUGFileIO.loadFromString(srText, fastSettings);
-            }
-            if (mapData.hasString("provincegroup")) {
-                String pgFilename = mapData.getString("provincegroup").replace('\\', '/');
-                if (!pgFilename.contains("/"))
-                    pgFilename = mapDirName + '/' + pgFilename;
-                
-                provinceGroups = EUGFileIO.load(resolver.resolveFilename(pgFilename), fastSettings);
-            }
+            if (!loadCKRegions(fastSettings))
+                loadRegions(fastSettings);
         }
         
         if (version.hasLandList()) {
             // Initialize boolean array
-            isLand = new boolean[maxProvinces];
+            isLand = new boolean[maxProvinces+1];
             for (int i = 1; i < isLand.length; i++) {
                 isLand[i] = true;   // unfortunately, the default is false
             }
             
             GenericList seaProvs = mapData.getList("sea_starts");
-            if (seaProvs == null) {
-                List<GenericList> seaZonesLists = mapData.lists.stream()
-                        .filter(w -> w.getName().equalsIgnoreCase("sea_zones"))
-                        .collect(Collectors.toList());
-                if (seaZonesLists.isEmpty()) {
-                    log.log(Level.WARNING, "No sea_starts or sea_zones found in default.map; weird things might start happening now");
+            String seaZones = mapData.getString("sea_zones"); // see if there is at least one in CK3 style
+            if (seaProvs == null ) {
+                if (seaZones.equals("")) {
+                    List<GenericList> seaZonesLists = mapData.lists.stream()
+                            .filter(w -> w.getName().equalsIgnoreCase("sea_zones"))
+                            .collect(Collectors.toList());
+                    if (seaZonesLists.isEmpty()) {
+                        log.log(Level.WARNING, "No sea_starts or sea_zones found in default.map; weird things might start happening now");
+                    } else {
+                        for (GenericList seaZoneRange : seaZonesLists) {
+                            if (seaZoneRange.size() == 2) {
+                                int start = Integer.parseInt(seaZoneRange.get(0));
+                                int end = Integer.parseInt(seaZoneRange.get(1));
+                                for (int i = start; i <= end; i++) {
+                                    isLand[i] = false;
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    for (GenericList seaZoneRange : seaZonesLists) {
-                        if (seaZoneRange.size() == 2) {
-                            int start = Integer.parseInt(seaZoneRange.get(0));
-                            int end = Integer.parseInt(seaZoneRange.get(1));
-                            for (int i = start; i <= end; i++) {
-                                isLand[i] = false;
+                    // CK3
+                    // sea_zones = RANGE { start_id end_id }
+                    // sea_zones = LIST { id1 id2 id3 }
+                    // have to find sea_zones = RANGE or sea_zones = LIST
+                    // and then find the next unnamed block in the tree
+                    for (int i = 0; i < mapData.getAllWritable().size(); i++) {
+                        WritableObject wo = mapData.getAllWritable().get(i);
+                        if (wo instanceof ObjectVariable) {
+                            ObjectVariable v = (ObjectVariable) wo;
+                            if (v.varname.equalsIgnoreCase("sea_zones") || v.varname.equalsIgnoreCase("lakes")
+                                    || v.varname.equalsIgnoreCase("river_provinces") || v.varname.equalsIgnoreCase("impassable_seas")) {
+                                List<Integer> seas = parseCK3RangeOrList(mapData, v, i);
+                                for (int id : seas) {
+                                    isLand[id] = false;
+                                }
+                                i++;
+                            }
+                            else if (v.varname.equalsIgnoreCase("impassable_mountains")) {
+                                if (isWasteland == null)
+                                    isWasteland = new boolean[maxProvinces+1]; // default is false, so no initialization needed
+
+                                List<Integer> wasteland = parseCK3RangeOrList(mapData, v, i);
+                                for (int id : wasteland) {
+                                    isWasteland[id] = true;
+                                }
+                                i++;
                             }
                         }
                     }
@@ -267,6 +282,217 @@ public final class Map {
         } else if (mapData.getString("sea_starts").isEmpty()) {
             log.log(Level.WARNING, "Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
         }
+    }
+
+    /**
+     * Reads the raw data for regions, if available, but does not initialize
+     * the region tables with the data.
+     * @return true if region data is available in the EU4 format
+     */
+    private boolean loadRegions(final ParserSettings settings) {
+        String regFilename = mapData.getString("region").replace('\\', '/');
+        if (regFilename.isEmpty())
+            return false;
+        
+        if (!regFilename.contains("/"))
+            regFilename = mapDirName + '/' + regFilename;
+        
+        String regionText = stripColors(readFile(resolver.resolveFilename(regFilename)));
+        regions = EUGFileIO.loadFromString(regionText, settings);
+        
+        if (mapData.hasString("area")) {
+            String areaFilename = mapData.getString("area").replace('\\', '/');
+            if (!areaFilename.contains("/"))
+                areaFilename = mapDirName + '/' + areaFilename;
+            
+            String areaText = stripColors(readFile(resolver.resolveFilename(areaFilename)));
+            areas = EUGFileIO.loadFromString(areaText, settings);
+        }
+        if (mapData.hasString("superregion")) {
+            String srFilename = mapData.getString("superregion").replace('\\', '/');
+            if (!srFilename.contains("/"))
+                srFilename = mapDirName + '/' + srFilename;
+            
+            String srText = stripColors(readFile(resolver.resolveFilename(srFilename)));
+            superRegions = EUGFileIO.loadFromString(srText, settings);
+        }
+        if (mapData.hasString("provincegroup")) {
+            String pgFilename = mapData.getString("provincegroup").replace('\\', '/');
+            if (!pgFilename.contains("/"))
+                pgFilename = mapDirName + '/' + pgFilename;
+            
+            provinceGroups = EUGFileIO.load(resolver.resolveFilename(pgFilename), settings);
+        }
+        
+        return true;
+    }
+    
+    private boolean loadCKRegions(final ParserSettings settings) {
+        String regFilename = mapData.getString("geographical_region");
+        if (regFilename.isEmpty())
+            regFilename = "map_data/geographical_regions/geographical_region.txt";
+        else if (!regFilename.contains("/"))
+                regFilename = mapDirName + '/' + regFilename;
+        regFilename = resolver.resolveFilename(regFilename);
+        
+        GenericObject regionData = EUGFileIO.loadUTF8(new File(regFilename), settings);
+        if (regionData == null)
+            return false;
+        
+        titles = EUGFileIO.loadAllUTF8(resolver.listFiles("common/landed_titles"), settings);
+        allTitleHoldings = new HashMap<>();
+        titleHierarchy = new HashMap<>();
+        for (GenericObject title : titles.children)
+            loadHoldings(title);
+        
+        List<java.util.Map<String, List<Integer>>> regionHierarchy = new ArrayList<>();
+        areaList = new HashMap<>();
+        //superRegionList = new HashMap<>();
+        regionHierarchy.add(areaList);
+        
+        // each top-level object is the name of a region, but regions can also
+        // contain other regions
+        
+        for (GenericObject regionBlock : regionData.children) {
+            String name = regionBlock.name;
+//            if (name.startsWith("material") || name.startsWith("hunt")
+//                    || name.startsWith("graphical") || name.startsWith("dlc"))
+//                continue;
+            if (!name.startsWith("world") || name.contains("buildings") || name.contains("innovation"))
+                continue;
+            List<Integer> provIds = new ArrayList<>();
+            
+            int highestLevel = 0;
+            
+            for (GenericList sub : regionBlock.lists) {
+                if (sub.getName().equalsIgnoreCase("regions")) {
+                    // add everything from each region listed
+                    // Paradox requires that each of these regions must have
+                    // already been defined, so no check needed unless we want to log it
+                    for (String region : sub) {
+                        for (int i = 0; i < regionHierarchy.size(); i++) {
+                            if (regionHierarchy.get(i).containsKey(region)) {
+                                highestLevel = Math.max(highestLevel, i + 1);
+                                provIds.addAll(regionHierarchy.get(i).get(region));
+                            }
+                        }
+//                        List<Integer> regionIds = regionList.get(region);
+//                        if (regionIds == null)
+//                            regionIds = superRegionList.get(region);
+//                        if (regionIds == null)
+//                            regionIds = null; // just to set a breakpoint
+//                        else
+//                            provIds.addAll(regionIds);
+                    }
+                    //superRegionList.put(name, provIds);
+                } else if (sub.getName().equalsIgnoreCase("duchies") || sub.getName().equalsIgnoreCase("counties")) {
+                    // add everything from each duchy or county listed
+                    for (String title : sub) {
+                        provIds.addAll(allTitleHoldings.get(title));
+                    }
+                    //regionList.put(name, provIds);
+                } else if (sub.getName().equalsIgnoreCase("provinces")) {
+                    // add each province listed
+                    
+                    for (String strProvId : sub) {
+                        provIds.add(Integer.parseInt(strProvId));
+                    }
+                    
+                    //regionList.put(name, provIds);
+                }
+            }
+            if (highestLevel >= regionHierarchy.size()) {
+                regionHierarchy.add(new HashMap<>());
+            }
+            regionHierarchy.get(highestLevel).put(name, provIds);
+        }
+        if (regionHierarchy.size() > 1)
+            regionList = regionHierarchy.get(1);
+        if (regionHierarchy.size() > 2)
+            superRegionList = regionHierarchy.get(2);
+        if (regionHierarchy.size() > 3)
+            contList = regionHierarchy.get(3);
+        
+        return true;
+    }
+
+    private List<Integer> loadHoldings(GenericObject title) {
+        List<Integer> provs = new ArrayList<>();
+        
+        if (title.name.startsWith("c_")) {
+            for (GenericObject barony : title.children) {
+                if (!barony.name.startsWith("b_"))
+                    continue;
+                
+                titleHierarchy.put(barony.name, title.name);
+                int prov = barony.getInt("province");
+                provs.add(prov);
+            }
+            allTitleHoldings.put(title.name, provs);
+        } else if (title.name.charAt(1) == '_') { // some kind of higher title
+            for (GenericObject subTitle : title.children) {
+                titleHierarchy.put(subTitle.name, title.name);
+                List<Integer> subProvs = loadHoldings(subTitle);
+                provs.addAll(subProvs);
+            }
+            allTitleHoldings.put(title.name, provs);
+        }
+        
+        return provs;
+    }
+    
+    public java.util.Map<String, List<Integer>> getAllDeJureHoldings() {
+        return allTitleHoldings;
+    }
+    
+    public List<Integer> getDeJureHolding(String title) {
+        if (allTitleHoldings != null) {
+            return allTitleHoldings.get(title);
+        }
+        return null;
+    }
+    
+    public String getDeJureLiege(String title) {
+        if (titleHierarchy != null) {
+            return titleHierarchy.get(title);
+        }
+        return null;
+    }
+
+    private List<Integer> parseCK3RangeOrList(GenericObject data, ObjectVariable v, int i) throws NumberFormatException {
+        List<Integer> ret = new ArrayList<>();
+        if (i >= data.getAllWritable().size() - 1)
+            return ret;
+        
+        if (v.getValue().equalsIgnoreCase("RANGE")) {
+            // sea_zones = RANGE { 632 640 }
+            WritableObject nextObj = data.getAllWritable().get(++i);
+            // we expect the next object to be a list with two integers
+            if (nextObj instanceof GenericList) {
+                GenericList list = (GenericList) nextObj;
+                if (list.size() == 2) {
+                    int start = Integer.parseInt(list.get(0));
+                    int end = Integer.parseInt(list.get(1));
+                    for (int j = start; j <= end; j++) {
+                        ret.add(j);
+                    }
+                } else {
+                    log.log(Level.WARNING, "Unexpected map range data: RANGE {0}", list.toString());
+                }
+            }
+        } else if (v.getValue().equalsIgnoreCase("LIST")) {
+            // sea_zones = LIST { 631 }
+            WritableObject nextObj = data.getAllWritable().get(++i);
+            // we expect the next object to be a list with at least one integer
+            if (nextObj instanceof GenericList) {
+                GenericList list = (GenericList) nextObj;
+                for (String sId : list) {
+                    int id = Integer.parseInt(sId);
+                    ret.add(id);
+                }
+            }
+        }
+        return ret;
     }
     
     /**
@@ -311,7 +537,7 @@ public final class Map {
         } catch (FileNotFoundException ex) {
         } catch (IOException ex) {
         }
-        log.log(Level.INFO, "{0} provinces", ret);
+        log.log(Level.INFO, "Last province id is {0}", ret);
         return ret;
     }
     
@@ -396,6 +622,9 @@ public final class Map {
     }
     
     public boolean isWasteland(int provId) {
+        if (isWasteland != null) {
+            return isWasteland[provId];
+        }
         List<Integer> wasteland = getClimates().get("impassable");
         return wasteland != null && wasteland.contains(provId);
     }
@@ -642,10 +871,16 @@ public final class Map {
         if (terrainColorsList == null) {
             terrainColorsList = new HashMap<>();
             
-            GenericObject categories = terrains.getChild("categories");
-            if (categories != null) {
-                for (GenericObject terrain : categories.children) {
-                    terrainColorsList.put(terrain.name, parseColor(terrain.getList("color")));
+            if (terrains == null) {
+                for (Terrain t : getTerrainOverridesCK3().values()) {
+                    terrainColorsList.put(t.getName(), t.getColor());
+                }
+            } else {
+                GenericObject categories = terrains.getChild("categories");
+                if (categories != null) {
+                    for (GenericObject terrain : categories.children) {
+                        terrainColorsList.put(terrain.name, parseColor(terrain.getList("color")));
+                    }
                 }
             }
         }
@@ -653,6 +888,9 @@ public final class Map {
     }
     
     public java.util.Map<String, Terrain> getTerrainOverrides() {
+        if (terrains == null)
+            return null;
+        
         if (terrainOverridesList == null) {
             terrainOverridesList = new HashMap<>();
             
@@ -664,6 +902,27 @@ public final class Map {
                                 new Terrain(terrain.name, parseColor(terrain.getList("color")), terrain.getList("terrain_override").getList()));
                     }
                 }
+            }
+        }
+        return terrainOverridesList;
+    }
+    
+    public java.util.Map<String, Terrain> getTerrainOverridesCK3() {
+        if (terrainOverridesList == null) {
+            terrainOverridesList = new HashMap<>();
+            GenericObject terrainTypes = EUGFileIO.loadUTF8(new File(resolver.resolveFilename("common\\terrain_types\\00_terrains.txt")), ParserSettings.getDefaults());
+            GenericObject terrainOverrides = EUGFileIO.loadUTF8(new File(resolver.resolveFilename("common\\province_terrain\\00_province_terrain.txt")), ParserSettings.getDefaults());
+            
+            for (GenericObject terrain : terrainTypes.children) {
+                terrainOverridesList.put(terrain.name, new Terrain(terrain.name, parseColorMaybeHsv(terrain, "color"), new ArrayList<>()));
+            }
+            
+            // terrainOverrides has three keys with default_land, default_sea, and default_coastal_sea
+            // followed by a list of key-value pairs
+            for (ObjectVariable keyValue : terrainOverrides.values) {
+                if (keyValue.varname.startsWith("default"))
+                    continue;
+                terrainOverridesList.get(keyValue.getValue()).getOverrides().add(keyValue.varname);
             }
         }
         return terrainOverridesList;
@@ -690,6 +949,39 @@ public final class Map {
         if (r > 1 || g > 1 || b > 1) // assume [0, 255] scale if any value is outside [0, 1]
             return new Color((int) r, (int) g, (int) b);
         return new Color(r, g, b);
+    }
+    
+    private static Color parseColorHsv(GenericList color) {
+        if (color.size() < 3) {
+            log.log(Level.WARNING, "Unable to parse HSV color: {0}", color.toString());
+            return null;
+        }
+        
+        float h = Float.parseFloat(color.get(0));
+        float s = Float.parseFloat(color.get(1));
+        float v = Float.parseFloat(color.get(2));
+        
+        return new Color(Color.HSBtoRGB(h, s, v));
+    }
+    
+    private static Color parseColorMaybeHsv(GenericObject parent, String key) {
+        for (int i = 0; i < parent.getAllWritable().size(); i++) {
+            WritableObject obj = parent.getAllWritable().get(i);
+            if (obj instanceof GenericList) {
+                GenericList maybeColor = (GenericList) obj;
+                if (maybeColor.getName().equalsIgnoreCase(key))
+                    return parseColor(maybeColor);
+            } else if (obj instanceof ObjectVariable) {
+                ObjectVariable maybeColorVar = (ObjectVariable) obj;
+                if (maybeColorVar.varname.equalsIgnoreCase(key) && maybeColorVar.getValue().equalsIgnoreCase("hsv")) {
+                    WritableObject shouldBeColorObj = parent.getAllWritable().get(i+1);
+                    if (shouldBeColorObj instanceof GenericList) {
+                        return parseColorHsv((GenericList) shouldBeColorObj);
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     public String getString(String key) {

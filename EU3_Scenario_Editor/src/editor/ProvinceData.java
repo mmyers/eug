@@ -111,7 +111,15 @@ public final class ProvinceData {
                 color += (g & 0xFF) << 8;
                 color += (b & 0xFF);
                 
-                final Province p = new Province(id, Text.getText("PROV" + arr[0]), color);
+                String nameKey = "PROV" + arr[0];
+                String name = Text.getText(nameKey);
+                if (name.equals(nameKey)) {
+                    nameKey = "b_" + arr[4].toLowerCase();
+                    name = Text.getText(nameKey);
+                    if (name.equals(nameKey))
+                        name = Text.getText(arr[4]);
+                }
+                final Province p = new Province(id, name, color);
                 
                 rgbMap.put(color, p);
                 allProvs[id] = p;
