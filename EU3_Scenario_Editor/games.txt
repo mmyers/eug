@@ -125,6 +125,20 @@ ck2 = {
 	mod_path = "Paradox Interactive/Crusader Kings II"
 }
 
+ck3 = {
+	inherit = ck2
+	display = "Crusader Kings 3"
+	has_land_list = yes
+	has_rivers = yes
+	has_regions = yes
+	save_type = ck3
+	view_set = ck3
+	new_style_mod = yes
+	mod_path = "Paradox Interactive/Crusader Kings III"
+	map_path = "map_data"
+	text = yaml
+}
+
 mote = {
 	display = "March of the Eagles"
 	start_date = 1805.1.1
