@@ -111,7 +111,7 @@ public final class EditorUI extends javax.swing.JFrame {
     }
 
     private static final java.util.regex.Pattern DATE_PATTERN =
-            java.util.regex.Pattern.compile("\\d{4}\\.\\d{1,2}\\.\\d{1,2}");
+            java.util.regex.Pattern.compile("\\d{3,4}\\.\\d{1,2}\\.\\d{1,2}");
 
     private boolean setStartDateNew(String startDate) {
         if (startDate == null || startDate.isEmpty())
@@ -194,8 +194,14 @@ public final class EditorUI extends javax.swing.JFrame {
                     daySpinner.getValue().toString();
             mapPanel.getModel().setDate(date);
 
-            if (version.hasBookmarks())
-                readBookmarks();
+            if (version.hasBookmarks()) {
+                String firstDate = readBookmarks();
+            
+                if (date.equals("0.0.0") && firstDate != null) {
+                    setStartDateNew(firstDate);
+                    mapPanel.getModel().setDate(firstDate);
+                }
+            }
         } else {
             log.log(Level.INFO, "Loading saved game...");
 
@@ -278,9 +284,9 @@ public final class EditorUI extends javax.swing.JFrame {
         return root;
     }
     
-    private void readBookmarks() {
+    private String readBookmarks() {
         GenericObject bookmarks = loadFileOrFolder("common/bookmarks", "common/bookmarks.txt");
-        if (bookmarks == null)
+        if (bookmarks == null || bookmarks.isEmpty())
             bookmarks = loadFolderUTF8("common/bookmarks/bookmarks");
         
         if (bookmarks != null)
@@ -289,20 +295,40 @@ public final class EditorUI extends javax.swing.JFrame {
                 private ClausewitzHistory.DateComparator dc = new ClausewitzHistory.DateComparator();
                 @Override
                 public int compare(GenericObject o1, GenericObject o2) {
-                    return dc.compare(o1.getString("date"), o2.getString("date"));
+                    String firstDate = o1.getString("date");
+                    if (firstDate.isEmpty())
+                        firstDate = o1.getString("start_date");
+                    String secondDate = o2.getString("date");
+                    if (secondDate.isEmpty())
+                        secondDate = o2.getString("start_date");
+                    return dc.compare(firstDate, secondDate);
                 }
             });
+            String firstDate = null;
             for (GenericObject bookmark : bookmarks.children) {
+                String date = bookmark.getString("date");
+                if (date.isEmpty())
+                    date = bookmark.getString("start_date");
+                
+                if (firstDate == null)
+                    firstDate = date;
+                
+                String name = bookmark.getString("name");
+                if (name == null || name.isEmpty())
+                    name = bookmark.name;
                 bookmarkMenu.add(
                         new BookmarkAction(
-                        Text.getText(bookmark.getString("name")) + " (" + bookmark.getString("date") + ")",
+                        Text.getText(name) + " (" + date + ")",
                         Text.getText(bookmark.getString("desc")),
-                        bookmark.getString("date")
+                        date
                         ));
             }
+            bookmarkMenu.pack();
+            return firstDate;
         }
         
         bookmarkMenu.pack();
+        return null;
     }
     
     /** This method is called from within the constructor to
