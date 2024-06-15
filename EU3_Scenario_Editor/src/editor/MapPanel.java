@@ -538,7 +538,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     
     public void flashProvinces(final List<Integer> provIds, final int numFlashes, final Color provColor) {
         final ActionListener listener = new ActionListener() {
-            private boolean color = true;
+            private boolean color = false;
             @Override
             public void actionPerformed(final ActionEvent e) {
                 if (color) {
@@ -553,8 +553,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             }
         };
         
-        for (int i = 1; i <= numFlashes*2; i++) {
-            Timer t = new Timer(333*i, listener);
+        for (Integer provId : provIds)
+            colorProvince(provId, provColor);
+        repaint();
+        
+        for (int i = 1; i <= numFlashes*2 - 1; i++) {
+            Timer t = new Timer(250*i, listener);
             t.setRepeats(false);
             t.start();
         }
