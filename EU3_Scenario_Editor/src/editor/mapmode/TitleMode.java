@@ -5,6 +5,7 @@ import editor.ProvinceData.Province;
 import editor.Text;
 import eug.shared.GenericObject;
 import eug.specific.ck2.CK2DataSource;
+import eug.specific.ck3.CK3DataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -18,6 +19,7 @@ import java.awt.Graphics2D;
 public class TitleMode extends ProvincePaintingMode {
 
     protected CK2DataSource dataSource;
+    protected CK3DataSource ck3DataSource;
     
     protected TitleType type;
 
@@ -41,9 +43,23 @@ public class TitleMode extends ProvincePaintingMode {
         super(panel);
         if (panel.getDataSource() instanceof CK2DataSource)
             this.dataSource = (CK2DataSource) panel.getDataSource();
+        else if (panel.getDataSource() instanceof CK3DataSource)
+            this.ck3DataSource = (CK3DataSource) panel.getDataSource();
         else
-            throw new IllegalArgumentException("Title mode is only valid for Crusader Kings 2");
+            throw new IllegalArgumentException("Title mode is only valid for Crusader Kings 2 or 3");
         this.type = level;
+    }
+    
+    private GenericObject getProvinceHistory(int provId) {
+        if (dataSource != null)
+            return dataSource.getProvinceHistory(provId);
+        return ck3DataSource.getProvinceHistory(provId);
+    }
+    
+    private GenericObject getTitleHistory(String title) {
+        if (dataSource != null)
+            return dataSource.getTitleHistory(title);
+        return ck3DataSource.getTitleHistory(title);
     }
 
     @Override
@@ -52,7 +68,7 @@ public class TitleMode extends ProvincePaintingMode {
         // In saved games: a province has multiple barony-level titles defined. Each of them *should* be subject to the same count???
         String owner = mapPanel.getModel().getHistString(provId, "title");
         if (owner == null || owner.isEmpty()) {
-            GenericObject history = dataSource.getProvinceHistory(provId);
+            GenericObject history = getProvinceHistory(provId);
             if (history != null) {
                 for (GenericObject obj : history.children) {
                     if (obj.name.startsWith("b_")) {
@@ -76,7 +92,7 @@ public class TitleMode extends ProvincePaintingMode {
     }
 
     protected String getTitleHistString(String title, String name) {
-        return ClausewitzHistory.getHistString(dataSource.getTitleHistory(title), name, mapPanel.getModel().getDate());
+        return ClausewitzHistory.getHistString(getTitleHistory(title), name, mapPanel.getModel().getDate());
     }
 
     public String getLiege(String title) {
@@ -143,7 +159,7 @@ public class TitleMode extends ProvincePaintingMode {
         String lowestTitle = mapPanel.getModel().getHistString(id, "title");
         
         if (lowestTitle == null || lowestTitle.isEmpty()) {
-            GenericObject history = dataSource.getProvinceHistory(id);
+            GenericObject history = getProvinceHistory(id);
             if (history != null) {
                 for (GenericObject obj : history.children) {
                     if (obj.name.startsWith("b_")) {
