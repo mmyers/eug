@@ -514,6 +514,7 @@ public final class EditorUI extends javax.swing.JFrame {
         getContentPane().add(toolBar, java.awt.BorderLayout.NORTH);
 
         mapPanel.addMouseMotionListener(formListener);
+        mapPanel.addMouseWheelListener(formListener);
         mapPanel.addMouseListener(formListener);
         mapScrollPane.setViewportView(mapPanel);
 
@@ -594,7 +595,7 @@ public final class EditorUI extends javax.swing.JFrame {
 
     // Code for dispatching events from components to event handlers.
 
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.awt.event.WindowListener {
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.awt.event.MouseWheelListener, java.awt.event.WindowListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == scaleColorsButton) {
@@ -656,6 +657,12 @@ public final class EditorUI extends javax.swing.JFrame {
         public void mouseMoved(java.awt.event.MouseEvent evt) {
             if (evt.getSource() == mapPanel) {
                 EditorUI.this.mapPanelMouseMoved(evt);
+            }
+        }
+
+        public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+            if (evt.getSource() == mapPanel) {
+                EditorUI.this.mapPanelMouseWheelMoved(evt);
             }
         }
 
@@ -924,6 +931,15 @@ public final class EditorUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, textField);
         }
     }//GEN-LAST:event_copyProvIdsButtonActionPerformed
+
+    private void mapPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_mapPanelMouseWheelMoved
+        if (evt.isControlDown()) {
+            if (evt.getPreciseWheelRotation() > 0)
+                zoomOutAction.actionPerformed(null);
+            else
+                zoomInAction.actionPerformed(null);
+        }
+    }//GEN-LAST:event_mapPanelMouseWheelMoved
     
     private void checkForUpdates() {
         SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
