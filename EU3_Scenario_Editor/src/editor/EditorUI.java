@@ -247,6 +247,8 @@ public final class EditorUI extends javax.swing.JFrame {
 
             isSavedGame = true;
         }
+        if (mapPanel.getModel().getDataSource() instanceof CK2DataSource || mapPanel.getModel().getDataSource() instanceof CK3DataSource)
+            showCountryHistButton.setText("Show title history");
     }
     
     private GenericObject loadLuaFile(String filename) {
@@ -680,10 +682,10 @@ public final class EditorUI extends javax.swing.JFrame {
     private transient String lastCountry = null;
 
     private String getLastCountryName() {
-        if (mapPanel.getDataSource() instanceof CK2DataSource) {
+        if (mapPanel.getDataSource() instanceof CK2DataSource || mapPanel.getDataSource() instanceof CK3DataSource) {
             if (!currentProvinces.isEmpty()) {
                 Province lastClickedProv = currentProvinces.get(currentProvinces.size()-1);
-                return TitleMode.getTitleName(lastCountry, lastClickedProv);
+                return TitleMode.getTitleName(lastCountry, lastClickedProv, mapPanel.getDataSource());
             }
             return "";
         } else {
@@ -944,10 +946,15 @@ public final class EditorUI extends javax.swing.JFrame {
         
         if (p.getId() != 0) { // Fix this
             showProvHistButton.setEnabled(true);
-            if (mapPanel.getModel().getDataSource() instanceof CK2DataSource) {
+            if (mapPanel.getModel().getDataSource() instanceof CK2DataSource || mapPanel.getModel().getDataSource() instanceof CK3DataSource) {
                 lastCountry = mapPanel.getModel().getHistString(p.getId(), "title");
+                if (mapPanel.getModel().getDataSource() instanceof CK3DataSource)
+                    lastCountry = map.getDeJureCounty(p.getId());
                 if (mapPanel.getMode() instanceof TitleMode) {
                     TitleMode mode = ((TitleMode)mapPanel.getMode());
+                    lastCountry = mode.getLiege(lastCountry);
+                } else if (mapPanel.getMode() instanceof DeJureTitleMode) {
+                    DeJureTitleMode mode = ((DeJureTitleMode)mapPanel.getMode());
                     lastCountry = mode.getLiege(lastCountry);
                 }
             } else

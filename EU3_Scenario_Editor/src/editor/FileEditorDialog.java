@@ -102,6 +102,10 @@ public class FileEditorDialog extends EditorDialog {
             fileName = files[0];
             setTitle(getTitle() + " (" + fileName + ")");
         }
+        
+        if (dataSource instanceof CK3DataSource)
+            scrollToText(tag + " = {");
+        
         register(this); // Register last in case exceptions occur
     }
     
@@ -129,6 +133,8 @@ public class FileEditorDialog extends EditorDialog {
         String data;
         if (dataSource instanceof CK2DataSource)
             data = ((CK2DataSource)dataSource).getTitleAsStr(tag);
+        else if (dataSource instanceof CK3DataSource)
+            data = ((CK3DataSource)dataSource).getTitleAsStr(tag);
         else
             data = dataSource.getCountryAsStr(tag);
         
@@ -167,6 +173,10 @@ public class FileEditorDialog extends EditorDialog {
             if (dataSource instanceof CK2DataSource) {
                 ((CK2DataSource) dataSource).saveTitle(tag, getText());
                 ((CK2DataSource) dataSource).reloadTitle(tag);
+                notifySaveEvent(tag);
+            } else if (dataSource instanceof CK3DataSource) {
+                ((CK3DataSource) dataSource).saveTitle(tag, getText());
+                ((CK3DataSource) dataSource).reloadTitle(tag);
                 notifySaveEvent(tag);
             } else {
                 dataSource.saveCountry(tag, name, getText());

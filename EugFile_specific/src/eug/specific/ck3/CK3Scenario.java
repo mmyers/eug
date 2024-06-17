@@ -35,6 +35,8 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
     
     private final GenericObject landedTitles;
     
+    private final Map<String, String> titleHistoryFiles;
+    
     /**
      * Mapping of province ID to the ID of the primary holding of its county.
      */
@@ -45,6 +47,7 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
         titleHistoryCache = new HashMap<>();
         provinceHistoryFiles = new HashMap<>();
         primaryHoldings = new HashMap<>();
+        titleHistoryFiles = new HashMap<>();
         landedTitles = loadTitles(new FilenameResolver(mainDir, modDir, true));
         preloadProvHistory();
     }
@@ -54,6 +57,7 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
         titleHistoryCache = new HashMap<>();
         provinceHistoryFiles = new HashMap<>();
         primaryHoldings = new HashMap<>();
+        titleHistoryFiles = new HashMap<>();
         landedTitles = loadTitles(resolver);
         preloadProvHistory();
     }
@@ -157,32 +161,32 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
 //        super.saveProvince(id, pname, data); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
 //    }
     
+    private void preloadTitleHistory() {
+        for (File f : resolver.listFiles("history/titles")) {
+            GenericObject titles = EUGFileIO.loadUTF8(f, ParserSettings.getQuietSettings());
+            for (GenericObject title : titles.children) {
+                titleHistoryCache.put(title.name, title);
+                titleHistoryFiles.put(title.name, f.getName());
+            }
+        }
+    }
     
 
     /** Gets the country history for the given tag, using the cache. */
     private GenericObject _getTitleHistory(final String title) {
+        if (titleHistoryCache.isEmpty())
+            preloadTitleHistory();
+        
         GenericObject hist = titleHistoryCache.get(title);
         if (hist == null) {
-            final String histFile = resolveTitleHistoryFile(title);
-
-            if (histFile == null) {
-                System.err.println("Cannot find title history file for " + title);
-                return null;
-            }
-
-            hist = EUGFileIO.load(histFile, settings);
-
-            if (hist == null) {
-                System.err.println("Failed to load title history file for " + title);
-            } else {
-                titleHistoryCache.put(title, hist);
-            }
+            System.err.println("Cannot find title history for " + title);
+            return null;
         }
         return hist;
     }
 
     private String resolveTitleHistoryFile(String title) {
-        return resolver.resolveFilename("history/titles/" + title + ".txt");
+        return resolver.resolveFilename("history/titles/" + titleHistoryFiles.get(title));
     }
 
     @Override
@@ -197,7 +201,12 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
 
     @Override
     public String getTitleAsStr(String title) {
-        return loadFile(resolveTitleHistoryFile(title));
+        try {
+            String fileName = resolveTitleHistoryFile(title);
+            return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            return "";
+        }
     }
 
     @Override
@@ -208,21 +217,19 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
 
     @Override
     public void reloadTitle(String title) {
-        titleHistoryCache.remove(title);
-        resolver.reset();
+        reloadTitles();
     }
 
     @Override
     public void reloadTitleHistory(String title) {
-        titleHistoryCache.remove(title);
-        resolver.reset();
+        reloadTitles();
     }
 
     @Override
     public void reloadTitles() {
         titleHistoryCache.clear();
+        titleHistoryFiles.clear();
         resolver.reset();
-        //preloadTitles(); // not implemented
     }
 
 
