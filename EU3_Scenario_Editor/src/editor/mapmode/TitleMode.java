@@ -6,6 +6,7 @@ import editor.Text;
 import eug.shared.GenericObject;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck3.CK3DataSource;
+import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -66,7 +67,7 @@ public class TitleMode extends ProvincePaintingMode {
     protected void paintProvince(final Graphics2D g, int provId) {
         // In history: a province has a single "title" string defined. Follow that title up the chain as far as necessary.
         // In saved games: a province has multiple barony-level titles defined. Each of them *should* be subject to the same count???
-        String owner = mapPanel.getModel().getHistString(provId, "title");
+        String owner = getLowestHistTitleHolder(provId);
         if (owner == null || owner.isEmpty()) {
             GenericObject history = getProvinceHistory(provId);
             if (history != null) {
@@ -85,6 +86,14 @@ public class TitleMode extends ProvincePaintingMode {
     @Override
     protected void paintSeaZone(final Graphics2D g, int id) {
         // Don't paint sea zones.
+    }
+    
+    protected String getLowestHistTitleHolder(int provId) {
+        String title = mapPanel.getModel().getHistString(provId, "title");
+        if (title != null && !title.isEmpty())
+            return title;
+        
+        return mapPanel.getMap().getDeJureCounty(provId);
     }
 
     protected Color getTitleColor(String title) {
@@ -155,8 +164,10 @@ public class TitleMode extends ProvincePaintingMode {
         final int id = current.getId();
         if (!getMap().isLand(id))
             return "";
+        if (getMap().isWasteland(id))
+            return "";
 
-        String lowestTitle = mapPanel.getModel().getHistString(id, "title");
+        String lowestTitle = getLowestHistTitleHolder(id);
         
         if (lowestTitle == null || lowestTitle.isEmpty()) {
             GenericObject history = getProvinceHistory(id);
@@ -176,7 +187,7 @@ public class TitleMode extends ProvincePaintingMode {
         StringBuilder ret = new StringBuilder();
         String title = lowestTitle;
         while (true) {
-            ret.append(getTitleName(title, current)).append("<br>");
+            ret.append(getTitleName(title, current, dataSource)).append("<br>");
             String liege = getTitleHistString(title, "liege");
             if (liege == null || liege.isEmpty() || liege.equals("0") || liege.equalsIgnoreCase(title))
                 break;
@@ -184,27 +195,35 @@ public class TitleMode extends ProvincePaintingMode {
         }
 
         return ret.toString();
-
-//        String title = getLiege(lowestTitle, type);
-//        String titleName = getTitleName(title, current);
-//        if (!titleName.isEmpty())
-//            return titleName;
-//
-//        return "Unknown owner";
     }
 
-    public static String getTitleName(String title, Province current) {
-        if (title.startsWith("e_"))
-            return Text.getText("empire_of") + " " + Text.getText(title);
-        else if (title.startsWith("k_"))
-            return Text.getText("kingdom_of") + " " + Text.getText(title);
-        else if (title.startsWith("d_"))
-            return Text.getText("duchy_of") + " " + Text.getText(title);
-        else if(title.startsWith("c_"))
-            return Text.getText("county_of") + " " + current.getName(); // counties share the name of the province
-        else if (title.startsWith("b_"))
-            return Text.getText("barony_of") + " " + Text.getText(title);
-        else
-            return "";
+    public static String getTitleName(String title, Province current, ClausewitzDataSource dataSource) {
+        if (dataSource instanceof CK2DataSource) {
+            if (title.startsWith("e_"))
+                return Text.getText("empire_of") + " " + Text.getText(title);
+            else if (title.startsWith("k_"))
+                return Text.getText("kingdom_of") + " " + Text.getText(title);
+            else if (title.startsWith("d_"))
+                return Text.getText("duchy_of") + " " + Text.getText(title);
+            else if(title.startsWith("c_"))
+                return Text.getText("county_of") + " " + current.getName(); // counties share the name of the province
+            else if (title.startsWith("b_"))
+                return Text.getText("barony_of") + " " + Text.getText(title);
+            else
+                return "";
+        } else {
+            if (title.startsWith("e_"))
+                return Text.getText("empire") + " of " + Text.getText(title);
+            else if (title.startsWith("k_"))
+                return Text.getText("kingdom") + " of " + Text.getText(title);
+            else if (title.startsWith("d_"))
+                return Text.getText("duchy") + " of " + Text.getText(title);
+            else if(title.startsWith("c_"))
+                return Text.getText("county") + " of " + Text.getText(title); // counties share the name of the province
+            else if (title.startsWith("b_"))
+                return Text.getText("barony") + " of " + Text.getText(title);
+            else
+                return "";
+        }
     }
 }

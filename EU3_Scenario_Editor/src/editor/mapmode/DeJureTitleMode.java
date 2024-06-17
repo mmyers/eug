@@ -114,8 +114,7 @@ public class DeJureTitleMode extends ProvincePaintingMode {
     }
 
     public String getLiege(String title) {
-        return "";
-        //return getLiege(title, type);
+        return mapPanel.getMap().getDeJureLiege(title);
     }
 
     protected String getLiege(String title, TitleType level) {
@@ -183,7 +182,7 @@ public class DeJureTitleMode extends ProvincePaintingMode {
 
         StringBuilder ret = new StringBuilder();
         while (true) {
-            ret.append(getTitleName(title, current)).append("<br>");
+            ret.append(TitleMode.getTitleName(title, current, dataSource)).append("<br>");
             String liege = mapPanel.getMap().getDeJureLiege(title);
             if (liege == null || liege.isEmpty() || liege.equals("0") || liege.equalsIgnoreCase(title))
                 break;
@@ -198,24 +197,5 @@ public class DeJureTitleMode extends ProvincePaintingMode {
 //            return titleName;
 //
 //        return "Unknown owner";
-    }
-
-    public static String getTitleName(String title, ProvinceData.Province current) {
-        String text = Text.getText(title);
-        if (!text.equals(title))
-            return text;
-        
-        if (title.startsWith("e_"))
-            return Text.getText("empire_of") + " " + Text.getText(title);
-        else if (title.startsWith("k_"))
-            return Text.getText("kingdom_of") + " " + Text.getText(title);
-        else if (title.startsWith("d_"))
-            return Text.getText("duchy_of") + " " + Text.getText(title);
-        else if(title.startsWith("c_"))
-            return Text.getText("county_of") + " " + current.getName(); // counties share the name of the province
-        else if (title.startsWith("b_"))
-            return Text.getText("barony_of") + " " + Text.getText(title);
-        else
-            return "";
     }
 }

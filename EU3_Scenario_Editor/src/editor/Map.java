@@ -75,6 +75,7 @@ public final class Map {
     private GenericObject titles; // CK2 and CK3
     private java.util.Map<String, List<Integer>> allTitleHoldings;
     private java.util.Map<String, String> titleHierarchy;
+    private java.util.Map<Integer, String> allDeJureCounties;
     
     private boolean[] isLand = null;   // for In Nomine mainly
     
@@ -342,6 +343,7 @@ public final class Map {
         titles = EUGFileIO.loadAllUTF8(resolver.listFiles("common/landed_titles"), settings);
         allTitleHoldings = new HashMap<>();
         titleHierarchy = new HashMap<>();
+        allDeJureCounties = new HashMap<>();
         for (GenericObject title : titles.children)
             loadHoldings(title);
         
@@ -427,6 +429,7 @@ public final class Map {
                 titleHierarchy.put(barony.name, title.name);
                 int prov = barony.getInt("province");
                 provs.add(prov);
+                allDeJureCounties.put(prov, title.name);
             }
             allTitleHoldings.put(title.name, provs);
         } else if (title.name.charAt(1) == '_') { // some kind of higher title
@@ -455,6 +458,13 @@ public final class Map {
     public String getDeJureLiege(String title) {
         if (titleHierarchy != null) {
             return titleHierarchy.get(title);
+        }
+        return null;
+    }
+    
+    public String getDeJureCounty(int provId) {
+        if (allDeJureCounties != null) {
+            return allDeJureCounties.get(provId);
         }
         return null;
     }

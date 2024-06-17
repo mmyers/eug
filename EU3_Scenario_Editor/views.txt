@@ -185,6 +185,7 @@ ck2 = {
 
 ck3 = {
 	provinces
+	titles
 	de-jure-titles
 	---
 	province-areas-menu
