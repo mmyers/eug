@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -49,16 +50,21 @@ public final class Text {
         
         Arrays.sort(files);
 
+        long startTime = System.currentTimeMillis();
+        int processedFiles;
         if (version.getTextFormat().equals("yaml")) {
-            log.log(Level.INFO, "Reading YAML text files");
-            processFilesYaml(files);
+            log.log(Level.INFO, "Reading YAML localization files");
+            processedFiles = processFilesYaml(files);
         } else {
-            log.log(Level.INFO, "Reading CSV text files");
-            processFilesCsv(files);
+            log.log(Level.INFO, "Reading CSV localization files");
+            processedFiles = processFilesCsv(files);
         }
+        log.log(Level.INFO, "Processed {0} localization files in {1} ms.", new Object[] { processedFiles, System.currentTimeMillis() - startTime });
     }
     
-    private static void processFilesCsv(File[] files) throws FileNotFoundException, IOException {
+    private static int processFilesCsv(File[] files) throws FileNotFoundException, IOException {
+        int count = 0;
+        
         for (File f : files) {
             if (!f.getName().endsWith(".csv"))
                 continue;   // Could use a FileFilter or FilenameFilter
@@ -66,6 +72,8 @@ public final class Text {
             if (f.length() <= 0) {
                 continue;
             }
+            
+            count++;
             
             int bufferSize = Math.min(1024000, (int)f.length());
             try (BufferedReader reader = new BufferedReader(new FileReader(f), bufferSize)) {
@@ -91,15 +99,19 @@ public final class Text {
                 }
             }
         }
+        
+        return count;
     }
 
-    private static void processFilesYaml(File[] files) throws FileNotFoundException, IOException {
+    private static int processFilesYaml(File[] files) throws FileNotFoundException, IOException {
+        int count = 0;
+        
         // very naive implementation
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
         for (File f : files) {
             if (f.isDirectory()) {
-                processFilesYaml(f.listFiles());
+                count += processFilesYaml(f.listFiles());
                 continue;
             }
             
@@ -109,9 +121,11 @@ public final class Text {
             if (f.length() <= 0) {
                 continue;
             }
+            
+            count++;
 
             int bufferSize = Math.min(102400, (int)f.length());
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"), bufferSize)) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8), bufferSize)) {
                 String line = reader.readLine();
 
                 if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
@@ -119,8 +133,6 @@ public final class Text {
 
                 if (!line.startsWith("l_english")) // only read English localizations
                     continue;
-                
-                //log.log(Level.INFO, "Reading {0}", f.getName());
                 
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();
@@ -161,6 +173,8 @@ public final class Text {
                 }
             }
         }
+        
+        return count;
     }
     
     private static String extractQuote(String value) {
