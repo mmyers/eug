@@ -697,12 +697,16 @@ public class EditorDialog extends JDialog {
         EUGFileIO.save(config, "editor_cfg.txt", EUGFileIO.NO_COMMENT);
     }
     
+    private String standardizeLineEndings(String input) {
+        return input.replaceAll("(\r\n|\r|\n)", "\n");
+    }
+    
     /**
      * Returns true iff the text in the text area has changed since being
      * loaded.
      */
     public final boolean textHasChanged() {
-        return !originalContents.equals(textPane.getText());
+        return !standardizeLineEndings(originalContents).equals(standardizeLineEndings(textPane.getText()));
     }
     
     protected final String getOriginalContents() {
@@ -715,10 +719,10 @@ public class EditorDialog extends JDialog {
         // the text pane's text. Apparently, any \n characters inserted into
         // the document automatically turn into \r\n (even if they were already
         // part of one!).
-        originalContents = contents.replaceAll("(\r\n|\r|\n)", "\r\n");
+        originalContents = standardizeLineEndings(contents);
         try {
             Document newDoc = textPane.getEditorKit().createDefaultDocument();
-            newDoc.insertString(0, contents.replaceAll("\r\n", "\n"), null);
+            newDoc.insertString(0, originalContents, null);
             textPane.setDocument(newDoc);
         } catch (BadLocationException ex) {
             log.log(Level.WARNING, ex.getMessage(), ex);
