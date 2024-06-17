@@ -237,22 +237,22 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         g.setColor(Color.BLACK);
         
         final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
-        final double halfScale = scale/2;
-        final int maxX = getWidth();
-        final int maxY = getHeight();
         
-        int x1, x2, y1, y2;
         double x, y;
+        
+        int pixelSize = 1;
+        if (scale > 1)
+            pixelSize = 2;
+        if (scale > 2)
+            pixelSize = 3;
+        if (scale > 3)
+            pixelSize = 4;
         
         for (Integer[] pt : model.getMapData().getBorderPixels()) {
             x = ((double) pt[0]) * scale;
             y = ((double) pt[1]) * scale;
             
-            x1 = Math.max((int) Math.round(x - halfScale), 0);
-            x2 = Math.min((int) Math.round(x + halfScale), maxX);
-            y1 = Math.max((int) Math.round(y - halfScale), 0);
-            y2 = Math.min((int) Math.round(y + halfScale), maxY);
-            g.fillRect(x1, y1, x2-x1, y2-y1);
+            g.fillRect((int)x, (int)y, pixelSize, pixelSize);
         }
     }
     
@@ -572,7 +572,6 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     /** @since 0.5pre1 */
     public void setDataSource(ClausewitzDataSource dataSource) {
         model.setDataSource(dataSource);
-        model.preloadProvs();
     }
 
     /** @since 0.5pre3 */
@@ -628,7 +627,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         // arrow head adapted from https://stackoverflow.com/a/4112875
         // slight modification because arrows would be drawn backwards when a line crosses the edge of the map
-        final int ARROW_SIZE = 4;
+        final int ARROW_SIZE = (int) Math.max(4, 4 * scaleFactor);
         double dx = x2 - x1, dy = y2 - y1;
         double angle = Math.atan2(dy, dx);
         int len = (int) Math.sqrt(dx*dx + dy*dy);
