@@ -53,7 +53,8 @@ public class ProvCultureMode extends ProvincePaintingMode {
         final String cultureGroupTag = Utilities.getCultureGroup(cultureTag);
         java.awt.Color c = Utilities.getCultureColor(cultureTag);
         String ret = "Culture: " + cultureTag + " (" + cultureText + ")<br>";
-        ret += "Group: " + cultureGroupTag + " (" + Text.getText(cultureGroupTag) + ")<br>";
+        if (cultureGroupTag != null)
+            ret += "Group: " + cultureGroupTag + " (" + Text.getText(cultureGroupTag) + ")<br>";
         ret += "Color: " + c.getRed() + " " + c.getGreen() + " " + c.getBlue();
         return ret;
     }

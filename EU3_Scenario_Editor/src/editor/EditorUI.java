@@ -2311,7 +2311,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private class DeJureTitleFilterAction extends FilterAction {
         public DeJureTitleFilterAction(DeJureTitleMode.TitleType type) {
-            super(type.getName() + " Titles", new DeJureTitleMode(mapPanel, type));
+            super("De Jure " + type.getName() + " Titles", new DeJureTitleMode(mapPanel, type));
             putValue(SHORT_DESCRIPTION, type.getName() + " Titles");
         }
     }
