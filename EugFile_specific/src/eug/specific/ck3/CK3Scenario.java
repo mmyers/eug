@@ -231,6 +231,11 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
         titleHistoryFiles.clear();
         resolver.reset();
     }
+    
+    @Override
+    public void preloadTitles() {
+        preloadTitleHistory();
+    }
 
 
     @Override

@@ -69,6 +69,11 @@ public interface CK3DataSource extends ClausewitzDataSource {
      * Forces a reload of all title data if the implementation uses a cache.
      */
     public void reloadTitles();
+    
+    /**
+     * Preloads all available title data into a cache.
+     */
+    public void preloadTitles();
 
 
     /**

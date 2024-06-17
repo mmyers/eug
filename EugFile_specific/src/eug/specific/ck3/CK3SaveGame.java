@@ -133,6 +133,11 @@ public class CK3SaveGame extends ClausewitzSaveGame implements CK3DataSource {
     public void reloadTitles() {
         initTitles();
     }
+    
+    @Override
+    public void preloadTitles() {
+        initTitles();
+    }
 
     @Override
     public void saveTitle(String title, String data) {

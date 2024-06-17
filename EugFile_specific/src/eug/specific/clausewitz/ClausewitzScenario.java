@@ -318,8 +318,9 @@ public abstract class ClausewitzScenario implements ClausewitzDataSource {
     }
     
     private void preloadCountryHistory() {
-        final GenericObject countries =
-                EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
+        GenericObject countries = EUGFileIO.load(resolver.resolveFilename("common/countries.txt"), settings);
+        if (countries == null)
+            countries = EUGFileIO.loadAll(resolver.listFiles("common/country_tags"), settings);
         
         for (ObjectVariable def : countries.values) {
             String tag = def.varname;
