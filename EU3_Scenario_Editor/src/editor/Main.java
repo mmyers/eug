@@ -13,6 +13,7 @@ import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.Style;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -272,6 +273,9 @@ public class Main {
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                dialog.getRootPane().getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                dialog.getRootPane().getGlassPane().setVisible(true);
+                
                 log.log(Level.INFO, "**************************************************");
                 
                 if (gameDirField.getText().isEmpty())
@@ -304,8 +308,6 @@ public class Main {
 
                 EUGFileIO.saveUTF8(config, "config.txt", true, Style.AGCEEP, ParserSettings.getQuietSettings());
                 
-                dialog.dispose();
-
                 log.log(Level.INFO, "Loading {0}. Mod: {1}", new Object[]{version.getDisplay(), mod.getName()});
                 log.log(Level.INFO, "Game path: {0}", gameDirField.getText());
                 log.log(Level.INFO, "Mod path: {0}", (mod.getName().equals("None") ? "(none)" : mod.getModPath()));
@@ -323,7 +325,10 @@ public class Main {
                 boolean checkForUpdates = true;
                 if (config.hasString("check_for_updates"))
                     checkForUpdates = config.getBoolean("check_for_updates");
-                startEditor(saveFile, version, resolver, checkForUpdates);
+                EditorUI ui = startEditor(saveFile, version, resolver, checkForUpdates);
+                
+                dialog.dispose();
+                ui.setVisible(true);
             }
         });
         buttonPanel.add(okButton);
@@ -360,7 +365,7 @@ public class Main {
     private static final String LAST_MOD_KEY = "lastmod";
     private static final String PATHS_KEY = "paths";
 
-    private void startEditor(String saveFile, GameVersion version, FilenameResolver resolver, boolean checkUpdates) {
+    private EditorUI startEditor(String saveFile, GameVersion version, FilenameResolver resolver, boolean checkUpdates) {
         try {
             Text.initText(resolver, version);
         } catch (FileNotFoundException ex) {
@@ -379,7 +384,7 @@ public class Main {
 
         try {
             EditorUI ui = new EditorUI(saveFile, version, resolver, checkUpdates);
-            ui.setVisible(true);
+            return ui;
         } catch (OutOfMemoryError er) {
             javax.swing.JOptionPane.showMessageDialog(null,
                     "Out of memory. Please see readme.txt for information on solving this.",
@@ -387,6 +392,7 @@ public class Main {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
+        return null;
     }
     
     // returns a Vector to use in a combo box

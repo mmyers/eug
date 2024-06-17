@@ -29,6 +29,7 @@ import eug.specific.eu3.EU3Scenario;
 import eug.specific.victoria2.Vic2SaveGame;
 import eug.specific.victoria2.Vic2Scenario;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -89,14 +89,55 @@ public final class EditorUI extends javax.swing.JFrame {
         mapPanel.initialize(map, resolver, provinceData, version.isMapUpsideDown());
         pack();
         
-        setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        setExtendedState(getExtendedState() | java.awt.Frame.MAXIMIZED_BOTH);
         
         mapPanel.centerMap();
         setDataSource(saveFile);
         addFilters();
         
+        preloadHistory();
+        
         if (checkUpdates)
             checkForUpdates();
+    }
+    
+    private transient Thread historyPreloadThread;
+    
+    private void preloadHistory() {
+        Runnable r = () -> {
+            log.log(Level.INFO, "Preloading history");
+
+            long startTime = System.currentTimeMillis();
+
+            mapPanel.getDataSource().preloadProvinces(map.getMaxProvinces());
+
+            // Preloading countries and titles sometimes takes quite a long time
+            // and it isn't necessary in all cases, so let's not do it here
+//            if (mapPanel.getDataSource() instanceof CK3DataSource)
+//                ((CK3DataSource)mapPanel.getDataSource()).preloadTitles();
+//            else
+//                mapPanel.getDataSource().preloadCountries();
+
+            log.log(Level.INFO, "Loaded history in {0} ms.", System.currentTimeMillis() - startTime);
+        };
+        historyPreloadThread = new Thread(r);
+        historyPreloadThread.start();
+    }
+    
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        
+        if (b) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                historyPreloadThread.join();
+            } catch (InterruptedException ex) {
+                log.log(Level.WARNING, "History preload failed");
+                historyPreloadThread.interrupt();
+            }
+            setCursor(null);
+        }
     }
 
     private boolean setStartDateOld(GenericObject defines) {
@@ -895,11 +936,13 @@ public final class EditorUI extends javax.swing.JFrame {
             @Override
             protected void done() {
                 try {
-                    if (get() == true) {
+                    if (get()) {
                         log.log(Level.INFO, "New version found: {0}", Version.getLatestVersion());
                         EditorUI.this.helpMenu.setBackground(Color.ORANGE);
                         EditorUI.this.helpMenu.setOpaque(true);
                         EditorUI.this.checkVersionMenuItem.setBackground(Color.ORANGE);
+                    } else {
+                        log.log(Level.INFO, "No new version found");
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
