@@ -19,6 +19,7 @@ public class AboutDialog extends javax.swing.JDialog {
     private static final String GITHUB_LINK = "https://github.com/mmyers/eug";
     private static final String EU3_THREAD = "https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-save-game-and-scenario-editor-viewer.527308/";
     private static final String EU4_THREAD = "https://forum.paradoxplaza.com/forum/index.php?threads/announcing-a-scenario-editor-and-map-viewer.707474/";
+    private static final String CK3_THREAD = "https://forum.paradoxplaza.com/forum/threads/tool-clausewitz-scenario-editor-now-for-ck3.1689106/";
     private static final String PATREON_LINK = "https://www.patreon.com/user?u=60455822";
     private static final String DISCORD_LINK = "https://discord.gg/j382dvC3Fw";
     
@@ -31,6 +32,7 @@ public class AboutDialog extends javax.swing.JDialog {
             "<html><head><style>img { margin-right: 5px }</style></head><body style='font-size:1.2em; font-family: \"Garamond\", serif; background-color: #d3d3d3; margin-left: 5px;'>" +
             "<h1>Clausewitz Scenario Editor " + Version.getCurrentVersion() + "</h1>\n" +
             "By MichaelM<br>Since 2007<p>\n" +
+            "<img src=\"" + PARADOX_ICON + "\" width=16 height=16>&nbsp;<a href=\"" + CK3_THREAD   + "\">Visit the CK3 forum thread</a><br>\n" +
             "<img src=\"" + PARADOX_ICON + "\" width=16 height=16>&nbsp;<a href=\"" + EU4_THREAD   + "\">Visit the EU4 forum thread</a><br>\n" +
             "<img src=\"" + PARADOX_ICON + "\" width=16 height=16>&nbsp;<a href=\"" + EU3_THREAD   + "\">Visit the old EU3 forum thread</a><br>\n" +
             "<img src=\"" + GITHUB_ICON  + "\" width=16 height=16>&nbsp;<a href=\"" + GITHUB_LINK  + "\">View source code on GitHub</a><br>\n" +
