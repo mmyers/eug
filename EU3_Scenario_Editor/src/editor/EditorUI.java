@@ -817,6 +817,10 @@ public final class EditorUI extends javax.swing.JFrame {
                 dlg.setVisible(true);
             }
         } else {
+            if (mapPanel.getDataSource() instanceof CK3DataSource) {
+                JOptionPane.showMessageDialog(this, "Multi-editing is not yet supported in CK3 because of the different history structure. Please edit a single province at a time.");
+                return;
+            }
             if (provinceHistoryMergeTool == null) {
                 provinceHistoryMergeTool = new ClausewitzHistoryMergeTool();
                 provinceHistoryMergeTool.initAutoMergeList(mapPanel.getDataSource());
