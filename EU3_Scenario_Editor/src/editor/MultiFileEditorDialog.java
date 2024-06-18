@@ -115,7 +115,7 @@ public class MultiFileEditorDialog extends EditorDialog {
         this.countryTags = null;
         this.countryNames = null;
         
-        setOriginalContents("# Anything typed here will be added to all selected province history files");
+        setOriginalContents("");
         
         createTopBar();
     }
@@ -131,7 +131,7 @@ public class MultiFileEditorDialog extends EditorDialog {
         this.countryTags = countryTags;
         this.countryNames = countryNames;
         
-        setOriginalContents("# Anything typed here will be added to all selected country history files");
+        setOriginalContents("");
         
         createTopBar();
     }
