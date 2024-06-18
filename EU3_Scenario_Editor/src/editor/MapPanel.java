@@ -135,6 +135,13 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
+    
+    public BufferedImage getCurrentSnapshot() {
+        if (isDirty || backBufferImage == null)
+            paintBuffer();
+        
+        return backBufferImage;
+    }
 
     @Override
     protected void paintComponent(final Graphics g) {

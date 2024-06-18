@@ -50,7 +50,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -410,6 +412,10 @@ public final class EditorUI extends javax.swing.JFrame {
         showCountryHistButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        reloadMenuItem = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        exportImageMenuItem = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator8 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         zoomInMenuItem = new javax.swing.JMenuItem();
@@ -418,8 +424,6 @@ public final class EditorUI extends javax.swing.JFrame {
         goToProvMenuItem = new javax.swing.JMenuItem();
         javax.swing.JSeparator jSeparator3 = new javax.swing.JSeparator();
         setDateMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JSeparator jSeparator7 = new javax.swing.JSeparator();
-        reloadMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
@@ -539,6 +543,18 @@ public final class EditorUI extends javax.swing.JFrame {
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
 
+        reloadMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        reloadMenuItem.setText("Force a reload of all data");
+        reloadMenuItem.addActionListener(formListener);
+        fileMenu.add(reloadMenuItem);
+        fileMenu.add(jSeparator7);
+
+        exportImageMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        exportImageMenuItem.setText("Export map as image...");
+        exportImageMenuItem.addActionListener(formListener);
+        fileMenu.add(exportImageMenuItem);
+        fileMenu.add(jSeparator8);
+
         exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
@@ -563,11 +579,6 @@ public final class EditorUI extends javax.swing.JFrame {
 
         setDateMenuItem.setAction(setDateAction);
         toolsMenu.add(setDateMenuItem);
-        toolsMenu.add(jSeparator7);
-
-        reloadMenuItem.setText("Force a reload of all data");
-        reloadMenuItem.addActionListener(formListener);
-        toolsMenu.add(reloadMenuItem);
 
         menuBar.add(toolsMenu);
 
@@ -627,6 +638,9 @@ public final class EditorUI extends javax.swing.JFrame {
             }
             else if (evt.getSource() == checkVersionMenuItem) {
                 EditorUI.this.checkVersionMenuItemActionPerformed(evt);
+            }
+            else if (evt.getSource() == exportImageMenuItem) {
+                EditorUI.this.exportImageMenuItemActionPerformed(evt);
             }
         }
 
@@ -940,6 +954,33 @@ public final class EditorUI extends javax.swing.JFrame {
                 zoomInAction.actionPerformed(null);
         }
     }//GEN-LAST:event_mapPanelMouseWheelMoved
+
+    private void exportImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportImageMenuItemActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        chooser.setFileFilter(new FileNameExtensionFilter("JPG or PNG files", "jpg", "jpeg", "png"));
+        
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String fileName = chooser.getSelectedFile().toString();
+            String format;
+            if (fileName.toLowerCase().endsWith("jpg")
+                    || fileName.toLowerCase().endsWith("jpeg")) {
+                format = "JPEG";
+            } else if (fileName.toLowerCase().endsWith("png")) {
+                format = "PNG";
+            } else {
+                return;
+            }
+            
+            try {
+                ImageIO.write(mapPanel.getCurrentSnapshot(), format, chooser.getSelectedFile());
+                JOptionPane.showMessageDialog(this, "Saved successfully to " + fileName);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Failed to save snapshot image to {0}", fileName);
+                JOptionPane.showMessageDialog(this, "Failed to save image!", "Error", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_exportImageMenuItemActionPerformed
     
     private void checkForUpdates() {
         SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
@@ -2041,6 +2082,7 @@ public final class EditorUI extends javax.swing.JFrame {
     private javax.swing.JLabel ctryNameLabel;
     private javax.swing.JSpinner daySpinner;
     private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenuItem exportImageMenuItem;
     javax.swing.JButton flashProvsButton;
     private javax.swing.JButton goToProvButton;
     private javax.swing.JMenuItem goToProvMenuItem;
