@@ -18,9 +18,10 @@ just find that last colony that's keeping you from getting 100% warscore on your
 mortal enemy).
 
 
-It is known to be compatible with EU3, EU4, Rome, Victoria 2, and HOI3. CK2
-probably works, but I don't guarantee it; I've only tried it on the demo, which
-means no saved games.
+It is known to be compatible with EU3, EU4, Rome, Victoria 2, HOI3, CK2, CK3,
+and March of the Eagles. It's possible that it would work on other Clausewitz
+or Jomini engine games with little or no code modification, only changes to
+games.txt and views.txt.
 
 
 ===========================
@@ -128,38 +129,43 @@ pause
 ----- stop copying here -----
 
 
-==================
-=== Known Bugs ===
-==================
+====================
+=== Known Issues ===
+====================
 
 
 * Some items in save games are time-dependent, like revolt_risk. The editor
   currently does not handle them specially and assumes that anything that has
   not been reset to 0 must still exist.
+* Hierarchical mods are not fully supported. The editor only looks for files
+  in the vanilla game folder and in the mod folder, not in any dependencies.
 
+Other issues/suggestions should be posted in one of the many forum threads,
+or on one of these places.
 
-=== To do ===
-
-    * Add a view mode for discoveries.
-    * Implement an export-to-image function.
-    * Improve saved game capabilites to allow viewing variables which are not
-        in the history (e.g. country national ideas).
-    * I don't know what else; what do you think? Post your suggestions on the
-        thread!
+GitHub issues: https://github.com/mmyers/eug/issues
+My Discord: https://discord.gg/j382dvC3Fw
 
 
 ===============
 === Credits ===
 ===============
 
-EUG-file handling (lib/eugFile.jar) is based partly on Kinniken's
+The original EUG file handling (lib/eugFile.jar) is based partly on Kinniken's
 VictoriaEditor (http://www.kstudio.net/vedit/). All else is entirely my own
 work.
-Big thanks go to seboden. He has been most helpful in not just finding bugs,
-but also suggesting fixes.
-Thanks also to Kurper and jdrou for making suggestions for the Divine Wind
-version.
-Thanks to everyone who posted feedback and suggestions in the forum thread.
+
+Thanks to forum members seboden, Kurper, jdrou, 17blue17, GTAIV, and anyone else
+who has posted feedback and suggestions in the thread or on Discord.
+
+Special thanks to my Patreon patrons:
+17blue17
+King Macbeth
+Trevor Beedie
+
+Special thanks also to atreus for sponsoring my CK3 work (i.e. buying me CK3).
+If anyone else wants me to officially support another modern Paradox game,
+following atreus's strategy would probably work.
 
 -- MichaelM
 

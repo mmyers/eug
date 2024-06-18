@@ -3,6 +3,55 @@
 \=================/
 
 
+=== 1.0.0 ===
+
+New features:
+- New support for Crusader Kings 3, history only.
+  - Both province history and title history files are editable.
+  - When opening a history file, the text editor will automatically scroll to
+    the correct section of the file.
+
+- New De Jure title mode used exclusively for CK3, in addition to CK2's de facto
+  title mode which uses title history to find the current holders.
+
+- New mode selection toolbar in the multi-editor window:
+  - "Auto" uses the old behavior where the editor would attempt to guess which
+      history statements can appear multiple times and which only once.
+  - "Add" manually specifies that all input text should be added to each file.
+  - "Overwrite" specifies that all input text should overwrite corresponding
+    history lines.
+  - "Delete" removes the input text from each selected history file.
+  As before, all additions/deletions are done in a logical manner using the
+  structure of the files, not simple plain text. When you add a line inside a
+  date block, the editor will look to see if there is an existing block with the
+  same date, and add the data to that block if possible. Removing works
+  the same way.
+
+  Note: Multi-editing is currently disabled in CK3 because of the different
+        structure of CK3's history files.
+
+- New function "File->Export map as image..." to save the current map as a
+  JPEG or PNG image.
+
+- The map can now be zoomed with CTRL + mouse scroll wheel.
+
+- MAJOR speedup in rendering colored maps. CK3 title mode goes from rendering
+  around 2 frames per second to rendering 400-500 fps - i.e. imperceptibly fast.
+  The initial rendering of each map mode does still take the full time, but
+  each subsequent rendering is able to simply reuse the same map.
+  This does have the small drawback of increasing memory consumption, especially
+  at higher zoom levels.
+
+- The UI no longer disappears while loading game files. Instead it shows a wait cursor.
+
+Bugfixes:
+- Fixed issue when editing history files with mixed LF and CRLF line endings.
+  The editor will no longer get confused and think there are changes when there aren't.
+
+- Improved border drawing when zoomed in or out. Borders will remain as solid
+  lines instead of slightly fuzzy dotted lines.
+
+
 === 0.9.12 ===
 
 New features:

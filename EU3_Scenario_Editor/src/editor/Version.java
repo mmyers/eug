@@ -24,9 +24,9 @@ public class Version {
     
     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(Version.class.getName());
     
-    private static final int MAJOR = 0;
-    private static final int MINOR = 9;
-    private static final int REV = 12;
+    private static final int MAJOR = 1;
+    private static final int MINOR = 0;
+    private static final int REV = 0;
     
     private static final String PROJECT_URL = "https://sourceforge.net/projects/eug";
     private static final String UPDATE_URL = "https://eug.sourceforge.net/version.xml";
@@ -95,8 +95,14 @@ public class Version {
         
         if (major > MAJOR)
             return true;
+        else if (major < MAJOR)
+            return false;
+        
         if (minor > MINOR)
             return true;
+        else if (minor < MINOR)
+            return false;
+        
         return rev > REV;
     }
     
