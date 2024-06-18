@@ -412,8 +412,6 @@ public final class EditorUI extends javax.swing.JFrame {
         showCountryHistButton = new javax.swing.JButton();
         javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        reloadMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JPopupMenu.Separator jSeparator7 = new javax.swing.JPopupMenu.Separator();
         exportImageMenuItem = new javax.swing.JMenuItem();
         javax.swing.JPopupMenu.Separator jSeparator8 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
@@ -424,6 +422,8 @@ public final class EditorUI extends javax.swing.JFrame {
         goToProvMenuItem = new javax.swing.JMenuItem();
         javax.swing.JSeparator jSeparator3 = new javax.swing.JSeparator();
         setDateMenuItem = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        reloadMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
@@ -543,12 +543,6 @@ public final class EditorUI extends javax.swing.JFrame {
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
 
-        reloadMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        reloadMenuItem.setText("Force a reload of all data");
-        reloadMenuItem.addActionListener(formListener);
-        fileMenu.add(reloadMenuItem);
-        fileMenu.add(jSeparator7);
-
         exportImageMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exportImageMenuItem.setText("Export map as image...");
         exportImageMenuItem.addActionListener(formListener);
@@ -579,6 +573,12 @@ public final class EditorUI extends javax.swing.JFrame {
 
         setDateMenuItem.setAction(setDateAction);
         toolsMenu.add(setDateMenuItem);
+        toolsMenu.add(jSeparator7);
+
+        reloadMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        reloadMenuItem.setText("Force a reload of all data");
+        reloadMenuItem.addActionListener(formListener);
+        toolsMenu.add(reloadMenuItem);
 
         menuBar.add(toolsMenu);
 
@@ -958,6 +958,9 @@ public final class EditorUI extends javax.swing.JFrame {
     private void exportImageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportImageMenuItemActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        chooser.setDialogTitle("Choose an image file to export the map");
+        chooser.setApproveButtonText("Export");
+        chooser.setSelectedFile(new java.io.File("export.png"));
         chooser.setFileFilter(new FileNameExtensionFilter("JPG or PNG files", "jpg", "jpeg", "png"));
         
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
