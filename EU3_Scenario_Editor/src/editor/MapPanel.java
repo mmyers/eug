@@ -136,6 +136,28 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
     
+    private double dirtyFPS;
+    private double cleanFPS;
+    
+    public void checkFPS() {
+        long startTime = System.nanoTime();
+        for (int i = 0; i < 20; i++) {
+            isDirty = true;
+            paint(getGraphics());
+        }
+        long middleTime = System.nanoTime();
+        for (int i = 0; i < 100; i++) {
+            paint(getGraphics());
+        }
+        long endTime = System.nanoTime();
+        
+        long averageDirtyFrame = (middleTime - startTime) / 20;
+        long averageCleanFrame = (endTime - middleTime) / 100;
+        dirtyFPS = 1000000000.0 / averageDirtyFrame;
+        cleanFPS = 1000000000.0 / averageCleanFrame;
+        repaint();
+    }
+    
     @Override
     protected void paintComponent(final Graphics g) {
         if (scaledMapImage == null) {
@@ -149,6 +171,12 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             for (java.util.Map.Entry<Integer, Color> override : overrides.entrySet()) {
                 paintProvince((Graphics2D) g, override.getKey(), override.getValue());
             }
+            
+            g.setColor(Color.WHITE);
+            if (dirtyFPS > 0)
+                g.drawString(String.format("Dirty FPS: %.1f", dirtyFPS), 0, 10);
+            if (cleanFPS > 0)
+                g.drawString(String.format("Clean FPS: %.1f", cleanFPS), 0, 30);
         }
     }
     
