@@ -4,7 +4,7 @@
 A game editor which has as many mapmodes as the game does itself. Includes a syntax-checking text editor at no extra cost.
 
 Compatible with:
-- Crusader Kings 3 ([see discussion thread on Paradox forums])(https://forum.paradoxplaza.com/forum/threads/tool-clausewitz-scenario-editor-now-for-ck3.1689106/)
+- Crusader Kings 3 ([see discussion thread on Paradox forums](https://forum.paradoxplaza.com/forum/threads/tool-clausewitz-scenario-editor-now-for-ck3.1689106/))
 - Europa Universalis IV ([EU4 discusson thread](https://forum.paradoxplaza.com/forum/index.php?threads/announcing-a-scenario-editor-and-map-viewer.707474/))
 - Europa Universalis III ([EU3 discussion thread](https://forum.paradoxplaza.com/forum/index.php?threads/clausewitz-save-game-and-scenario-editor-viewer.527308/))
 
