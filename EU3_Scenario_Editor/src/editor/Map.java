@@ -609,7 +609,7 @@ public final class Map {
                     unusedIds.add(i);
                 }
             }
-            climateList.put("normal", unusedIds);
+            climateList.put("(none)", unusedIds);
         }
         return climateList;
     }

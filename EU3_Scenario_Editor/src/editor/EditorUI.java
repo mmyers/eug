@@ -1978,7 +1978,7 @@ public final class EditorUI extends javax.swing.JFrame {
     
     private void addClimateFilters(JMenu rootMenu) {
         rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.ALL));
-        if (map.getClimates().keySet().stream().anyMatch(k -> !k.contains("winter") && !k.equalsIgnoreCase("normal")))
+        if (map.getClimates().keySet().stream().anyMatch(k -> !k.contains("winter") && !k.equalsIgnoreCase("normal") && !k.equals("(none)")))
             rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.CLIMATE));
         if (map.getClimates().keySet().stream().anyMatch(k -> k.contains("winter")))
             rootMenu.add(new AllClimatesFilterAction(AllClimatesMapMode.ClimateType.WINTER));

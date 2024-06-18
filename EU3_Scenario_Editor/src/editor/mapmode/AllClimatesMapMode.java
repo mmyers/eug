@@ -65,6 +65,8 @@ public class AllClimatesMapMode extends ProvincePaintingMode {
         int colorIdx = Math.min(15, colors.size()-1);
         for (java.util.Map.Entry<String, List<Integer>> climate : climates.entrySet()) {
             String climateTag = climate.getKey();
+            if (climateTag.equals("(none)"))
+                continue;
             
             java.util.Map<Integer, String> climateMap = provinceClimates;
             if (climateTag.endsWith("_winter") || climateTag.equalsIgnoreCase("normal")) { // "normal" almost always refers to winter
