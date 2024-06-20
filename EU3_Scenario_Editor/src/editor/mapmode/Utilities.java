@@ -125,6 +125,8 @@ public final class Utilities {
     private static final java.util.Map<String, String> cultureGroups = new HashMap<>();
     
     private static final List<Color> geographyColors = new ArrayList<>();
+    
+    private static java.util.Map<String, Color> namedColors;
 
     private static FilenameResolver resolver;
 
@@ -143,7 +145,7 @@ public final class Utilities {
         religions = EUGFileIO.load(resolver.resolveFilename("common/religion.txt"), settings);
         if (religions == null)
             religions = EUGFileIO.loadAll(resolver.listFiles("common/religions"), settings);
-        if (religions == null)
+        if (religions == null || religions.isEmpty())
             religions = EUGFileIO.loadAllUTF8(resolver.listFiles("common/religion/religions"), settings);
     }
     
@@ -159,7 +161,7 @@ public final class Utilities {
         cultures = EUGFileIO.load(resolver.resolveFilename("common/cultures.txt"), settings);
         if (cultures == null)
             cultures = EUGFileIO.loadAll(resolver.listFiles("common/cultures"), settings);
-        if (cultures == null)
+        if (cultures == null || cultures.isEmpty())
             initCK3Cultures();
         
         // go ahead and set up the colors here since we need to keep track of
@@ -214,7 +216,7 @@ public final class Utilities {
     }
     
     private static void initCK3Cultures() {
-        java.util.Map<String, Color> namedColors = readCK3NamedColors();
+        initNamedColors();
         cultures = EUGFileIO.loadAllUTF8(resolver.listFiles("common/culture/cultures"), settings);
         for (GenericObject culture : cultures.children) {
             Color color = parseColorMaybeHsv(culture, "color");
@@ -224,20 +226,21 @@ public final class Utilities {
         }
     }
     
-    private static java.util.Map<String, Color> readCK3NamedColors() {
-        java.util.Map<String, Color> ret = new HashMap<>();
-        GenericObject namedColors = EUGFileIO.loadUTF8(new java.io.File(resolver.resolveFilename("common/named_colors/culture_colors.txt")), ParserSettings.getQuietSettings());
-        GenericObject colorsRoot = namedColors.getChild("colors");
-        for (int i = 0; i < colorsRoot.getAllWritable().size(); i++) {
-            WritableObject obj = colorsRoot.getAllWritable().get(i);
-            if (obj instanceof GenericList) {
-                GenericList list = (GenericList) obj;
-                ret.put(list.getName(), parseColor(list));
-            } else if (obj instanceof ObjectVariable) {
-                ret.put(((ObjectVariable) obj).varname, parseColorHsv((GenericList)colorsRoot.getAllWritable().get(++i)));
+    private static void initNamedColors() {
+        if (namedColors == null) {
+            namedColors = new HashMap<>();
+            GenericObject namedColorsObj = EUGFileIO.loadUTF8(new java.io.File(resolver.resolveFilename("common/named_colors/culture_colors.txt")), ParserSettings.getQuietSettings());
+            GenericObject colorsRoot = namedColorsObj.getChild("colors");
+            for (int i = 0; i < colorsRoot.getAllWritable().size(); i++) {
+                WritableObject obj = colorsRoot.getAllWritable().get(i);
+                if (obj instanceof GenericList) {
+                    GenericList list = (GenericList) obj;
+                    namedColors.put(list.getName(), parseColor(list));
+                } else if (obj instanceof ObjectVariable) {
+                    namedColors.put(((ObjectVariable) obj).varname, parseColorHsv((GenericList)colorsRoot.getAllWritable().get(++i)));
+                }
             }
         }
-        return ret;
     }
     
     private static void initGeographyColors() {
@@ -311,6 +314,11 @@ public final class Utilities {
                     WritableObject shouldBeColorObj = parent.getAllWritable().get(i+1);
                     if (shouldBeColorObj instanceof GenericList) {
                         return parseColorHsv((GenericList) shouldBeColorObj);
+                    }
+                } else if (maybeColorVar.varname.equalsIgnoreCase(key) && maybeColorVar.getValue().equalsIgnoreCase("rgb")) {
+                    WritableObject shouldBeColorObj = parent.getAllWritable().get(i+1);
+                    if (shouldBeColorObj instanceof GenericList) {
+                        return parseColor((GenericList) shouldBeColorObj);
                     }
                 }
             }
@@ -428,13 +436,15 @@ public final class Utilities {
     }
 
     private static Color cacheReligion(GenericObject group, String religion) {
-        GenericList color = group.getList("color");
-        if (color == null) {
-            log.log(Level.WARNING, "color for {0} is null", religion);
-            relColorCache.put(religion, COLOR_NO_RELIGION_DEF);
-            return COLOR_NO_RELIGION_DEF;
+        Color ret = parseColorMaybeHsv(group, "color");
+        if (ret == null && group.hasString("color")) {
+            initNamedColors();
+            ret = namedColors.get(group.getString("color"));
         }
-        Color ret = parseColor(color);
+        if (ret == null) {
+            log.log(Level.WARNING, "color for {0} is null", religion);
+            ret = COLOR_NO_RELIGION_DEF;
+        }
         relColorCache.put(religion, ret);
         return ret;
     }
@@ -462,7 +472,7 @@ public final class Utilities {
     }
     
     public static String getCultureGroup(String culture) {
-        if (cultureGroups.isEmpty())
+        if (cultures == null)
             initCultures();
         return cultureGroups.get(culture);
     }
