@@ -13,6 +13,7 @@ import eug.shared.GenericList;
 import eug.shared.GenericObject;
 import eug.shared.Style;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -93,6 +94,45 @@ public class Main {
         }
     }
     
+    private boolean isValidGameDir(String dirName) {
+        File f = new File(dirName);
+        if (f.isDirectory()) {
+            File history = new File(f.getAbsolutePath() + File.separator + "history");
+            File common = new File(f.getAbsolutePath() + File.separator + "common");
+            if (history.isDirectory() && common.isDirectory())
+                return true;
+        }
+        return false;
+    }
+    
+    private void setValidationLabel(JLabel label, boolean isValid) {
+        if (isValid) {
+            label.setForeground(Color.GREEN.darker());
+            label.setText("\u2705");
+            label.setToolTipText("This is a valid game directory");
+        } else {
+            label.setForeground(Color.RED);
+            label.setText("\u274E");
+            label.setToolTipText("<html>This is not a valid game directory.<br>"
+                    + "For most games, navigate to the directory that holds the game .exe file.<br>"
+                    + "For newer games such as Crusader Kings 3, navigate to the /game directory inside the main installation.</html>");
+        }
+    }
+    
+    private boolean isValidSaveGame(String fileName) {
+        return fileName.isEmpty() || new File(fileName).isFile();
+    }
+    
+    private void setSaveGameValidationLabel(JLabel label, boolean isValid) {
+        if (isValid) {
+            label.setForeground(Color.GREEN.darker());
+            label.setText("\u2705");
+        } else {
+            label.setForeground(Color.RED);
+            label.setText("\u274E");
+        }
+    }
+    
     private void showDialog() {
         final JComboBox<Mod> modBox = new JComboBox<>(); // referenced in several places
         
@@ -107,6 +147,10 @@ public class Main {
 
         JPanel gameDirPanel = new JPanel();
         gameDirPanel.setBorder(BorderFactory.createTitledBorder("Game folder (NOT mod folder)"));
+        final JLabel validLabel = new JLabel();
+        validLabel.setPreferredSize(new Dimension(20, 20));
+        setValidationLabel(validLabel, false); // blank is invalid
+        
         final JTextField gameDirField = new JTextField();
         gameDirField.setPreferredSize(new Dimension(500, 24));
         JButton browseButton = new JButton("Browse...");
@@ -119,7 +163,10 @@ public class Main {
 
                 int choice = chooser.showOpenDialog(dialog);
                 if (choice == JFileChooser.APPROVE_OPTION) {
-                    gameDirField.setText(chooser.getSelectedFile().getAbsolutePath());
+                    String mainPath = chooser.getSelectedFile().getAbsolutePath();
+                    gameDirField.setText(mainPath);
+                    setValidationLabel(validLabel, isValidGameDir(mainPath));
+                    
                     String modPath = chooser.getSelectedFile().getAbsolutePath() + File.separator + "mod";
                     
                     @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -131,7 +178,8 @@ public class Main {
         gameDirField.getDocument().addDocumentListener(new DocumentListener() {
             private void checkMods() {
                 File dir = new File(gameDirField.getText());
-                if (dir.exists() && dir.isDirectory()) {
+                if (isValidGameDir(dir.getAbsolutePath())) {
+                    setValidationLabel(validLabel, true);
                     String modPath = dir.getAbsolutePath() + File.separator + "mod";
                     
                     @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -143,6 +191,8 @@ public class Main {
                     }
                     modBox.setModel(new DefaultComboBoxModel<>(mods));
                 }
+                else
+                    setValidationLabel(validLabel, false);
             }
             @Override
             public void insertUpdate(DocumentEvent de) {
@@ -163,13 +213,21 @@ public class Main {
         });
 
         gameDirPanel.add(gameDirField);
+        gameDirPanel.add(validLabel);
         gameDirPanel.add(browseButton);
         filePanel.add(gameDirPanel);
 
+        
         JPanel saveGamePanel = new JPanel();
         saveGamePanel.setBorder(BorderFactory.createTitledBorder("Saved Game"));
+        
         final JTextField saveGameField = new JTextField();
         saveGameField.setPreferredSize(new Dimension(500, 24));
+        
+        final JLabel saveGameValidationLabel = new JLabel();
+        saveGameValidationLabel.setPreferredSize(new Dimension(20, 20));
+        setSaveGameValidationLabel(saveGameValidationLabel, true); // blank is valid
+        
         JButton browseSaveButton = new JButton("Browse...");
         browseSaveButton.addActionListener(new ActionListener() {
             @Override
@@ -189,10 +247,32 @@ public class Main {
                 if (choice == JFileChooser.APPROVE_OPTION) {
                     saveGameField.setText(chooser.getSelectedFile().getAbsolutePath());
                 }
+                setSaveGameValidationLabel(saveGameValidationLabel, isValidSaveGame(saveGameField.getText()));
+            }
+        });
+        
+        saveGameField.getDocument().addDocumentListener(new DocumentListener() {
+            private void doCheck() {
+                setSaveGameValidationLabel(saveGameValidationLabel, isValidSaveGame(saveGameField.getText()));
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                doCheck();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                doCheck();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                doCheck();
             }
         });
 
         saveGamePanel.add(saveGameField);
+        saveGamePanel.add(saveGameValidationLabel);
         saveGamePanel.add(browseSaveButton);
         filePanel.add(saveGamePanel);
 
@@ -273,13 +353,13 @@ public class Main {
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!isValidGameDir(gameDirField.getText()) || !isValidSaveGame(saveGameField.getText()))
+                    return;
+                
                 dialog.getRootPane().getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 dialog.getRootPane().getGlassPane().setVisible(true);
                 
                 log.log(Level.INFO, "**************************************************");
-                
-                if (gameDirField.getText().isEmpty())
-                    return;
                 
                 String saveFile = null;
                 if (!saveGameField.getText().isEmpty()) {
