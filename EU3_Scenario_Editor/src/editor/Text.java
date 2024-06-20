@@ -15,8 +15,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -40,15 +42,10 @@ public final class Text {
      * @throws IOException
      */
     public static void initText(FilenameResolver resolver, GameVersion version) throws FileNotFoundException, IOException {
-        File[] files = resolver.listFiles("localisation");
-        if (files == null)
-            files = resolver.listFiles("localization/english"); // CK3/V3 switched to American spelling and put each language in a separate folder
-        if (files == null) {
-            log.log(Level.WARNING, "Could not find localization files");
-            return;
-        }
+        List<File> files = listLocFiles(resolver);
         
-        Arrays.sort(files);
+        if (files.isEmpty())
+            return;
 
         long startTime = System.currentTimeMillis();
         int processedFiles;
@@ -62,7 +59,29 @@ public final class Text {
         log.log(Level.INFO, "Processed {0} localization files in {1} ms.", new Object[] { processedFiles, System.currentTimeMillis() - startTime });
     }
     
-    private static int processFilesCsv(File[] files) throws FileNotFoundException, IOException {
+    private static List<File> listLocFiles(FilenameResolver resolver) {
+        // HOI4
+        List<File> files = resolver.listFilesRecursive("localisation/english");
+        if (!files.isEmpty()) {
+            files.addAll(resolver.listFilesRecursive("localisation/replace/english"));
+            return files;
+        }
+
+        // EU3/EU4
+        files = resolver.listFilesRecursive("localisation");
+        if (!files.isEmpty())
+            return files;
+
+        // CK3
+        files = resolver.listFilesRecursive("localization/english");
+        if (!files.isEmpty()) {
+            files.addAll(resolver.listFilesRecursive("localization/replace/english"));
+            return files;
+        }
+        return files;
+    }
+    
+    private static int processFilesCsv(List<File> files) throws FileNotFoundException, IOException {
         int count = 0;
         
         for (File f : files) {
@@ -103,18 +122,13 @@ public final class Text {
         return count;
     }
 
-    private static int processFilesYaml(File[] files) throws FileNotFoundException, IOException {
+    private static int processFilesYaml(List<File> files) throws FileNotFoundException, IOException {
         int count = 0;
         
         // very naive implementation
         // EU4 YAML files consist of a single node, defined in the first line
         // so we skip that line and break everything else at a ":"
         for (File f : files) {
-            if (f.isDirectory()) {
-                count += processFilesYaml(f.listFiles());
-                continue;
-            }
-            
             if (!f.getName().endsWith(".yml"))
                 continue;   // Could use a FileFilter or FilenameFilter
 
@@ -122,59 +136,58 @@ public final class Text {
                 continue;
             }
             
-            count++;
-
-            int bufferSize = Math.min(102400, (int)f.length());
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8), bufferSize)) {
-                String line = reader.readLine();
-
-                if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
-                    line = line.substring(1);
-
-                if (!line.startsWith("l_english")) // only read English localizations
-                    continue;
-                
-                while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-                    if (line.length() == 0 || line.charAt(0) == '#')
-                        continue;
-                    if (line.charAt(0) == '\uFEFF')
-                        line = line.substring(1);
-
-                    if (line.endsWith("\\n")) {
-                        StringBuilder lineBuilder = new StringBuilder(line).append("\n").append(line = reader.readLine());
-                        while (line.endsWith("\\n")) {
-                            lineBuilder.append("\n").append(line = reader.readLine());
-                        }
-                        line = lineBuilder.toString();
-                    }
-
-                    int comment = line.indexOf('#');
-                    if (comment > 0)
-                        line = line.substring(0, comment);
-
-                    int firstColon = line.indexOf(':');
-                    if (firstColon < 0) {
-                        log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
-                        log.log(Level.WARNING, line);
-                        continue;
-                    }
-
-                    String key = line.substring(0, firstColon).trim(); //.toLowerCase();
-                    //if (!text.containsKey(key)) {
-                        String value = line.substring(firstColon + 1).trim();
-                        value = extractQuote(value);
-                        //if (value.startsWith("\""))
-                        //    value = value.substring(1);
-                        //if (value.endsWith("\""))
-                        //    value = value.substring(0, value.length() - 1);
-                        text.put(key, value);
-                    //}
-                }
-            }
+            if (processYamlFile(f))
+                count++;
         }
         
         return count;
+    }
+
+    private static boolean processYamlFile(File f) throws IOException {
+        int bufferSize = Math.min(102400, (int)f.length());
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8), bufferSize)) {
+            // Read the first line and make sure everything is in order
+            String line = reader.readLine();
+            if (line.charAt(0) == '\uFEFF') // Unicode BOM, which Java doesn't handle in UTF-8 files
+                line = line.substring(1);
+            if (!line.startsWith("l_english")) {
+                return false;
+            }
+            
+            // Read the rest of the file
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.length() == 0 || line.charAt(0) == '#')
+                    continue;
+                if (line.charAt(0) == '\uFEFF')
+                    line = line.substring(1);
+                
+                if (line.endsWith("\\n")) {
+                    StringBuilder lineBuilder = new StringBuilder(line).append("\n").append(line = reader.readLine());
+                    while (line.endsWith("\\n")) {
+                        lineBuilder.append("\n").append(line = reader.readLine());
+                    }
+                    line = lineBuilder.toString();
+                }
+                
+                int comment = line.indexOf('#');
+                if (comment > 0)
+                    line = line.substring(0, comment);
+                
+                int firstColon = line.indexOf(':');
+                if (firstColon < 0) {
+                    log.log(Level.WARNING, "Malformed line in file {0}:", f.getPath());
+                    log.log(Level.WARNING, line);
+                    continue;
+                }
+                
+                String key = line.substring(0, firstColon).trim();
+                String value = line.substring(firstColon + 1).trim();
+                value = extractQuote(value);
+                text.put(key, value);
+            }
+        }
+        return true;
     }
     
     private static String extractQuote(String value) {

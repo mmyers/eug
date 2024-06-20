@@ -289,6 +289,56 @@ public final class FilenameResolver {
         }
     }
     
+    
+    private static String normalizeFileSeparators(String path) {
+        return path.replace("/", File.separator).replace("\\", File.separator);
+    }
+    
+    /**
+     * Enumerates all files in the given directory and its subfolders. If a mod
+     * is being used and the directory is set to extend, files in both the
+     * original and the mod directory are returned (excluding exact path
+     * duplicates).
+     * <p>
+     * Unlike {@link listFiles}, this method is directory-aware:
+     * that is, if the main folder and the mod folder have a subdirectory
+     * with the same name, the contents of both will be enumerated. {@code listFiles}
+     * would not return the subdirectory in the main folder, since it is
+     * "overridden" by the subdirectory in the mod folder. Therefore, recursively
+     * calling {@code listFiles} would fail to account for the contents of the
+     * subdirectory in the main folder.
+     * @param dirName the name of the directory to list files in.
+     * @return a list containing the results of {@code File.listFiles()}
+     *         on the given directory in both the main and mod folders.
+     * @see java.io.File#listFiles()
+     * @see #listFiles(String)
+     */
+    public java.util.List<File> listFilesRecursive(String dirName) {
+        // First normalize file separators so we can check substrings later
+        dirName = normalizeFileSeparators(dirName).toLowerCase();
+        
+        java.util.List<File> ret = new java.util.ArrayList<>();
+        
+        File[] files = listFiles(dirName);
+        if (files == null || files.length == 0)
+            return ret;
+        
+        for (File f : files) {
+            if (f.isFile())
+                ret.add(f);
+            else if (f.isDirectory()) {
+                // grab ONLY the end part and resolve that for recursion
+                // e.g. turn C:\...\...\Crusader Kings III\game\localization\english\map
+                // into localization\english\map
+                String fullPath = f.getAbsolutePath();
+                String pathEnd = fullPath.substring(fullPath.toLowerCase().indexOf(dirName), fullPath.length());
+                // now we have only the part that needs to be resolved
+                ret.addAll(listFilesRecursive(pathEnd));
+            }
+        }
+        return ret;
+    }
+    
     /** Filters out any files with extensions matching {@link #ignoreFileTypes}. */
     private File[] filterFiles(File[] files) {
         if (files == null || files.length == 0 || ignoreFileTypes.isEmpty())
