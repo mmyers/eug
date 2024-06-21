@@ -3,6 +3,21 @@
 \=================/
 
 
+=== 1.0.1 ===
+
+New features:
+- Game directory and save path are now validated in the launcher dialog. If
+  one or both of the paths are invalid, the launcher will not allow the user
+  to proceed.
+
+Bugfixes:
+- Modded CK3 religion and culture files are now read correctly.
+- Modded CK3 localisation is now read correctly.
+- CK3 religions may now use named_colors and HSV colors.
+- CK3 colors may now be given in the format "color = rgb { X Y Z }"
+  in addition to the existing formats "color = { X Y Z }" and "color = hsv { X Y Z }".
+
+
 === 1.0.0 ===
 
 New features:
