@@ -25,8 +25,6 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     private int max;
     private int step;
     
-    protected int numColors;
-    
     protected Color[] colors;
     
     // TODO: Perhaps make it so an arbitrary number of colors could be used,
@@ -56,35 +54,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     }
     
     private void initializeColors() {
-        numColors = (max-min)/step;
-        colors = new Color[numColors];
-        final int minRed = minColor.getRed(),       midRed = midColor.getRed(),     maxRed = maxColor.getRed();
-        final int minGreen = minColor.getGreen(),   midGreen = midColor.getGreen(), maxGreen = maxColor.getGreen();
-        final int minBlue = minColor.getBlue(),     midBlue = midColor.getBlue(),   maxBlue = maxColor.getBlue();
-        final int middle = Math.max(1, numColors/2);
-        for (int i = 0; i < middle; i++) {
-            int red = mix(minRed, midRed, i, middle);
-            int gr = mix(minGreen, midGreen, i, middle);
-            int bl = mix(minBlue, midBlue, i, middle);
-            colors[i] = new Color(red, gr, bl);
-        }
-        for (int i = middle; i < numColors; i++) {
-            int red = mix(midRed, maxRed, i - middle, middle);
-            int gr = mix(midGreen, maxGreen, i - middle, middle);
-            int bl = mix(midBlue, maxBlue, i - middle, middle);
-            colors[i] = new Color(red, gr, bl);
-        }
-        
-        // sanity in case there are too few colors and we have rounding errors
-        colors[0] = minColor;
-        if (numColors > 0)
-            colors[numColors-1] = maxColor;
-    }
-    
-    private static int mix(int min, int max, int ratio, int maxRatio) {
-        int ret = (max * ratio);
-        ret += (min * (maxRatio - ratio));
-        return (ret / maxRatio);
+        colors = Utilities.createSteppedColors(min, max, step, minColor, midColor, maxColor);
     }
     
     @Override
@@ -97,7 +67,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         }
         
         int index = (int) ((Double.parseDouble(value) + min) / step);
-        index = Math.max(0, Math.min(numColors-1, index));
+        index = Math.max(0, Math.min(colors.length-1, index));
         
         mapPanel.paintProvince(g, provId, colors[index]);
     }

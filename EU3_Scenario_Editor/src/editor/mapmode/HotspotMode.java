@@ -38,7 +38,7 @@ public class HotspotMode extends DiscreteScalingMapMode {
         }
         
         int index = (int) ((count + 0.0) / getStep());
-        index = Math.max(0, Math.min(numColors-1, index));
+        index = Math.max(0, Math.min(colors.length-1, index));
         
         mapPanel.paintProvince(g, provId, colors[index]);
     }

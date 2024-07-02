@@ -505,6 +505,43 @@ public final class Utilities {
         return change ? String.valueOf(cArr) : st;
     }
     
+    /**
+     * Creates an array of colors ranging from minColor through midColor to maxColor.
+     */
+    public static Color[] createSteppedColors(int min, int max, int step, Color minColor, Color midColor, Color maxColor) {
+        int numColors = (max-min)/step;
+        Color[] colors = new Color[numColors];
+        final int minRed = minColor.getRed(),   midRed = midColor.getRed(),   maxRed = maxColor.getRed();
+        final int minGrn = minColor.getGreen(), midGrn = midColor.getGreen(), maxGrn = maxColor.getGreen();
+        final int minBlu = minColor.getBlue(),  midBlu = midColor.getBlue(),  maxBlu = maxColor.getBlue();
+        final int middle = Math.max(1, numColors/2);
+        for (int i = 0; i < middle; i++) {
+            int red = mix(minRed, midRed, i, middle);
+            int grn = mix(minGrn, midGrn, i, middle);
+            int blu = mix(minBlu, midBlu, i, middle);
+            colors[i] = new Color(red, grn, blu);
+        }
+        for (int i = middle; i < numColors; i++) {
+            int red = mix(midRed, maxRed, i - middle, middle);
+            int grn = mix(midGrn, maxGrn, i - middle, middle);
+            int blu = mix(midBlu, maxBlu, i - middle, middle);
+            colors[i] = new Color(red, grn, blu);
+        }
+        
+        // sanity in case there are too few colors and we have rounding errors
+        colors[0] = minColor;
+        if (numColors > 0)
+            colors[numColors-1] = maxColor;
+        
+        return colors;
+    }
+    
+    private static int mix(int min, int max, int ratio, int maxRatio) {
+        int ret = (max * ratio);
+        ret += (min * (maxRatio - ratio));
+        return (ret / maxRatio);
+    }
+    
     
     // Texture handling (striped paints)
     
