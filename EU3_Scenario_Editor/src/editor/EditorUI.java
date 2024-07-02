@@ -917,6 +917,7 @@ public final class EditorUI extends javax.swing.JFrame {
         if (mapPanel.getMode() instanceof DiscreteScalingMapMode) {
             ColorChooserDialog dialog = new ColorChooserDialog(this, (DiscreteScalingMapMode) mapPanel.getMode());
             dialog.setVisible(true);
+            mapPanel.refresh();
         }
     }//GEN-LAST:event_scaleColorsButtonActionPerformed
 

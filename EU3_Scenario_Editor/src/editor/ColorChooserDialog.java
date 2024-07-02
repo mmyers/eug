@@ -16,18 +16,20 @@ import javax.swing.JColorChooser;
  */
 public class ColorChooserDialog extends javax.swing.JDialog {
 
-    private DiscreteScalingMapMode mapMode;
+    private final DiscreteScalingMapMode mapMode;
     private String colorsName;
 
-    private Color origLowColor;
-    private Color origMidColor;
-    private Color origHighColor;
+    private final Color origLowColor;
+    private final Color origMidColor;
+    private final Color origHighColor;
 
     /** Creates new form ColorChooserDialog */
     public ColorChooserDialog(EditorUI parent, DiscreteScalingMapMode mapMode) {
         super(parent, true);
         this.mapMode = mapMode;
         this.colorsName = mapMode.getName();
+        if (colorsName == null)
+            colorsName = "default";
         this.origLowColor = mapMode.getMinColor();
         this.origMidColor = mapMode.getMidColor();
         this.origHighColor = mapMode.getMaxColor();
@@ -217,7 +219,6 @@ public class ColorChooserDialog extends javax.swing.JDialog {
         mapMode.setMinColor(origLowColor);
         mapMode.setMidColor(origMidColor);
         mapMode.setMaxColor(origHighColor);
-        getParent().repaint();
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
