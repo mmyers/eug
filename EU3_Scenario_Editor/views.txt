@@ -88,6 +88,7 @@ eu4 = { # mostly In Nomine with trade nodes swapped for COTs
 	base-tax
 	base-production
 	base-manpower
+	development
 	---
 	#revolt-risk
 	unrest
@@ -197,8 +198,9 @@ ck3 = {
 	province-religions
 	#religions
 	#religions-menu
-        #capitals
+	#capitals
 	override-simple-terrain
+	ck3-development
 	---
 	modding-menu
 }

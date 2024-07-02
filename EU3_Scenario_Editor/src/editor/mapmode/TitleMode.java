@@ -103,6 +103,17 @@ public class TitleMode extends ProvincePaintingMode {
     protected String getTitleHistString(String title, String name) {
         return ClausewitzHistory.getHistString(getTitleHistory(title), name, mapPanel.getModel().getDate());
     }
+    
+    protected String getLiegeHistString(String title, String name) {
+        String ret = getTitleHistString(title, name);
+        while (ret == null || ret.isEmpty()) {
+            title = getTitleHistString(title, "liege");
+            if (title == null || title.isEmpty())
+                break;
+            ret = getTitleHistString(title, name);
+        }
+        return ret;
+    }
 
     public String getLiege(String title) {
         return getLiege(title, type);

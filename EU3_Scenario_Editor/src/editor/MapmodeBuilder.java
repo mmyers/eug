@@ -254,6 +254,10 @@ public class MapmodeBuilder {
                     DiscreteStepFilterAction actn = new DiscreteStepFilterAction("Leadership", "leadership", 0, 10, 1);
                     actn.setStepColors(allColors, view);
                     viewMenu.add(actn);
+                } else if (view.equals("development")) {
+                    viewMenu.add(new DevelopmentFilterAction(0, 30, 1));
+                } else if (view.equals("ck3-development")) {
+                    viewMenu.add(new CK3DevelopmentFilterAction());
                 } else if (view.equals("hotspots-owner")) {
                     viewMenu.add(new HotspotFilterAction("owner", 20, 1));
                 } else if (view.equals("hotspots-controller")) {
@@ -1310,6 +1314,20 @@ public class MapmodeBuilder {
         public CultureGroupFilterAction(String name, String cultureGroup) {
             super(name, new CultureGroupMode(mapPanel, cultureGroup));
             putValue(SHORT_DESCRIPTION, name + " culture group");
+        }
+    }
+    
+    private static class DevelopmentFilterAction extends FilterAction {
+        public DevelopmentFilterAction(int min, int max, int step) {
+            super("Total development level", new DevelopmentMapMode(mapPanel, min, max, step));
+            putValue(SHORT_DESCRIPTION, "Total development level");
+        }
+    }
+    
+    private static class CK3DevelopmentFilterAction extends FilterAction {
+        public CK3DevelopmentFilterAction() {
+            super("Development level", new CK3DevelopmentMapMode(mapPanel));
+            putValue(SHORT_DESCRIPTION, "Development level");
         }
     }
     

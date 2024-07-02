@@ -29,7 +29,7 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     
     // TODO: Perhaps make it so an arbitrary number of colors could be used,
     // fading from one to another?
-    private Color minColor = Color.RED.darker();
+    private Color minColor = Color.WHITE;
     private Color midColor = Color.YELLOW;
     private Color maxColor = Color.GREEN.darker();
     
@@ -59,17 +59,26 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
     
     @Override
     protected void paintProvince(final Graphics2D g, int provId) {
-        String value = mapPanel.getModel().getHistString(provId, prop);
-
-        if (value == null || value.length() == 0 || value.equals("0")) {
+        double value = getProvinceValue(provId);
+        if (value < 0) {
             mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
             return;
         }
         
-        int index = (int) ((Double.parseDouble(value) + min) / step);
+        int index = (int) ((value + min) / step);
         index = Math.max(0, Math.min(colors.length-1, index));
         
         mapPanel.paintProvince(g, provId, colors[index]);
+    }
+    
+    protected double getProvinceValue(int provId) {
+        String value = mapPanel.getModel().getHistString(provId, prop);
+
+        if (value == null || value.length() == 0 || value.equals("0")) {
+            return -1;
+        }
+        
+        return Double.parseDouble(value);
     }
     
     @Override
