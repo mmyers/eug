@@ -742,11 +742,13 @@ public final class EditorUI extends javax.swing.JFrame {
                 @Override
                 public void handleSaveEvent(int provId) {
                     mapPanel.getModel().clearHistoryCache();
+                    mapPanel.refresh();
                 }
 
                 @Override
                 public void handleSaveEvent(String tagOrTitle) {
                     mapPanel.getModel().clearHistoryCache();
+                    mapPanel.refresh();
                 }
             });
             dlg.setVisible(true);
@@ -833,11 +835,13 @@ public final class EditorUI extends javax.swing.JFrame {
                     @Override
                     public void handleSaveEvent(int provId) {
                         mapPanel.getModel().clearHistoryCache();
+                        mapPanel.refresh();
                     }
 
                     @Override
                     public void handleSaveEvent(String tagOrTitle) {
                         mapPanel.getModel().clearHistoryCache();
+                        mapPanel.refresh();
                     }
                 });
                 dlg.setVisible(true);
