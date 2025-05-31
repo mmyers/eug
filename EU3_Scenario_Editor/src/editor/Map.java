@@ -390,7 +390,11 @@ public final class Map {
                 } else if (sub.getName().equalsIgnoreCase("duchies") || sub.getName().equalsIgnoreCase("counties")) {
                     // add everything from each duchy or county listed
                     for (String title : sub) {
-                        provIds.addAll(allTitleHoldings.get(title));
+                        List<Integer> titleHoldings = allTitleHoldings.get(title);
+                        if (titleHoldings == null)
+                            log.log(Level.WARNING, "Geographical regions file uses title {0} which is not in landed_titles", title);
+                        else
+                            provIds.addAll(titleHoldings);
                     }
                     //regionList.put(name, provIds);
                 } else if (sub.getName().equalsIgnoreCase("provinces")) {
