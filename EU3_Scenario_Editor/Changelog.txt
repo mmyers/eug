@@ -3,6 +3,19 @@
 \=================/
 
 
+=== 1.0.2 ===
+
+New features:
+- New "Total development" mapmode for EU4 which sums manpower, tax, and production
+- New "Development" mapmode for CK3 which tracks "change_development_level"
+
+Bugfixes:
+- Fix issue with map not refreshing after setting custom mapmode colors
+- Fix issue with map not refreshing after saving changes in a text editor
+- Print a warning instead of crashing if a CK3 geographical_region file uses
+  a title that is not defined in landed_titles
+
+
 === 1.0.1 ===
 
 New features:
@@ -12,7 +25,7 @@ New features:
 
 Bugfixes:
 - Modded CK3 religion and culture files are now read correctly.
-- Modded CK3 localisation is now read correctly.
+- Modded CK3 localization is now read correctly.
 - CK3 religions may now use named_colors and HSV colors.
 - CK3 colors may now be given in the format "color = rgb { X Y Z }"
   in addition to the existing formats "color = { X Y Z }" and "color = hsv { X Y Z }".
