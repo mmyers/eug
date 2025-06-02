@@ -33,8 +33,9 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
      */
     private final Map<Integer, String> provinceHistoryFiles;
     
-    private final GenericObject landedTitles;
-    
+    /**
+     * Mapping of title to which file its history is found in (e.g. d_aksum is found in history/provinces/k_abyssinia.txt)
+     */
     private final Map<String, String> titleHistoryFiles;
     
     /**
@@ -48,7 +49,7 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
         provinceHistoryFiles = new HashMap<>();
         primaryHoldings = new HashMap<>();
         titleHistoryFiles = new HashMap<>();
-        landedTitles = loadTitles(new FilenameResolver(mainDir, modDir, true));
+        loadTitles(new FilenameResolver(mainDir, modDir, true));
         preloadProvHistory();
     }
 
@@ -58,18 +59,16 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
         provinceHistoryFiles = new HashMap<>();
         primaryHoldings = new HashMap<>();
         titleHistoryFiles = new HashMap<>();
-        landedTitles = loadTitles(resolver);
+        loadTitles(resolver);
         preloadProvHistory();
     }
     
-    private GenericObject loadTitles(FilenameResolver resolver) {
+    private void loadTitles(FilenameResolver resolver) {
         GenericObject titles = EUGFileIO.loadAllUTF8(resolver.listFiles("common/landed_titles"), ParserSettings.getQuietSettings());
         
         for (GenericObject topLevelTitle : titles.children) {
             loadHoldings(topLevelTitle);
         }
-        
-        return titles;
     }
     
     private void loadHoldings(GenericObject title) {
@@ -158,7 +157,8 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
     // then update provinceHistoryFiles for all affected provinces
 //    @Override
 //    public void saveProvince(int id, String pname, String data) {
-//        super.saveProvince(id, pname, data); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+//        super.saveProvince(id, pname, data);
+//        String resolver.resolveFilename(pname)
 //    }
     
     private void preloadTitleHistory() {
@@ -172,7 +172,7 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
     }
     
 
-    /** Gets the country history for the given tag, using the cache. */
+    /** Gets the title history for the given title, using the cache. */
     private GenericObject _getTitleHistory(final String title) {
         if (titleHistoryCache.isEmpty())
             preloadTitleHistory();
