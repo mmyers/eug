@@ -242,7 +242,9 @@ public class CK3Scenario extends ClausewitzScenario implements CK3DataSource {
     public void saveTitle(String title, String data) {
         String filename = resolveTitleHistoryFile(title);
         if (filename == null) {
-            filename = resolver.resolveFilenameForWrite("history/titles/" + title + ".txt");
+            String titleFileName = "history/titles/" + title + ".txt";
+            filename = resolver.resolveFilenameForWrite(titleFileName);
+            titleHistoryFiles.put(title, titleFileName);
         } else {
             filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')));
             filename = resolver.resolveFilenameForWrite("history/titles/" + filename);
