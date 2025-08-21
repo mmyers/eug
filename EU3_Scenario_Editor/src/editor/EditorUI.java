@@ -987,6 +987,8 @@ public final class EditorUI extends javax.swing.JFrame {
                 zoomOutAction.actionPerformed(null);
             else
                 zoomInAction.actionPerformed(null);
+        } else {
+            mapScrollPane.dispatchEvent(evt); // no CTRL, let the panel scroll
         }
     }//GEN-LAST:event_mapPanelMouseWheelMoved
 
