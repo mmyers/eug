@@ -238,7 +238,8 @@ public final class Map {
                                     || v.varname.equalsIgnoreCase("river_provinces") || v.varname.equalsIgnoreCase("impassable_seas")) {
                                 List<Integer> seas = parseCK3RangeOrList(mapData, v, i);
                                 for (int id : seas) {
-                                    isLand[id] = false;
+                                    if (rangeCheck(id, v.varname))
+                                        isLand[id] = false;
                                 }
                                 i++;
                             }
@@ -248,7 +249,8 @@ public final class Map {
 
                                 List<Integer> wasteland = parseCK3RangeOrList(mapData, v, i);
                                 for (int id : wasteland) {
-                                    isWasteland[id] = true;
+                                    if (rangeCheck(id, "impassable_mountains"))
+                                        isWasteland[id] = true;
                                 }
                                 i++;
                             }
@@ -258,7 +260,8 @@ public final class Map {
             } else {
                 for (String provId : seaProvs) {
                     int id = Integer.parseInt(provId);
-                    isLand[id] = false;
+                    if (rangeCheck(id, "sea_starts"))
+                        isLand[id] = false;
                 }
             }
 
@@ -267,7 +270,8 @@ public final class Map {
                 if (lakes != null) {
                     for (String provId : lakes) {
                         int id = Integer.parseInt(provId);
-                        isLand[id] = false;
+                        if (rangeCheck(id, "lakes"))
+                            isLand[id] = false;
                     }
                 }
             }
@@ -276,13 +280,22 @@ public final class Map {
                 if (rivers != null) {
                     for (String provId : rivers) {
                         int id = Integer.parseInt(provId);
-                        isLand[id] = false;
+                        if (rangeCheck(id, "major_rivers"))
+                            isLand[id] = false;
                     }
                 }
             }
         } else if (mapData.getString("sea_starts").isEmpty()) {
-            log.log(Level.WARNING, "Error: No numeric value for sea_starts found in map file. Game should probably been defined has_land_list = yes");
+            log.log(Level.WARNING, "Error: No numeric value for sea_starts found in map file. Game should probably be defined as 'has_land_list = yes' in games.txt.");
         }
+    }
+    
+    private boolean rangeCheck(int provId, String warningText) {
+        if (provId < 0 || provId > maxProvinces) {
+            log.log(Level.WARNING, "Province {0} is out of range ({1})", new Object[] { provId, warningText });
+            return false;
+        }
+        return true;
     }
 
     /**
