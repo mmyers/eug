@@ -10,6 +10,7 @@ import eug.specific.clausewitz.ClausewitzDataSource;
 import eug.specific.clausewitz.ClausewitzHistory;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.List;
 
 /**
  * A <code>MapMode</code> that paints all land provinces the color of the
@@ -104,13 +105,48 @@ public class TitleMode extends ProvincePaintingMode {
         return ClausewitzHistory.getHistString(getTitleHistory(title), name, mapPanel.getModel().getDate());
     }
     
+    protected List<String> getTitleHistStrings(String title, String name) {
+        return ClausewitzHistory.getHistStrings(getTitleHistory(title), name, mapPanel.getModel().getDate());
+    }
+    
     protected String getLiegeHistString(String title, String name) {
+        // First check this level of title and see if we can find this key.
+        // If not, iterate up the chain of titles until we find one that does have the key. Lowest title wins.
+        String originalTitle = title;
         String ret = getTitleHistString(title, name);
         while (ret == null || ret.isEmpty()) {
             title = getTitleHistString(title, "liege");
-            if (title == null || title.isEmpty())
+            if (title == null || title.isEmpty() || title.equals("0"))
                 break;
             ret = getTitleHistString(title, name);
+        }
+        // If we haven't found the key, check previous lieges (much slower to iterate, so we won't do this unless necessary)
+        if (ret == null || ret.isEmpty()) {
+            return getHistoricalLiegeHistString(originalTitle, name);
+        }
+        return ret;
+    }
+    
+    private String getHistoricalLiegeHistString(String title, String name) {
+        // Iteratively check all lieges of this title
+        // First we find all previous lieges. Then for each of them, we check all previous lieges.
+        // At each stage we save the last non-empty value of the key.
+        String ret = null; // skip the initial check because we already know we don't have the key in the immediate title block
+        while (ret == null || ret.isEmpty()) {
+            List<String> lieges = getTitleHistStrings(title, "liege");
+            if (lieges == null || lieges.isEmpty())
+                break;
+            for (String previousLiege : lieges) {
+                if (previousLiege.equals("0"))
+                    continue;
+                
+                String possibleValue = getTitleHistString(previousLiege, name);
+                if (possibleValue == null || possibleValue.isEmpty())
+                    continue;
+                
+                ret = possibleValue;
+            }
+            title = lieges.get(lieges.size()-1);
         }
         return ret;
     }
