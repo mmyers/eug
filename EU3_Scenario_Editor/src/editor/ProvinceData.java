@@ -114,10 +114,14 @@ public final class ProvinceData {
                 String nameKey = "PROV" + arr[0];
                 String name = Text.getText(nameKey);
                 if (name.equals(nameKey)) {
+                    if (arr.length <= 4) {
+                        log.log(Level.WARNING, "Malformed line: {0}", line);
+                    } else {
                     nameKey = "b_" + arr[4].toLowerCase();
                     name = Text.getText(nameKey);
                     if (name.equals(nameKey))
                         name = Text.getText(arr[4]);
+                    }
                 }
                 final Province p = new Province(id, name, color);
                 
