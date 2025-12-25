@@ -42,7 +42,10 @@ public class CK3DevelopmentMapMode extends TitleMode {
         if (!mapPanel.getMap().isLand(current.getId()) || mapPanel.getMap().isWasteland(current.getId()))
             return "";
         
-        return "Development level: " + getLiegeHistString(getLowestHistTitleHolder(current.getId()), "change_development_level");
+        String dev = getLiegeHistString(getLowestHistTitleHolder(current.getId()), "change_development_level");
+        if (dev == null || dev.isEmpty())
+            dev = "0";
+        return "Development level: " + dev;
     }
     
 }
