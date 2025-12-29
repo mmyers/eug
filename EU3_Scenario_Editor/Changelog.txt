@@ -2,6 +2,14 @@
 |=== Changelog ===|
 \=================/
 
+=== 1.0.3 ===
+
+Bugfixes:
+- Fix issue with scrolling map with mouse wheel
+- Warn rather than crashing on malformed lines in definition.csv and default.map
+- Fix CK3 development map mode to (hopefully) follow the in-game algorithm
+  rather than strictly reporting the current value for the current liege.
+
 
 === 1.0.2 ===
 
