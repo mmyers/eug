@@ -31,7 +31,8 @@ public class DeJureTitleMode extends ProvincePaintingMode {
         COUNTY("County", "c_"),
         DUCHY("Duchy", "d_"),
         KINGDOM("Kingdom", "k_"),
-        EMPIRE("Empire", "e_");
+        EMPIRE("Empire", "e_"),
+        HEGEMONY("Hegemony", "h_");
         
         private final String name;
         private final String prefix;
@@ -163,6 +164,17 @@ public class DeJureTitleMode extends ProvincePaintingMode {
                 if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
+            case HEGEMONY:
+                if (title.startsWith("b_") || title.startsWith("c_") || title.startsWith("d_") || title.startsWith("k_")) {
+                    String tmpLiege = getTitleHistString(title, "liege");
+                    if (tmpLiege != null && tmpLiege.equalsIgnoreCase(title))
+                        return title;
+                    liege = getLiege(tmpLiege, level);
+                } else if (title.startsWith("e_"))
+                    liege = getTitleHistString(title, "liege");
+
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
+                    return liege;
             default:
                 return title;
         }
