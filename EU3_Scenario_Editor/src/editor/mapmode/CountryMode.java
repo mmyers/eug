@@ -40,6 +40,24 @@ public class CountryMode extends ProvincePaintingMode {
     protected Color getCtryColor(String country) {
         return Utilities.getCtryColor(country);
     }
+
+    protected Object getCountryBorderGroup(String country) {
+        if (country == null || country.isEmpty() || Utilities.isNotACountry(country)) {
+            return "NO_COUNTRY";
+        }
+        return country.toUpperCase();
+    }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (getMap().isWasteland(provId)) {
+            return "WASTELAND";
+        }
+        if (!getMap().isLand(provId)) {
+            return "SEA_ZONE";
+        }
+        return getCountryBorderGroup(mapPanel.getModel().getOwner(provId));
+    }
     
     @Override
     public String getTooltipExtraText(final Province current) {

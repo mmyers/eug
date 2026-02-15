@@ -75,6 +75,26 @@ public final class ReligionMode extends ProvincePaintingMode {
     protected void paintSeaZone(final Graphics2D g, int id) {
         // do nothing
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        final String religion = mapPanel.getModel().getHistString(provId, "religion");
+        if (religion == null)
+            return "MISSING";
+        if (religion.length() == 0 || religion.equalsIgnoreCase("none"))
+            return "NONE";
+
+        final String owner = mapPanel.getModel().getOwner(provId);
+        final String ownerRel = (owner == null) ? null : ctryReligions.get(owner.toUpperCase());
+        if (ownerRel == null || religion.equalsIgnoreCase(ownerRel))
+            return "REL:" + religion.toLowerCase();
+        return "REL:" + religion.toLowerCase() + "|OWNER_REL:" + ownerRel.toLowerCase();
+    }
     
     
     @Override

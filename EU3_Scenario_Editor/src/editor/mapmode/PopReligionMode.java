@@ -95,6 +95,16 @@ public class PopReligionMode extends PopMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!mapPanel.getMap().isLand(provId))
+            return "SEA_ZONE";
+        String topReligion = provReligions.get(provId);
+        if (topReligion == null)
+            return "NO_POPS";
+        return topReligion;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         int provId = current.getId();
         if (!mapPanel.getMap().isLand(provId))

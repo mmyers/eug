@@ -95,6 +95,18 @@ public class AllAreasMapMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        String area = provinceAreas.get(provId);
+        if (area != null)
+            return area;
+        if (mapPanel.getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!mapPanel.getMap().isLand(provId))
+            return "SEA_ZONE";
+        return "DEFAULT";
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         String area = provinceAreas.get(current.getId());
         if (area != null) {

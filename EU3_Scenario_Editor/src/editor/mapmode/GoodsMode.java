@@ -58,6 +58,21 @@ public class GoodsMode extends ProvincePaintingMode {
     protected void paintSeaZone(Graphics2D g, int id) {
         // Do nothing
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        final String goods = mapPanel.getModel().getHistString(provId, "trade_goods");
+        if (goods == null)
+            return "MISSING";
+        if (goods.length() == 0 || goods.equalsIgnoreCase("none"))
+            return "NONE";
+        return goods.toLowerCase();
+    }
     
     
     @Override

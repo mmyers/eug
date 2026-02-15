@@ -43,6 +43,21 @@ public class IsPlayerMapMode extends CountryMode {
             return notFoundColor;
         }
     }
+
+    @Override
+    protected Object getCountryBorderGroup(String country) {
+        if (country == null || country.isEmpty() || Utilities.isNotACountry(country))
+            return "NO_COUNTRY";
+
+        country = country.toUpperCase();
+        if (saveGame == null)
+            return country;
+
+        boolean player = saveGame.getCountry(country).getBoolean("was_player");
+        if (player)
+            return country;
+        return "NOT_PLAYER";
+    }
     
 
     @Override

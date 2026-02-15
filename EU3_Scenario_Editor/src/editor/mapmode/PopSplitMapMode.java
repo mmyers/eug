@@ -57,6 +57,13 @@ public class PopSplitMapMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        return mapPanel.getModel().getHistString(provId, "split");
+    }
+
+    @Override
     public String getTooltipExtraText(final Province current) {
         final int id = current.getId();
         if (!getMap().isLand(id))

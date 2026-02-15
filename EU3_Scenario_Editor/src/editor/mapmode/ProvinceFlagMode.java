@@ -45,6 +45,13 @@ public class ProvinceFlagMode extends ProvincePaintingMode {
     protected void paintSeaZone(Graphics2D g, int id) {
         // probably don't care about sea zones - who is setting flags on them?
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        return mapPanel.getModel().isRhsSet(provId, SET_PROVINCE_FLAG, CLR_PROVINCE_FLAG, flagName);
+    }
     
     @Override
     public String getTooltipExtraText(ProvinceData.Province current) {

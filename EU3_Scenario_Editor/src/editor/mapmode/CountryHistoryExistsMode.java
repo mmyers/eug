@@ -45,6 +45,19 @@ public class CountryHistoryExistsMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        final String ownerTag = mapPanel.getModel().getOwner(provId);
+        if (Utilities.isNotACountry(ownerTag))
+            return "NO_COUNTRY";
+
+        final GenericObject history = mapPanel.getDataSource().getCountryHistory(ownerTag);
+        return history != null;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         final String ownerTag = mapPanel.getModel().getOwner(current.getId());
         if (Utilities.isNotACountry(ownerTag))

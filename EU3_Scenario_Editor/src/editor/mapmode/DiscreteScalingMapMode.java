@@ -80,6 +80,25 @@ public class DiscreteScalingMapMode extends ProvincePaintingMode {
         
         return Double.parseDouble(value);
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (getMap().isWasteland(provId)) {
+            return "WASTELAND";
+        }
+        if (!getMap().isLand(provId)) {
+            return "SEA_ZONE";
+        }
+
+        final double value = getProvinceValue(provId);
+        if (value < 0) {
+            return "NONE";
+        }
+
+        int index = (int) ((value + min) / step);
+        index = Math.max(0, Math.min(colors.length-1, index));
+        return index;
+    }
     
     @Override
     protected void paintSeaZone(final Graphics2D g, int id) {

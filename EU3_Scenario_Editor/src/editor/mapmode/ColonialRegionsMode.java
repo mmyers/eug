@@ -97,6 +97,18 @@ public class ColonialRegionsMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        ColonialRegion cr = regions.get(provId);
+        if (cr != null)
+            return cr.getName();
+        if (mapPanel.getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!mapPanel.getMap().isLand(provId))
+            return "SEA_ZONE";
+        return "DEFAULT";
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         ColonialRegion cr = regions.get(current.getId());
         if (cr != null) {

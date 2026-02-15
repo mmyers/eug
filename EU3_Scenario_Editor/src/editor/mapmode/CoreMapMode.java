@@ -45,6 +45,16 @@ public class CoreMapMode extends ProvincePaintingMode {
         // Sea zones can't be cores.
         return;
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        final List<String> coreOf = mapPanel.getModel().isCoreOf(provId);
+        if (coreOf != null && coreOf.contains(tag))
+            return "CORE";
+        return "NOT_CORE";
+    }
     
     @Override
     public String getTooltipExtraText(Province current) {

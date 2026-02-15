@@ -169,6 +169,25 @@ public class AllClimatesMapMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        final String climate = provinceClimates.get(provId);
+        final String winter = provinceWinters.get(provId);
+        final String monsoon = provinceMonsoons.get(provId);
+
+        if (climateType == ClimateType.CLIMATE)
+            return climate == null ? "DEFAULT" : climate;
+        if (climateType == ClimateType.WINTER)
+            return winter == null ? "DEFAULT" : winter;
+        if (climateType == ClimateType.MONSOON)
+            return monsoon == null ? "DEFAULT" : monsoon;
+
+        String c = (climate == null) ? "-" : climate;
+        String w = (winter == null) ? "-" : winter;
+        String m = (monsoon == null) ? "-" : monsoon;
+        return c + "|" + w + "|" + m;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         StringBuilder ret = new StringBuilder();
         

@@ -52,6 +52,18 @@ public class CustomCountryMode extends CountryMode {
         else
             return notFoundColor;
     }
+
+    @Override
+    protected Object getCountryBorderGroup(String country) {
+        if (country == null || country.isEmpty() || Utilities.isNotACountry(country))
+            return "NO_COUNTRY";
+
+        country = country.toUpperCase();
+        String histValue = mapPanel.getModel().getHistString(country, name);
+        if (histValue == null)
+            return "MISSING";
+        return value.equals(histValue.toLowerCase());
+    }
     
     @Override
     public String getTooltipExtraText(final Province current) {

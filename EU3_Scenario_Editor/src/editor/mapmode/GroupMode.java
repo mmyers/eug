@@ -54,4 +54,9 @@ public class GroupMode extends ProvincePaintingMode {
             mapPanel.paintProvince(g, id, foundColor);
         }
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        return provIds.contains(provId);
+    }
 }

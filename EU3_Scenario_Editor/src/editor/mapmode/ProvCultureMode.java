@@ -40,6 +40,21 @@ public class ProvCultureMode extends ProvincePaintingMode {
     protected void paintSeaZone(final Graphics2D g, int id) {
         // Do nothing
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (mapPanel.getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        final String culture = mapPanel.getModel().getHistString(provId, "culture");
+        if (culture == null)
+            return "MISSING";
+        if (culture.length() == 0 || culture.equalsIgnoreCase("none"))
+            return "NONE";
+        return culture.toLowerCase();
+    }
     
     @Override
     public String getTooltipExtraText(final Province current) {

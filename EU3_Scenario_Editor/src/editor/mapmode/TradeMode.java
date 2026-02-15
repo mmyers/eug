@@ -122,6 +122,20 @@ public class TradeMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (tradeNodes.containsKey(provId))
+            return provId;
+        Integer node = nodeMembers.get(provId);
+        if (node != null)
+            return node;
+        if (getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        return "UNKNOWN";
+    }
+
+    @Override
     protected void paintingEnded(Graphics2D g) {
         for (Integer node : tradeNodes.keySet()) {
             List<List<Integer>> targets = outgoing.get(node);

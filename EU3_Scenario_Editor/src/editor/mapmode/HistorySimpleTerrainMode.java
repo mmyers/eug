@@ -37,6 +37,17 @@ public class HistorySimpleTerrainMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        String terrain = mapPanel.getModel().getHistString(provId, "terrain");
+        if (terrain == null || terrain.isEmpty())
+            return "DEFAULT";
+        return terrain;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         String terr = mapPanel.getModel().getHistString(current.getId(), "terrain");
         if (terr != null) {
