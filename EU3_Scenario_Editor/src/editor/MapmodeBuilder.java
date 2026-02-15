@@ -295,7 +295,8 @@ public class MapmodeBuilder {
         viewMenu.add(new JSeparator());
         viewMenu.add(new CustomMapModeAction());
         viewMenu.add(new CustomScalingMapModeAction());
-        viewMenu.add(new PaintBordersAction());
+        viewMenu.add(new PaintInternalBordersAction());
+        viewMenu.add(new PaintExternalBordersAction());
         
         log.log(Level.INFO, "Done in {0} ms.", System.currentTimeMillis() - startTime);
     }
@@ -1379,14 +1380,26 @@ public class MapmodeBuilder {
         }
     }
 
-    private static class PaintBordersAction extends AbstractAction {
-        PaintBordersAction() {
-            super("Toggle borders");
+    private static class PaintInternalBordersAction extends AbstractAction {
+        PaintInternalBordersAction() {
+            super("Toggle internal borders");
             putValue(AbstractAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke('B', InputEvent.CTRL_DOWN_MASK));
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            mapPanel.setPaintBorders(!mapPanel.isPaintBorders());
+            mapPanel.setPaintInternalBorders(!mapPanel.isPaintInternalBorders());
+            mapPanel.repaint();
+        }
+    }
+
+    private static class PaintExternalBordersAction extends AbstractAction {
+        PaintExternalBordersAction() {
+            super("Toggle external borders");
+            putValue(AbstractAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke('B', InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            mapPanel.setPaintExternalBorders(!mapPanel.isPaintExternalBorders());
             mapPanel.repaint();
         }
     }
