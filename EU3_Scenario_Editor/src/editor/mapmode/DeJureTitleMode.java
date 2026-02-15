@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class DeJureTitleMode extends ProvincePaintingMode {
 
-    private static final float EXTERNAL_BORDER_MULTIPLIER = 3.0f;
-    
     protected CK2DataSource dataSource;
     protected CK3DataSource ck3DataSource;
     
@@ -210,11 +208,4 @@ public class DeJureTitleMode extends ProvincePaintingMode {
         return provId;
     }
 
-    @Override
-    public float getBorderThicknessMultiplier(final int provId1, final int provId2, final Object group1, final Object group2) {
-        if (java.util.Objects.equals(group1, group2)) {
-            return 1.0f;
-        }
-        return EXTERNAL_BORDER_MULTIPLIER;
-    }
 }
