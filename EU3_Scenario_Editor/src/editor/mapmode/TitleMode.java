@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * A <code>MapMode</code> that paints all land provinces the color of the
- * landed title that owns them or that is their liege. Only valid for CK2.
+ * landed title that owns them or that is their liege. Only valid for CK2 and CK3.
  * @author Michael Myers
  * @since 0.8.2
  */
@@ -30,7 +30,8 @@ public class TitleMode extends ProvincePaintingMode {
         COUNTY("County"),
         DUCHY("Duchy"),
         KINGDOM("Kingdom"),
-        EMPIRE("Empire");
+        EMPIRE("Empire"),
+        HEGEMONY("Hegemony");
         
         private final String name;
         private TitleType(String name) {
@@ -201,6 +202,18 @@ public class TitleMode extends ProvincePaintingMode {
                 if (liege != null && !liege.isEmpty() && !liege.equals("0"))
                     return liege;
                 return title;
+            case HEGEMONY:
+                if (title.startsWith("b_") || title.startsWith("c_") || title.startsWith("d_") || title.startsWith("k_")) {
+                    String tmpLiege = getTitleHistString(title, "liege");
+                    if (tmpLiege != null && tmpLiege.equalsIgnoreCase(title))
+                        return title;
+                    liege = getLiege(tmpLiege, level);
+                } else if (title.startsWith("e_"))
+                    liege = getTitleHistString(title, "liege");
+
+                if (liege != null && !liege.isEmpty() && !liege.equals("0"))
+                    return liege;
+                return title;
             default:
                 return title;
         }
@@ -259,7 +272,9 @@ public class TitleMode extends ProvincePaintingMode {
             else
                 return "";
         } else {
-            if (title.startsWith("e_"))
+            if (title.startsWith("h_"))
+                return Text.getText("hegemony") + " of " + Text.getText(title);
+            else if (title.startsWith("e_"))
                 return Text.getText("empire") + " of " + Text.getText(title);
             else if (title.startsWith("k_"))
                 return Text.getText("kingdom") + " of " + Text.getText(title);
