@@ -62,7 +62,9 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
     private transient java.util.Map<Integer, Color> overrides;
 
     /** @since 0.5pre3 */
-    private boolean paintBorders;
+    private boolean paintInternalBorders;
+
+    private boolean paintExternalBorders;
 
     /** @since 0.7.5 */
     private boolean isMapInverted;
@@ -101,7 +103,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         
         mode = new ProvinceMode(this);
         
-        paintBorders = true;
+        paintInternalBorders = true;
+        paintExternalBorders = true;
     }
     
     private void createMapImage(Map map, FilenameResolver resolver) {
@@ -170,7 +173,7 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         try {
             mode.paint(g);
 
-            if (paintBorders && mode.paintsBorders()) {
+            if ((paintInternalBorders || paintExternalBorders) && mode.paintsBorders()) {
                 paintBorders((Graphics2D) g);
             }
         } catch (RuntimeException ex) {
@@ -244,6 +247,8 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
         g.setColor(Color.BLACK);
         
         final double scale = scaleFactor/DEFAULT_SCALE_FACTOR;
+        final java.util.Map<Integer, Integer> provIdByRgb = new java.util.HashMap<>();
+        final java.util.Map<Integer, Object> groupByProvId = new java.util.HashMap<>();
         
         double x, y;
         
@@ -254,13 +259,55 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
             pixelSize = 3;
         if (scale > 3)
             pixelSize = 4;
-        
-        for (Integer[] pt : model.getMapData().getBorderPixels()) {
-            x = ((double) pt[0]) * scale;
-            y = ((double) pt[1]) * scale;
+
+        final int basePixelSize = pixelSize;
+
+        for (MapPixelData.BorderPixel pt : model.getMapData().getBorderPixels()) {
+            final int provId1 = getProvinceIdForRgb(pt.getRgb1(), provIdByRgb);
+            final int provId2 = getProvinceIdForRgb(pt.getRgb2(), provIdByRgb);
+            if (provId1 < 0 || provId2 < 0)
+                continue;
+
+            final Object group1 = groupByProvId.computeIfAbsent(provId1, mode::getBorderGroup);
+            final Object group2 = groupByProvId.computeIfAbsent(provId2, mode::getBorderGroup);
+            final boolean isExternal = !java.util.Objects.equals(group1, group2);
+
+            if (!paintInternalBorders && !paintExternalBorders)
+                continue;
+
+            final float thicknessMultiplier;
+            if (isExternal) {
+                if (paintExternalBorders) {
+                    thicknessMultiplier = Math.max(1.0f, mode.getBorderThicknessMultiplier(provId1, provId2, group1, group2));
+                } else if (paintInternalBorders) {
+                    thicknessMultiplier = 1.0f;
+                } else {
+                    continue;
+                }
+            } else {
+                if (!paintInternalBorders)
+                    continue;
+                thicknessMultiplier = Math.max(1.0f, mode.getBorderThicknessMultiplier(provId1, provId2, group1, group2));
+            }
+
+            final int drawPixelSize = Math.max(1, Math.round(basePixelSize * thicknessMultiplier));
+
+            x = ((double) pt.getX()) * scale;
+            y = ((double) pt.getY()) * scale;
             
-            g.fillRect((int)x, (int)y, pixelSize, pixelSize);
+            g.fillRect((int)x, (int)y, drawPixelSize, drawPixelSize);
         }
+    }
+
+    private int getProvinceIdForRgb(final int rgb, final java.util.Map<Integer, Integer> cache) {
+        final Integer cached = cache.get(rgb);
+        if (cached != null)
+            return cached;
+
+        final ProvinceData.Province province = model.getProvinceData().getProv(rgb);
+        final int id = (province == null) ? -1 : province.getId();
+        cache.put(rgb, id);
+        return id;
     }
     
     @Override
@@ -583,12 +630,31 @@ public class MapPanel extends javax.swing.JPanel implements Scrollable {
 
     /** @since 0.5pre3 */
     public boolean isPaintBorders() {
-        return paintBorders;
+        return paintInternalBorders || paintExternalBorders;
     }
 
     /** @since 0.5pre3 */
     public void setPaintBorders(boolean paintBorders) {
-        this.paintBorders = paintBorders;
+        paintInternalBorders = paintBorders;
+        paintExternalBorders = paintBorders;
+        isDirty = true;
+    }
+
+    public boolean isPaintInternalBorders() {
+        return paintInternalBorders;
+    }
+
+    public void setPaintInternalBorders(boolean paintInternalBorders) {
+        this.paintInternalBorders = paintInternalBorders;
+        isDirty = true;
+    }
+
+    public boolean isPaintExternalBorders() {
+        return paintExternalBorders;
+    }
+
+    public void setPaintExternalBorders(boolean paintExternalBorders) {
+        this.paintExternalBorders = paintExternalBorders;
         isDirty = true;
     }
     

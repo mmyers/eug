@@ -60,6 +60,27 @@ public class CustomMode extends ProvincePaintingMode {
         // Default is to do nothing
         return;
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (getMap().isWasteland(provId)) {
+            return "WASTELAND";
+        }
+        if (!getMap().isLand(provId)) {
+            return "SEA_ZONE";
+        }
+
+        String prop;
+        if (isOwner)
+            prop = mapPanel.getModel().getOwner(provId);
+        else
+            prop = mapPanel.getModel().getHistString(provId, name);
+
+        if (prop == null)
+            return "MISSING";
+
+        return value.equals(prop.toLowerCase());
+    }
     
     @Override
     public String getTooltipExtraText(final Province current) {

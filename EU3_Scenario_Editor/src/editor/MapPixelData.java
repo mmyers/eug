@@ -15,6 +15,36 @@ import java.util.List;
 /** @since 0.3pre1 */
 public final class MapPixelData {
     
+    public static final class BorderPixel {
+        private final int x;
+        private final int y;
+        private final int rgb1;
+        private final int rgb2;
+
+        public BorderPixel(int x, int y, int rgb1, int rgb2) {
+            this.x = x;
+            this.y = y;
+            this.rgb1 = rgb1;
+            this.rgb2 = rgb2;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public int getRgb1() {
+            return rgb1;
+        }
+
+        public int getRgb2() {
+            return rgb2;
+        }
+    }
+    
     /**
      * Mapping of rgb value to a list of horizontal lines in the province.
      * Each line is kept in an array of size 3.
@@ -24,16 +54,16 @@ public final class MapPixelData {
     private final java.util.Map<Integer, List<Integer[]>> provLines;
     
     /**
-     * List of two-element arrays holding coordinates of border pixels.
+     * List of border pixels and the two province colors the border divides.
      * @since 0.5pre3
      */
-    private final List<Integer[]> borders;
+    private final List<BorderPixel> borders;
     
     private static final int BLACK = 0xFF000000; // java.awt.Color.BLACK.getRGB();
     
     public MapPixelData(final BufferedImage img, final int numProvs) {
         provLines = new HashMap<>(numProvs);
-        java.util.Map<Integer[], Object> tmpBorders = new HashMap<>(numProvs*32);
+        java.util.List<BorderPixel> tmpBorders = new ArrayList<>(numProvs*32);
         
         int rgb;
         
@@ -63,8 +93,11 @@ public final class MapPixelData {
                 points[2] = x;
                 
                 provLines.get(rgb).add(points);
-                if (rgb != BLACK && x < width && rgbLine[x] != BLACK) { // it's PTI, so don't bother with a border
-                    tmpBorders.put(new Integer[] {x,y}, null);
+                if (x < width) {
+                    int rgb2 = rgbLine[x];
+                    if (rgb != BLACK && rgb2 != BLACK) { // it's PTI, so don't bother with a border
+                        tmpBorders.add(new BorderPixel(x, y, rgb, rgb2));
+                    }
                 }
                 
                 x--;
@@ -81,20 +114,23 @@ public final class MapPixelData {
                 do {
                     y++;
                 } while (y < height && rgb == rgbCol[y]);
-                if (rgb != BLACK && y < height && rgbCol[y] != BLACK) { // it's PTI, so don't bother with a border
-                    tmpBorders.put(new Integer[] {x,y}, null);
+                if (y < height) {
+                    int rgb2 = rgbCol[y];
+                    if (rgb != BLACK && rgb2 != BLACK) { // it's PTI, so don't bother with a border
+                        tmpBorders.add(new BorderPixel(x, y, rgb, rgb2));
+                    }
                 }
             }
         }
         
-        borders = new ArrayList<>(tmpBorders.keySet());
+        borders = tmpBorders;
     }
     
     public List<Integer[]> getLinesInProv(int rgb) {
         return provLines.get(rgb);
     }
     
-    public List<Integer[]> getBorderPixels() {
+    public List<BorderPixel> getBorderPixels() {
         return borders;
     }
 }

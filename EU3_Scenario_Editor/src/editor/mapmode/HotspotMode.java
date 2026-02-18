@@ -21,26 +21,16 @@ public class HotspotMode extends DiscreteScalingMapMode {
     }
 
     @Override
-    protected void paintProvince(Graphics2D g, int provId) {
-        List<String> strings = mapPanel.getModel().getHistStrings(provId, prop); // not very efficient - could precalculate some of this maybe
-        int count;
+    protected double getProvinceValue(int provId) {
+        List<String> strings = mapPanel.getModel().getHistStrings(provId, prop);
+        if (strings != null && !strings.isEmpty())
+            return strings.size();
         
-        if (strings != null && !strings.isEmpty()) {
-            count = strings.size();
-        } else {
-            List<GenericObject> objects = mapPanel.getModel().getHistObjects(provId, prop);
-            if (objects != null) {
-                count = objects.size();
-            } else {
-                mapPanel.paintProvince(g, provId, Utilities.COLOR_LAND_DEFAULT);
-                return;
-            }
-        }
+        List<GenericObject> objects = mapPanel.getModel().getHistObjects(provId, prop);
+        if (objects != null)
+            return objects.size();
         
-        int index = (int) ((count + 0.0) / getStep());
-        index = Math.max(0, Math.min(colors.length-1, index));
-        
-        mapPanel.paintProvince(g, provId, colors[index]);
+        return 0;
     }
 
     @Override
@@ -53,18 +43,7 @@ public class HotspotMode extends DiscreteScalingMapMode {
         if (!getMap().isLand(id))
             return "";
         
-        List<String> strings = mapPanel.getModel().getHistStrings(id, prop);
-        int count = -1;
-        
-        if (strings != null && !strings.isEmpty()) {
-            count = strings.size();
-        } else {
-            List<GenericObject> objects = mapPanel.getModel().getHistObjects(id, prop);
-            if (objects != null) {
-                count = objects.size();
-            }
-        }
-        return "\"" + prop + "\" changes: " + count;
+        return prop + " changes: " + (int)getProvinceValue(id);
     }
     
     @Override

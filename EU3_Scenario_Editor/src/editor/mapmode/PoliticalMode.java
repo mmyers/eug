@@ -52,6 +52,24 @@ public final class PoliticalMode extends ProvincePaintingMode {
         // do nothing
     }
 
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId)) {
+            return "SEA_ZONE";
+        }
+
+        final String owner = mapPanel.getModel().getOwner(provId);
+        if (owner == null || owner.isEmpty()) {
+            return "NO_OWNER";
+        }
+
+        String controller = getController(provId);
+        if (controller == null || controller.isEmpty())
+            controller = owner;
+
+        return owner.toUpperCase() + "|" + controller.toUpperCase();
+    }
+
     private String getController(int provId) {
         String controller = mapPanel.getModel().getHistString(provId, "controller");
         if (controller.isEmpty()) {

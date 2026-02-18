@@ -60,6 +60,16 @@ public final class CapitalsMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        String country = capitals.get(provId);
+        if (country == null)
+            return "NOT_CAPITAL";
+        return "CAPITAL:" + country;
+    }
+
+    @Override
     public String getTooltipExtraText(final Province current) {
         if (capitals.containsKey(current.getId()))
             return "Capital of " + capitals.get(current.getId());

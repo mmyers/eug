@@ -55,5 +55,13 @@ public abstract class MapMode {
         return "";
     }
 
+    public Object getBorderGroup(final int provId) {
+        return provId;
+    }
+
+    public float getBorderThicknessMultiplier(final int provId1, final int provId2, final Object group1, final Object group2) {
+        return 1.0f;
+    }
+
     public abstract boolean paintsBorders();
 }

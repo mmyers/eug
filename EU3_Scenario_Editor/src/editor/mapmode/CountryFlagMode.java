@@ -36,6 +36,13 @@ public class CountryFlagMode extends CountryMode {
     }
 
     @Override
+    protected Object getCountryBorderGroup(String country) {
+        if (country == null || country.isEmpty() || Utilities.isNotACountry(country))
+            return "NO_COUNTRY";
+        return mapPanel.getModel().isRhsSet(country, SET_COUNTRY_FLAG, CLR_COUNTRY_FLAG, flagName);
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         String owner = mapPanel.getModel().getOwner(current.getId());
         if (Utilities.isNotACountry(owner))

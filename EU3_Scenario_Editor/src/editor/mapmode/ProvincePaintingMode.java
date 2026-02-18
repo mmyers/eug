@@ -20,6 +20,8 @@ import java.awt.Paint;
  */
 public abstract class ProvincePaintingMode extends MapMode {
     
+    protected static final float EXTERNAL_BORDER_MULTIPLIER = 3.0f;
+
     private static final Paint background = new Color(15, 100, 255);
     
     protected ProvincePaintingMode() {
@@ -86,6 +88,14 @@ public abstract class ProvincePaintingMode extends MapMode {
     @Override
     public boolean paintsBorders() {
         return true;
+    }
+
+    @Override
+    public float getBorderThicknessMultiplier(final int provId1, final int provId2, final Object group1, final Object group2) {
+        if (java.util.Objects.equals(group1, group2)) {
+            return 1.0f;
+        }
+        return EXTERNAL_BORDER_MULTIPLIER;
     }
 
 }

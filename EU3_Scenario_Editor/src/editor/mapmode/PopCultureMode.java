@@ -95,6 +95,16 @@ public class PopCultureMode extends PopMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        if (!mapPanel.getMap().isLand(provId))
+            return "SEA_ZONE";
+        String topCulture = provCultures.get(provId);
+        if (topCulture == null)
+            return "NO_POPS";
+        return topCulture;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         int provId = current.getId();
         if (!mapPanel.getMap().isLand(provId))

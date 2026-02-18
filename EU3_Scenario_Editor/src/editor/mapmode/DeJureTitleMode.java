@@ -19,7 +19,7 @@ import java.util.List;
  * @since 0.9.13
  */
 public class DeJureTitleMode extends ProvincePaintingMode {
-    
+
     protected CK2DataSource dataSource;
     protected CK3DataSource ck3DataSource;
     
@@ -210,4 +210,14 @@ public class DeJureTitleMode extends ProvincePaintingMode {
 //
 //        return "Unknown owner";
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        final String title = provinceTitles.get(provId);
+        if (title != null && !title.isEmpty()) {
+            return title;
+        }
+        return provId;
+    }
+
 }

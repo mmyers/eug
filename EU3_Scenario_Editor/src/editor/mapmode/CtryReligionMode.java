@@ -47,6 +47,20 @@ public class CtryReligionMode extends CountryMode {
             return Utilities.getReligionColor(religion);
         }
     }
+
+    @Override
+    protected Object getCountryBorderGroup(String country) {
+        if (country == null || country.isEmpty() || Utilities.isNotACountry(country))
+            return "NO_COUNTRY";
+
+        country = country.toUpperCase();
+        final String religion = mapPanel.getModel().getHistString(country, "religion");
+        if (religion == null)
+            return "MISSING";
+        if (religion.length() == 0 || religion.equalsIgnoreCase("none"))
+            return "NONE";
+        return religion;
+    }
     
     
     @Override

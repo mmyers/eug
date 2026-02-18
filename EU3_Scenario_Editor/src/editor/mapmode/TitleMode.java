@@ -89,6 +89,33 @@ public class TitleMode extends ProvincePaintingMode {
     protected void paintSeaZone(final Graphics2D g, int id) {
         // Don't paint sea zones.
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (!getMap().isLand(provId)) {
+            return "SEA_ZONE";
+        }
+        if (getMap().isWasteland(provId)) {
+            return "WASTELAND";
+        }
+
+        String owner = getLowestHistTitleHolder(provId);
+        if (owner == null || owner.isEmpty()) {
+            GenericObject history = getProvinceHistory(provId);
+            if (history != null) {
+                for (GenericObject obj : history.children) {
+                    if (obj.name.startsWith("b_")) {
+                        owner = getLiege(obj.name);
+                        break;
+                    }
+                }
+            }
+        }
+        owner = getLiege(owner);
+        if (owner == null || owner.isEmpty())
+            return "NO_TITLE";
+        return owner;
+    }
     
     protected String getLowestHistTitleHolder(int provId) {
         String title = mapPanel.getModel().getHistString(provId, "title");

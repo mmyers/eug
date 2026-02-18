@@ -94,6 +94,20 @@ public class DiscreteCountryScalingMapMode extends CountryMode {
         
         return colors[index];
     }
+
+    @Override
+    protected Object getCountryBorderGroup(String countryTag) {
+        if (countryTag == null || countryTag.isEmpty() || Utilities.isNotACountry(countryTag))
+            return "NO_COUNTRY";
+
+        String value = mapPanel.getModel().getHistString(countryTag, prop);
+        if (value == null || value.length() == 0)
+            value = "0";
+
+        int index = (int) ((Double.parseDouble(value) + min) / step);
+        index = Math.max(0, Math.min(numColors-1, index));
+        return index;
+    }
     
     @Override
     protected void paintSeaZone(final Graphics2D g, int id) {

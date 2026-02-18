@@ -36,6 +36,11 @@ public class HistoryExistsMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        return mapPanel.getDataSource().getProvinceHistory(provId) != null;
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         if (mapPanel.getDataSource().getProvinceHistory(current.getId()) == null)
             return "Does not have a history file";

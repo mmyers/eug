@@ -44,6 +44,21 @@ public class ProvReligionMode extends ProvincePaintingMode {
         // Do nothing
         return;
     }
+
+    @Override
+    public Object getBorderGroup(final int provId) {
+        if (mapPanel.getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+
+        final String religion = mapPanel.getModel().getHistString(provId, "religion");
+        if (religion == null)
+            return "MISSING";
+        if (religion.length() == 0 || religion.equalsIgnoreCase("none"))
+            return "NONE";
+        return religion.toLowerCase();
+    }
     
     @Override
     public String getTooltipExtraText(final Province current) {

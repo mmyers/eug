@@ -59,6 +59,18 @@ public class SimpleTerrainMode extends ProvincePaintingMode {
     }
 
     @Override
+    public Object getBorderGroup(final int provId) {
+        String terr = provTerrains.get(provId);
+        if (terr != null)
+            return terr;
+        if (getMap().isWasteland(provId))
+            return "WASTELAND";
+        if (!getMap().isLand(provId))
+            return "SEA_ZONE";
+        return "DEFAULT";
+    }
+
+    @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
         String terr = provTerrains.get(current.getId());
         if (terr != null) {
