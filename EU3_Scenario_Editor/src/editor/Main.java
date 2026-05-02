@@ -34,6 +34,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -219,7 +220,7 @@ public class Main {
 
         
         JPanel saveGamePanel = new JPanel();
-        saveGamePanel.setBorder(BorderFactory.createTitledBorder("Saved Game"));
+        saveGamePanel.setBorder(BorderFactory.createTitledBorder("Saved Game (optional)"));
         
         final JTextField saveGameField = new JTextField();
         saveGameField.setPreferredSize(new Dimension(500, 24));
@@ -353,8 +354,14 @@ public class Main {
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!isValidGameDir(gameDirField.getText()) || !isValidSaveGame(saveGameField.getText()))
+                if (!isValidGameDir(gameDirField.getText())) {
+                    JOptionPane.showMessageDialog(null, "Please mouse over the red X by the game folder for details and correct the issue, then try again.", "Invalid Game Folder", JOptionPane.WARNING_MESSAGE);
                     return;
+                }
+                else if (!isValidSaveGame(saveGameField.getText())) {
+                    JOptionPane.showMessageDialog(null, "Either clear out the saved game selector or choose a valid saved game file, then try again.", "Invalid Saved Game", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
                 
                 dialog.getRootPane().getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 dialog.getRootPane().getGlassPane().setVisible(true);
