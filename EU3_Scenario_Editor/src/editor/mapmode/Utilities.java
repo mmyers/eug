@@ -147,6 +147,8 @@ public final class Utilities {
             religions = EUGFileIO.loadAll(resolver.listFiles("common/religions"), settings);
         if (religions == null || religions.isEmpty())
             religions = EUGFileIO.loadAllUTF8(resolver.listFiles("common/religion/religions"), settings);
+        if (religions == null || religions.isEmpty())
+            religions = EUGFileIO.loadAllUTF8(resolver.listFiles("common/religion/religion_types"), settings); // CK3 1.19
     }
     
     private static void initTitles() {
