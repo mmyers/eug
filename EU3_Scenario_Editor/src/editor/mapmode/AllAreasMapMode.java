@@ -6,8 +6,10 @@ import editor.ProvinceData;
 import editor.Text;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -16,6 +18,7 @@ import java.util.List;
 public class AllAreasMapMode extends ProvincePaintingMode {
     
     private final java.util.Map<Integer, String> provinceAreas;
+    private final java.util.Map<Integer, List<String>> provinceMultiAreas;
     
     private final java.util.Map<String, Color> areaColors;
     
@@ -38,6 +41,7 @@ public class AllAreasMapMode extends ProvincePaintingMode {
     public AllAreasMapMode(MapPanel panel, GeographyType type) {
         super(panel);
         provinceAreas = new HashMap<>();
+        provinceMultiAreas = new HashMap<>();
         areaColors = new HashMap<>();
         
         this.type = type;
@@ -60,7 +64,10 @@ public class AllAreasMapMode extends ProvincePaintingMode {
             String areaTag = area.getKey();
             List<Integer> areaProvIds = area.getValue();
             for (Integer provId : areaProvIds) {
-                provinceAreas.put(provId, areaTag);
+                provinceAreas.putIfAbsent(provId, areaTag); // change: if a province is in multiple areas, show only the first (usually a more "canonical" area)
+                // also create a list of areas per province, for tooltip purposes
+                provinceMultiAreas.computeIfAbsent(provId, k -> new ArrayList<String>());
+                provinceMultiAreas.get(provId).add(areaTag);
             }
             areaColors.put(areaTag, colors.get(colorIdx++));
             if (colorIdx >= colors.size())
@@ -108,9 +115,12 @@ public class AllAreasMapMode extends ProvincePaintingMode {
 
     @Override
     public String getTooltipExtraText(ProvinceData.Province current) {
-        String area = provinceAreas.get(current.getId());
-        if (area != null) {
-            return type.getReadableName() + ": " + Text.getText(area);
+        List<String> areas = provinceMultiAreas.get(current.getId());
+        if (areas != null) {
+            String allAreasText = areas.stream()
+                                       .map(Text::getText)
+                                       .collect(Collectors.joining(", "));
+            return type.getReadableName() + ": " + allAreasText;
         } else if (mapPanel.getMap().isWasteland(current.getId())) {
             return "Wasteland";
         }
