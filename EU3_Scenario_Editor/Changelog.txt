@@ -2,6 +2,25 @@
 |=== Changelog ===|
 \=================/
 
+=== 1.0.4 ===
+
+Changes:
+- Add support for CK3 hegemonies, a level above empires. Thanks to @IHateTrains
+- Add a thicker border around groups of provinces (e.g. countries) rather than
+  only relying on color to visually separate them. Thanks to @IHateTrains
+- Add metaregion support: any region tag beginning with "metaregion" (case insensitive)
+  is put into a separate list in the geography menus. Suggested by @GTAIV
+- Province tooltips in all-regions (all-areas, all-continents...) map modes now 
+  list all regions that the province is in, rather than assuming they are in only one.
+- Geographical regions, areas, etc. are now kept internally in the same order
+  in which they appeared in the original files. If a province is in multiple lists,
+  the first list takes precedence.
+
+Bugfixes:
+- Update CK3 religions path. Reported by @Silver-Silvera
+- Fix stack trace dump in hot-spots map mode.
+
+
 === 1.0.3 ===
 
 Bugfixes:
