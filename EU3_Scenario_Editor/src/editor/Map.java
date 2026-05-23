@@ -728,7 +728,7 @@ public final class Map {
     }
     
     public java.util.Map<String, List<Integer>> getMetaRegions() {
-        getRegions(); // initialize
+        getRegions(); // initialize (non-CK3 only)
         return metaRegionList;
     }
     

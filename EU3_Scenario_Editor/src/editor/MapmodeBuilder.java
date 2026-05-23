@@ -101,7 +101,7 @@ public class MapmodeBuilder {
                     JMenu menu = new JMenu("Regions");
                     addRegionFilters(menu);
                     viewMenu.add(menu);
-                    if (!mapPanel.getMap().getMetaRegions().isEmpty()) {
+                    if (mapPanel.getMap().getMetaRegions() != null && !mapPanel.getMap().getMetaRegions().isEmpty()) {
                         JMenu menu2 = new JMenu("Metaregions");
                         addRegionFilters(menu2);
                         viewMenu.add(menu2);

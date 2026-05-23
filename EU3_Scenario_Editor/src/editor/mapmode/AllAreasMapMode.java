@@ -25,7 +25,7 @@ public class AllAreasMapMode extends ProvincePaintingMode {
     public enum GeographyType {
         AREAS("Area"),
         REGIONS("Region"),
-        META_REGIONS("Region"),
+        META_REGIONS("Metaregion"),
         SUPER_REGIONS("Super region"),
         CONTINENTS("Continent");
         
