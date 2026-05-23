@@ -85,7 +85,7 @@ package eug.parser;
                 else
                     ident.append(c);
             } else if (hitWord) { // stop at whitespace or equals
-                if (c == '=' || c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                if (c == '=' || c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '!' || c == '<' || c == '>') {
                     return ident.toString();
                 } else {
                     ident.append(c);
@@ -316,9 +316,10 @@ package eug.parser;
 ALPHA                       = [[:letter:]_\[\]\-',\u00B4\u00A8\u2010-\u2019\:@&]
 DIGIT                       = [0-9\.\-\+/]
 ALNUM                       = {ALPHA}|{DIGIT}
+JOMINI_EQUALS               = (<=|>=|\!=|\?=|<|>|=)
 
 /* \012 is LF; \u00A0 is NBSP */
-NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\b\012\u00A0]
+NONNEWLINE_WHITE_SPACE_CHAR = [\ \t\u00A0]
 NEWLINE                     = \r|\n|\r\n
 NONNEWLINE                  = [^\r\n]
 WHITE_SPACE_CHAR            = [\n\r\ \t\b\012\u00A0]
@@ -332,7 +333,7 @@ QUOTED_STR                  = \" [^\"]* \"
 UNQUOTED_STR                = {ALNUM}+
 
 /* Note: The Ident macro will slow things down. */
-Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR}* {COMMENT_NEWLINE}* {WHITE_SPACE_CHAR}*)* "=" {NONNEWLINE_WHITE_SPACE_CHAR}*
+Ident                       = ({UNQUOTED_STR} | {QUOTED_STR}) ({WHITE_SPACE_CHAR}* {COMMENT_NEWLINE}* {WHITE_SPACE_CHAR}*) {JOMINI_EQUALS} {NONNEWLINE_WHITE_SPACE_CHAR}*
 
 
 %% 
