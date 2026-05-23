@@ -403,7 +403,11 @@ public final class Map {
 //                            provIds.addAll(regionIds);
                     }
                     //superRegionList.put(name, provIds);
-                } else if (sub.getName().equalsIgnoreCase("duchies") || sub.getName().equalsIgnoreCase("counties")) {
+                } else if (sub.getName().equalsIgnoreCase("hegemonies")
+                        || sub.getName().equalsIgnoreCase("empires")
+                        || sub.getName().equalsIgnoreCase("kingdoms")
+                        || sub.getName().equalsIgnoreCase("duchies")
+                        || sub.getName().equalsIgnoreCase("counties")) {
                     // add everything from each duchy or county listed
                     for (String title : sub) {
                         List<Integer> titleHoldings = allTitleHoldings.get(title);
@@ -421,6 +425,8 @@ public final class Map {
                     }
                     
                     //regionList.put(name, provIds);
+                } else {
+                    log.log(Level.WARNING, "Unknown list type in geographical_regions.txt: {0}", sub.getName());
                 }
             }
             if (highestLevel >= regionHierarchy.size()) {
