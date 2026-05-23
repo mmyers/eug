@@ -25,8 +25,10 @@ public class AllAreasMapMode extends ProvincePaintingMode {
     public enum GeographyType {
         AREAS("Area"),
         REGIONS("Region"),
+        META_REGIONS("Region"),
         SUPER_REGIONS("Super region"),
         CONTINENTS("Continent");
+        
         private final String readableName;
         private GeographyType(String readableName) {
             this.readableName = readableName;
@@ -49,6 +51,7 @@ public class AllAreasMapMode extends ProvincePaintingMode {
         switch (type) {
             case AREAS: geography = mapPanel.getMap().getAreas(); break;
             case REGIONS: geography = mapPanel.getMap().getRegions(); break;
+            case META_REGIONS: geography = mapPanel.getMap().getMetaRegions(); break;
             case SUPER_REGIONS: geography = mapPanel.getMap().getSuperRegions(); break;
             case CONTINENTS: geography = mapPanel.getMap().getContinents(); break;
         }

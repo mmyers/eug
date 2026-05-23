@@ -101,6 +101,11 @@ public class MapmodeBuilder {
                     JMenu menu = new JMenu("Regions");
                     addRegionFilters(menu);
                     viewMenu.add(menu);
+                    if (!mapPanel.getMap().getMetaRegions().isEmpty()) {
+                        JMenu menu2 = new JMenu("Metaregions");
+                        addRegionFilters(menu2);
+                        viewMenu.add(menu2);
+                    }
                 } else if (view.equals("areas-menu") && version.hasRegions()) {
                     JMenu menu = new JMenu("Areas");
                     addAreaFilters(menu);
@@ -112,6 +117,9 @@ public class MapmodeBuilder {
                     } catch (Exception ex) {}
                     try {
                         menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.REGIONS));
+                    } catch (Exception ex) {}
+                    try {
+                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.META_REGIONS));
                     } catch (Exception ex) {}
                     try {
                         menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.SUPER_REGIONS));
@@ -842,6 +850,22 @@ public class MapmodeBuilder {
             }
         }
     }
+    
+    private static void addMetaRegionFilters(JMenu rootMenu) {
+        java.util.Map<String, List<Integer>> regions = mapPanel.getMap().getMetaRegions();
+        List<String> regionNames = new ArrayList<>(regions.keySet());
+        Collections.sort(regionNames, new StringComparator());
+        
+        int counter = 0;
+        for (String region : regionNames) {
+            rootMenu.add(new RegionFilterAction(Text.getText(region), region));
+            if (counter++ > MAX_PER_SUBMENU) {
+                rootMenu = (JMenu) rootMenu.add(new JMenu("More..."));
+                counter = 0;
+            }
+        }
+    }
+    
     private static void addSuperRegionFilters(JMenu rootMenu) {
         java.util.Map<String, List<Integer>> superRegions = mapPanel.getMap().getSuperRegions();
         List<String> superRegionNames = new ArrayList<>(superRegions.keySet());

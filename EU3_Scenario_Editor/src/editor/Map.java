@@ -61,6 +61,8 @@ public final class Map {
     private GenericObject regions;
     private java.util.Map<String, List<Integer>> regionList = null;
     
+    private java.util.Map<String, List<Integer>> metaRegionList = null; // special case: regions that begin with the word "metaregion"
+    
     private GenericObject superRegions;
     private java.util.Map<String, List<Integer>> superRegionList = null;
     
@@ -710,8 +712,24 @@ public final class Map {
                     }
                 }
             }
+            
+            metaRegionList = new LinkedHashMap<>();
+            
+            for (Entry<String, List<Integer>> e : regionList.entrySet()) {
+                if (e.getKey().toLowerCase().startsWith("metaregion")) {
+                    metaRegionList.put(e.getKey(), e.getValue());
+                }
+            }
+            for (Entry<String, List<Integer>> e : metaRegionList.entrySet()) {
+                regionList.remove(e.getKey());
+            }
         }
         return regionList;
+    }
+    
+    public java.util.Map<String, List<Integer>> getMetaRegions() {
+        getRegions(); // initialize
+        return metaRegionList;
     }
     
     public java.util.Map<String, List<Integer>> getSuperRegions() {
