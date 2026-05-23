@@ -118,9 +118,11 @@ public class MapmodeBuilder {
                     try {
                         menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.REGIONS));
                     } catch (Exception ex) {}
-                    try {
-                        menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.META_REGIONS));
-                    } catch (Exception ex) {}
+                    if (mapPanel.getMap().getMetaRegions() != null && !mapPanel.getMap().getMetaRegions().isEmpty()) {
+                        try {
+                            menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.META_REGIONS));
+                        } catch (Exception ex) {}
+                    }
                     try {
                         menu.add(new AllAreasFilterAction(AllAreasMapMode.GeographyType.SUPER_REGIONS));
                     } catch (Exception ex) {}
