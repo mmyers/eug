@@ -149,8 +149,9 @@ public class CWordFile {
      * @param string a string in the .eug format.
      */
     private void openStringStream(String string) {
+        String name = (string.length() > 20 ? string.substring(0, 20) + "..." : string);
         tokenizer = new EUGScanner(new StringReader(string));
-        tokenizer.setFileName("(string)");
+        tokenizer.setFileName("(string) '" + name + "'");
         this.filename = "(reading from string)";
     }
     
