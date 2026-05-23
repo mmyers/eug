@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -570,7 +571,7 @@ public final class Map {
     
     public java.util.Map<String, List<Integer>> getContinents() {
         if (contList == null) {
-            contList = new HashMap<>(continents.size());
+            contList = new LinkedHashMap<>(continents.size()); // change to LinkedHashMap to preserve the original order (probably doesn't matter for continents)
             if (!continents.lists.isEmpty()) {
                 for (GenericList cont : continents.lists) {
                     contList.put(cont.getName(), convertToIntList(cont.getList(), "continent"));
@@ -658,7 +659,7 @@ public final class Map {
     
     public java.util.Map<String, List<Integer>> getAreas() {
         if (areaList == null) {
-            areaList = new HashMap<>(areas.size());
+            areaList = new LinkedHashMap<>(areas.size()); // change to LinkedHashMap to preserve the original order
             
             areas.lists.stream()
                     .forEach((area) -> areaList.put(area.getName(), convertToIntList(area.getList(), "area")));
@@ -673,7 +674,7 @@ public final class Map {
     
     public java.util.Map<String, List<Integer>> getRegions() {
         if (regionList == null) {
-            regionList = new HashMap<>(regions.size());
+            regionList = new LinkedHashMap<>(regions.size()); // change to LinkedHashMap to preserve the original order
             
             // regions could be:
             // france = { 0 1 2 }
@@ -715,7 +716,7 @@ public final class Map {
     
     public java.util.Map<String, List<Integer>> getSuperRegions() {
         if (superRegionList == null) {
-            superRegionList = new HashMap<>(superRegions.size());
+            superRegionList = new LinkedHashMap<>(superRegions.size()); // change to LinkedHashMap to preserve the original order
             if (!superRegions.lists.isEmpty()) {
                 for (GenericList sr : superRegions.lists) {
                     // at this point, if superregions.txt exists, just assume areas.txt also exists
@@ -733,7 +734,7 @@ public final class Map {
     public java.util.Map<String, List<Integer>> getProvinceGroups() {
         // exactly like areas.txt
         if (provinceGroupList == null) {
-            provinceGroupList = new HashMap<>(provinceGroups.size());
+            provinceGroupList = new LinkedHashMap<>(provinceGroups.size()); // change to LinkedHashMap to preserve the original order
             if (!provinceGroups.lists.isEmpty()) {
                 for (GenericList group : provinceGroups.lists) {
                     provinceGroupList.put(group.getName(), convertToIntList(group.getList(), "province group"));
