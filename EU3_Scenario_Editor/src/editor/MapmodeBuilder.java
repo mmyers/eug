@@ -103,7 +103,7 @@ public class MapmodeBuilder {
                     viewMenu.add(menu);
                     if (mapPanel.getMap().getMetaRegions() != null && !mapPanel.getMap().getMetaRegions().isEmpty()) {
                         JMenu menu2 = new JMenu("Metaregions");
-                        addRegionFilters(menu2);
+                        addMetaRegionFilters(menu2);
                         viewMenu.add(menu2);
                     }
                 } else if (view.equals("areas-menu") && version.hasRegions()) {
