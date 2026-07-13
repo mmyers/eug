@@ -17,9 +17,16 @@ import java.util.List;
  */
 public class SingleRegionMode extends GroupMode {
     
+    private boolean isMetaRegion = false;
+    
     /** Creates a new instance of RegionsMode */
     public SingleRegionMode(String region) {
         provIds = getMap().getRegion(region);
+        if ((provIds == null || provIds.isEmpty()) && getMap().getMetaRegions() != null) {
+            provIds = getMap().getMetaRegions().get(region);
+            if (provIds != null && !provIds.isEmpty())
+                isMetaRegion = true;
+        }
     }
     
     public SingleRegionMode(List<Integer> continent) {
@@ -29,6 +36,11 @@ public class SingleRegionMode extends GroupMode {
     public SingleRegionMode(MapPanel panel, String region) {
         super(panel);
         provIds = getMap().getRegion(region);
+        if ((provIds == null || provIds.isEmpty()) && getMap().getMetaRegions() != null) {
+            provIds = getMap().getMetaRegions().get(region);
+            if (provIds != null && !provIds.isEmpty())
+                isMetaRegion = true;
+        }
     }
     
     public SingleRegionMode(MapPanel panel, List<Integer> region) {
@@ -41,10 +53,13 @@ public class SingleRegionMode extends GroupMode {
             return "";
         
         StringBuilder ret = new StringBuilder("Regions: ");
-        List<String> regions = getMap().getRegionsOfProv(current.getId());
+        List<String> regions = isMetaRegion ? getMap().getMetaRegionsOfProv(current.getId()) : getMap().getRegionsOfProv(current.getId());
         ret.append(String.join(", ", regions));
         
         return ret.toString();
     }
     
+    public boolean isMetaRegion() {
+        return isMetaRegion;
+    }
 }

@@ -840,6 +840,22 @@ public final class Map {
         return ret;
     }
     
+    public List<String> getMetaRegionsOfProv(String provId) {
+        return getMetaRegionsOfProv(Integer.parseInt(provId));
+    }
+    
+    public List<String> getMetaRegionsOfProv(int provId) {
+        List<String> ret = getMetaRegions().entrySet().stream()
+                .filter((entry) -> (entry.getValue().contains(provId)))
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
+        
+        if (ret.isEmpty())
+            ret.add("(none)");
+        
+        return ret;
+    }
+    
     public List<String> getSuperRegionsOfProv(String provId) {
         return getSuperRegionsOfProv(Integer.parseInt(provId));
     }

@@ -1165,7 +1165,12 @@ public final class EditorUI extends javax.swing.JFrame {
                         mapPanel.repaint();
                     }
                 } else if (mode instanceof SingleRegionMode) {
-                    String reg = map.getRegionsOfProv(lastProvRolledOver.getId()).get(0);
+                    String reg;
+                    if (((editor.mapmode.SingleRegionMode)mode).isMetaRegion()) {
+                        reg = map.getMetaRegionsOfProv(lastProvRolledOver.getId()).get(0);
+                    } else {
+                        reg = map.getRegionsOfProv(lastProvRolledOver.getId()).get(0);
+                    }
                     if (!reg.equals("(none)")) {
                         mapPanel.setMode(new SingleRegionMode(mapPanel, reg));
                         viewModeLabel.setText("Provinces in " + reg);
