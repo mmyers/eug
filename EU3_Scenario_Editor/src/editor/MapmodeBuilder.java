@@ -81,13 +81,17 @@ public class MapmodeBuilder {
                     viewMenu.add(new HistorySimpleTerrainFilterAction());
                 } else if (view.equals("titles")) {
                     JMenu menu = new JMenu("Titles");
-                    for (TitleMode.TitleType t : TitleMode.TitleType.values())
-                        menu.add(new TitleFilterAction(t));
+                    for (TitleMode.TitleType t : TitleMode.TitleType.values()) {
+                        if (t.isValidForCK2() || !version.getName().equalsIgnoreCase("ck2"))
+                            menu.add(new TitleFilterAction(t));
+                    }
                     viewMenu.add(menu);
                 } else if (view.equals("de-jure-titles")) {
                     JMenu menu = new JMenu("De Jure Titles");
-                    for (DeJureTitleMode.TitleType t : DeJureTitleMode.TitleType.values())
-                        menu.add(new DeJureTitleFilterAction(t));
+                    for (TitleMode.TitleType t : TitleMode.TitleType.values()) {
+                        if (t.isValidForCK2() || !version.getName().equalsIgnoreCase("ck2"))
+                            menu.add(new DeJureTitleFilterAction(t));
+                    }
                     viewMenu.add(menu);
                 } else if (view.equals("country-menu")) {
                     JMenu menu = new JMenu("Single country");
@@ -1055,7 +1059,7 @@ public class MapmodeBuilder {
     }
     
     private static class DeJureTitleFilterAction extends FilterAction {
-        public DeJureTitleFilterAction(DeJureTitleMode.TitleType type) {
+        public DeJureTitleFilterAction(TitleMode.TitleType type) {
             super("De Jure " + type.getName() + " Titles", new DeJureTitleMode(mapPanel, type));
             putValue(SHORT_DESCRIPTION, "De Jure " + type.getName() + " Titles");
         }

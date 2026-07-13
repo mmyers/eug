@@ -25,20 +25,32 @@ public class TitleMode extends ProvincePaintingMode {
     
     protected TitleType type;
 
+
     public enum TitleType {
-        //BARONY("Barony"),
-        COUNTY("County"),
-        DUCHY("Duchy"),
-        KINGDOM("Kingdom"),
-        EMPIRE("Empire"),
-        HEGEMONY("Hegemony");
+        //BARONY  ("Barony",   "b_", true),
+        COUNTY  ("County",   "c_", true),
+        DUCHY   ("Duchy",    "d_", true),
+        KINGDOM ("Kingdom",  "k_", true),
+        EMPIRE  ("Empire",   "e_", true),
+        HEGEMONY("Hegemony", "h_", false);
         
         private final String name;
-        private TitleType(String name) {
+        private final String prefix;
+        private final boolean validForCK2;
+        
+        private TitleType(String name, String prefix, boolean ck2) {
             this.name = name;
+            this.prefix = prefix;
+            this.validForCK2 = ck2;
         }
         public String getName() {
             return name;
+        }
+        public String getPrefix() {
+            return prefix;
+        }
+        public boolean isValidForCK2() {
+            return validForCK2;
         }
     };
 

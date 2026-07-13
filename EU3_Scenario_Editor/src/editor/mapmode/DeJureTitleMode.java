@@ -3,7 +3,7 @@ package editor.mapmode;
 
 import editor.MapPanel;
 import editor.ProvinceData;
-import editor.Text;
+import editor.mapmode.TitleMode.TitleType;
 import eug.shared.GenericObject;
 import eug.specific.ck2.CK2DataSource;
 import eug.specific.ck3.CK3DataSource;
@@ -25,29 +25,6 @@ public class DeJureTitleMode extends ProvincePaintingMode {
     
     protected final TitleType type;
     private final java.util.Map<Integer, String> provinceTitles;
-
-    public enum TitleType {
-        //BARONY("Barony", "b_"),
-        COUNTY("County", "c_"),
-        DUCHY("Duchy", "d_"),
-        KINGDOM("Kingdom", "k_"),
-        EMPIRE("Empire", "e_"),
-        HEGEMONY("Hegemony", "h_");
-        
-        private final String name;
-        private final String prefix;
-        
-        private TitleType(String name, String prefix) {
-            this.name = name;
-            this.prefix = prefix;
-        }
-        public String getName() {
-            return name;
-        }
-        public String getPrefix() {
-            return prefix;
-        }
-    };
 
     public DeJureTitleMode(MapPanel panel, TitleType level) {
         super(panel);
