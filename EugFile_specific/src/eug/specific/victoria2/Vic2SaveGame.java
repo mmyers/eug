@@ -54,7 +54,7 @@ public class Vic2SaveGame extends ClausewitzSaveGame implements Vic2DataSource {
     }
 
     @Override
-    public List<GenericObject> getPops(int provId) {
+    public List<GenericObject> getPops(int provId, String date) {
         GenericObject province = getProvince(provId);
         // Pops are directly inside the province data
         if (province != null)

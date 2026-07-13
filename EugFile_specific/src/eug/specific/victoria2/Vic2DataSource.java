@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface Vic2DataSource extends ClausewitzDataSource {
     
-    public List<GenericObject> getPops(int provId);
+    public List<GenericObject> getPops(int provId, String date);
 }

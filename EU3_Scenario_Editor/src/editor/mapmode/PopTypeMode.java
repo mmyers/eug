@@ -48,14 +48,14 @@ public class PopTypeMode extends PopMode {
         
         Vic2DataSource ds = (Vic2DataSource)mapPanel.getDataSource();
         for (int i = 0; i < mapPanel.getMap().getMaxProvinces(); i++) {
-            List<GenericObject> pops = ds.getPops(i); // each of these objects will be <provid> = { <pops> }, so we'll need to go down another level
+            List<GenericObject> pops = ds.getPops(i, lastDate); // each of these objects will be <provid> = { <pops> }, so we'll need to go down another level
             int total = 0;
             java.util.Map<String, Integer> types = new HashMap<>();
             for (GenericObject provPop : pops) {
                 for (GenericObject pop : provPop.children) {
                     provPops.computeIfAbsent(i, k -> new ArrayList<>()).add(pop);
                     
-                    int size = pop.getInt(SIZE_KEY);
+                    int size = (int)pop.getDouble(SIZE_KEY);
                     total += size;
                     types.merge(pop.name, size, (val1, val2) -> val1 + val2);
                 }
@@ -66,7 +66,7 @@ public class PopTypeMode extends PopMode {
                 String topType = types.entrySet().stream().max(java.util.Map.Entry.comparingByValue()).get().getKey();
                 provTypes.put(i, topType);
                 Collections.sort(provPops.get(i),
-                        (GenericObject o1, GenericObject o2) -> Integer.compare(o2.getInt(SIZE_KEY), o1.getInt(SIZE_KEY))); // descending
+                        (GenericObject o1, GenericObject o2) -> Integer.compare((int)o2.getDouble(SIZE_KEY), (int)o1.getDouble(SIZE_KEY))); // descending
                 provTotalPopulation.put(i, total);
             }
         }
@@ -109,14 +109,14 @@ public class PopTypeMode extends PopMode {
             return "No pops";
         
         String topType = provTypes.get(provId);
-        int sum = pops.stream().filter(pop -> pop.name.equalsIgnoreCase(topType)).mapToInt(pop -> pop.getInt(SIZE_KEY)).sum();
+        int sum = pops.stream().filter(pop -> pop.name.equalsIgnoreCase(topType)).mapToInt(pop -> (int)pop.getDouble(SIZE_KEY)).sum();
         double percent = 100 * sum / (double) provTotalPopulation.get(provId);
         
         StringBuilder ret = new StringBuilder("Majority pop type: ").append(Text.getText(topType)).append(" (").append(String.format("%.1f", percent)).append("%)");
         for (GenericObject pop : pops) {
             // "600 Albanian Catholic aristocrats"
             ret.append("<br>")
-                    .append(pop.getInt(SIZE_KEY))
+                    .append((int)pop.getDouble(SIZE_KEY))
                     .append(" ")
                     .append(Text.getText(getCulture(pop)))
                     .append(" ")

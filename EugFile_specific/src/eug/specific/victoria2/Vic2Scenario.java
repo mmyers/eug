@@ -8,7 +8,9 @@ import eug.shared.GenericObject;
 import eug.specific.clausewitz.ClausewitzScenario;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -16,7 +18,7 @@ import java.util.List;
  */
 public class Vic2Scenario extends ClausewitzScenario implements Vic2DataSource {
     
-    private List<GenericObject> allPops;
+    private Map<String, List<GenericObject>> allPops;
 
     public Vic2Scenario(String mainDir, String modDir) {
         super(mainDir, modDir);
@@ -62,34 +64,41 @@ public class Vic2Scenario extends ClausewitzScenario implements Vic2DataSource {
     }
     
     private void loadPops() {
-        allPops = new ArrayList<>();
+        allPops = new HashMap<>();
         File[] popsFilesOrFolders = resolver.listFiles("history/pops");
         for (File f : popsFilesOrFolders) {
-            getPops(f, allPops);
+            allPops.put(f.getName(), loadPops(f));
         }
     }
     
     @Override
-    public List<GenericObject> getPops(int provId) {
+    public List<GenericObject> getPops(int provId, String date) {
         if (allPops == null)
             loadPops();
         
         String provIdStr = Integer.toString(provId);
         List<GenericObject> ret = new ArrayList<>();
-        for (GenericObject obj : allPops) {
+        if (allPops.get(date) == null)
+            return null;
+        
+        for (GenericObject obj : allPops.get(date)) {
             ret.addAll(obj.getChildren(provIdStr));
         }
         
         return ret;
     }
     
-    private void getPops(File dir, List<GenericObject> ret) {
+    private List<GenericObject> loadPops(File dir) {
+        List<GenericObject> ret = new ArrayList<>();
+        
         for (File f : dir.listFiles()) {
             if (f.isDirectory())
-                getPops(f, ret);
+                ret.addAll(loadPops(f));
             else
                 ret.add(EUGFileIO.load(f, ParserSettings.getQuietSettings()));
         }
+        
+        return ret;
     }
 
 }
